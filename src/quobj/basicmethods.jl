@@ -1,0 +1,80 @@
+import Base: length, size, LinAlg.checksquare, getindex, setindex!, diag,
+     full, norm, trace, normalize!, scale!, similar, ishermitian, show
+
+# Special QuObject methods
+data(A::QuObject) = A.data
+dims(A::QuObject) = A.dims
+isnormalized(A::QuVector) = norm(A) ≈ 1.0
+isnormalized(A::QuMatrix) = trace(A) ≈ 1.0
+function dimsmatch(A::QuObject,B::QuObject)
+    dims(A)==dims(B) || throw(DimensionMismatch("subspace dimensions must match"))
+    return nothing
+end
+dense(x::Ket) = ket(full(x),x.dims,true)
+dense(x::Bra) = bra(full(x),x.dims,true)
+dense(A::Density) = density(full(A),A.dims,true)
+dense(A::Operator) = operator(full(A),A.dims,true)
+
+# Translate basic Base array methods to QuObjects
+length(A::QuObject) = length(A.data)
+size(A::QuObject, d) = size(A.data, d)
+size(A::QuObject) = size(A.data)
+checksquare(A::QuMatrix) = checksquare(A.data)
+getindex(A::QuObject, idx...) = getindex(A.data,idx...)
+setindex!(A::QuObject, idx...) = setindex!(A.data,v,idx...)
+diag(A::QuMatrix) = diag(A.data)
+full(A::QuObject) = full(A.data)
+norm(x::QuVector,n=2) = norm(x.data,n)
+trace(A::QuMatrix) = trace(A.data)
+normalize!(x::QuVector) = (normalize!(x.data,2);x)
+normalize!(A::QuMatrix) = (scale!(A.data,1/trace(A.data));A)
+scale!(A::QuObject,b::Number) = (scale!(A.data,b);A)
+similar{T<:QuObject}(A::T) = T(similar(A.data),A.dims)
+ishermitian(A::Density) = true
+ishermitian(A::Operator) = A.herm
+
+# Show methods
+function show{T<:QuMatrix}(io::IO, A::T)
+    n = size(A,1)
+    dim = join(A.dims,'⊗')
+    print(io, "$n×$n $T with space dimensions $dim")
+end
+function show{T<:QuMatrix}(io::IO, ::MIME"text/plain", A::T)
+    n = size(A,1)
+    dim = join(A.dims,'⊗')
+    println(io, "$n×$n $T with space dimensions $dim:")
+    Base.showarray(io, A.data, false, header=false)
+end
+show(io::IO, ψ::QuVector) = print(io, braket(ψ))
+function show(io::IO, ::MIME"text/plain", ψ::QuVector)
+    n = size(ψ,1)
+    dim = join(ψ.dims,'⊗')
+    println(io, "$n-d $(typeof(ψ)) with space dimensions $dim:")
+    println(io, braket(ψ))
+end
+
+# Bra-ket printing
+function braket(ψ::QuVector, N::Int = 5)
+    # N is the max number of kets/bras to show
+    idx = find(x->abs2(x)>0.01,ψ.data)
+    isempty(idx) && return "0"
+    perm = sortperm(ψ.data[idx], by=abs2, rev=true)
+    idx = length(perm)>N ? idx[perm[1:N]] : idx[perm]
+    coeffs = map(full(ψ.data[idx])) do x
+        @sprintf("%.2f∠%d°", abs(x), rad2deg(angle(x)))
+    end
+    labels = join.(reverse.(braketlabels.(idx.-1,[ψ.dims])),[","])
+    return prettybraket(ψ,coeffs,labels)*(length(perm)>N?" +...":"")
+end
+
+prettybraket(::Ket,coeffs,labels) = join(string.(coeffs,["|"],labels,["⟩"])," + ")
+prettybraket(::Bra,coeffs,labels) = join(string.(coeffs,["⟨"],labels,["|"])," + ")
+
+function braketlabels{N}(n::Integer,bases::SchroDims{N})
+    l = zeros(Int,N)
+    for i in 1:N
+        l[i] = rem(n, bases[N-i+1])
+        n = div(n, bases[N-i+1])
+    end
+    return l
+end

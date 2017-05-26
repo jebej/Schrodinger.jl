@@ -2,3 +2,7 @@
 *.jl.*.cov
 *.jl.mem
 deps/deps.jl
+docs/build
+docs/localmake.jl
+docs/makedocs.lnk
+examples
