@@ -104,8 +104,18 @@ true
 Let's plot the results!
 
 ```@setup example1plot
+print("Loading Schrodinger.jl...")
 using Schrodinger
+println(" done!")
+print("Running differential equation solver for the first time...")
 res = sesolve(π*σx, basis(2,0), (0.0,2.0), [-σz], saveat=linspace(0,2,101))
+println(" done!")
+print("Loading Plots.jl...")
+using Plots
+println(" done!")
+print("Plotting for the first time...")
+plot([1,2,3],[1,2,3])
+println(" done!")
 !isdir("img") && mkdir("img")
 ```
 ```@example example1plot
