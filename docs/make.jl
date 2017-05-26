@@ -25,9 +25,10 @@ makedocs(
     ]
 )
 
-#deploydocs(
-#    repo = "github.com/jebej/Schrodinger.jl.git",
-#    target = "build",
-#    deps = nothing,
-#    make = nothing,
-#)
+deploydocs(
+    repo = "github.com/jebej/Schrodinger.jl.git",
+    julia = "0.5"
+    target = "build",
+    deps = nothing,
+    make = nothing,
+)

@@ -1,6 +1,3 @@
-using Base.Test, BenchmarkTools
-using Schrodinger: ptrace
-
 cases = [
     (rand(4,4), (2,), (2,2)),
     (rand(6,6), (1,), (2,3)),
@@ -8,8 +5,7 @@ cases = [
     (rand(36,36), (1,), (2,9,2)),
     (rand(48,48), (1,2), (3,4,2,2)),
     (rand(50,50), (2,), (5,5,2)),
-    (rand(72,72), (1,2,4), (3,4,2,3)),]
-
+    (rand(Complex128,72,72), (1,2,4), (3,4,2,3)),]
 
 function ptrace_ref(A::Matrix, out, sysdims::NTuple)
     # Function adapted from a [MATLAB function](http://www.dr-qubit.org/Matlab_code.html) by Toby Cubitt and licensed under GPL2.
@@ -54,7 +50,7 @@ end
 
 for (A, out, sysdims) in cases
     @test ptrace(A,out,sysdims)[1] ≈ ptrace_ref(A,out,sysdims)[1]
-    a = median(@benchmark(ptrace($A,$out,$sysdims)))
-    b = median(@benchmark(ptrace_ref($A,$out,$sysdims)))
-    println("ptrace speedup: $(ratio(a,b))")
+    #a = median(@benchmark(ptrace($A,$out,$sysdims)))
+    #b = median(@benchmark(ptrace_ref($A,$out,$sysdims)))
+    #println("ptrace speedup: $(ratio(a,b))")
 end
