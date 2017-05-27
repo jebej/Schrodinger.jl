@@ -7,7 +7,7 @@ makedocs(
     linkcheck = true,
     clean = false,
     format = :html,
-    html_prettyurls = true,
+    html_prettyurls = false,
     pages = Any[
         "Home" => "index.md",
         "Manual" => Any[
