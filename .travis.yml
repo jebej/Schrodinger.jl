@@ -14,7 +14,7 @@ notifications:
 #  - julia -e 'Pkg.clone(pwd()); Pkg.build("Schrodinger"); Pkg.test("Schrodinger"; coverage=true)'
 after_success:
   # deploy documentation
-  - julia -e 'Pkg.add("Documenter"); ENV["PYTHON"]=""; Pkg.add("PyPlot"); Pkg.add("Plots")
+  - julia -e 'Pkg.add("Documenter"); ENV["PYTHON"]=""; Pkg.add("PyPlot"); Pkg.add("Plots")'
   - julia -e 'using Plots; plot([1,2,3],[1,2,3])'
   - julia -e 'cd(Pkg.dir("Schrodinger")); include(joinpath("docs", "make.jl"))'
   # push coverage results to Coveralls
