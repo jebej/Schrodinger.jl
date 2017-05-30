@@ -1,5 +1,5 @@
 module Schrodinger
-using DiffEqBase, OrdinaryDiffEq, ParameterizedFunctions, Compat
+using DiffEqBase, OrdinaryDiffEq, Compat
 
 export Operator, Density, Ket, Bra,
     data, dims, isnormalized, dimsmatch, dense, braket,
