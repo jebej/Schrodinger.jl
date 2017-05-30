@@ -8,7 +8,8 @@ export Operator, Density, Ket, Bra,
     qzero, qeye, create, destroy, numberop, displacementop, squeezeop,
     Liouvillian, SchrodingerEvo, LindbladEvo,
     Propagator, SchrodingerProp, LindbladProp,
-    sesolve, mesolve, lsolve, psolve, psteady, expim, gaussian
+    sesolve, mesolve, lsolve, psolve, psteady,
+    expim, gaussian
 
 include("quobj/types.jl")
 include("quobj/basicmethods.jl")
