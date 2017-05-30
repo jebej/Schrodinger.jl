@@ -10,8 +10,8 @@ us  = basis(3, 2)
 a = tensor(destroy(N), qeye(3))
 ada = tensor(numberop(N), qeye(3))
 psi0 = tensor(normalize!(basis(N, 0)+0.5*basis(N, 1)), us) # Define initial state
-σ_gg = operator(tensor(basis(N, 1), gs)) # Define states onto which to project
-σ_uu = operator(tensor(basis(N, 0), us))
+σ_gg = Operator(tensor(basis(N, 1), gs)) # Define states onto which to project
+σ_uu = Operator(tensor(basis(N, 0), us))
 H0 = ada - g * (σ_ge' * a + a' * σ_ge)  # time-independent term
 H1 = (σ_ue' + σ_ue)  # time-dependent term
 

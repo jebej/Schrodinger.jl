@@ -16,14 +16,14 @@ Functions for creating states and operators are listed in the API sections [Stat
 
 There are three ways of representing quantum states: with `Ket` or `Bra` vectors for pure states, and with `Density` matrices for both pure and mixed states.
 
-We already saw that it is possible to create a pure ket state from a Julia vector using the [`ket`](@ref) function. Kets (and bras) are by default stored as sparse vectors. Schrodinger.jl exposes a few functions to generate common states. These functions are listed in the table below; click on the function name for more details.
+We already saw that it is possible to create a pure ket state from a Julia vector using the [`Ket`](@ref) function. Kets (and bras) are by default stored as sparse vectors. Schrodinger.jl exposes a few functions to generate common states. These functions are listed in the table below; click on the function name for more details.
 
-| Function           | Type      | Notes                                                               |
-|--------------------|-----------|---------------------------------------------------------------------|
-| [`basis`](@ref)    | `Ket`     | A simple basis vector. The function `fock` is an alias to this one. |
-| [`coherent`](@ref) | `Ket`     | A quantum harmonic oscillator coherent state.                       |
-| [`maxmixed`](@ref) | `Density` | The maximally mixed state.                                          |
-| [`thermal`](@ref)  | `Density` | A thermal state.                                                    |
+| Function           | Type             | Notes                                                               |
+|--------------------|------------------|---------------------------------------------------------------------|
+| [`basis`](@ref)    | sparse `Ket`     | A simple basis vector. The function `fock` is an alias to this one. |
+| [`coherent`](@ref) | dense `Ket`      | A quantum harmonic oscillator coherent state.                       |
+| [`maxmixed`](@ref) | sparse `Density` | The maximally mixed state.                                          |
+| [`thermal`](@ref)  | sparse `Density` | A thermal state.                                                    |
 
 ### Kets
 
@@ -101,10 +101,10 @@ julia> ρ = 1/3 * ψ*ψ' + 2/3 * e1*e1'
 
 Notice that because the probabilities 1/2 and 2/3 add up to 1, the density matrix is already properly normalized: its trace is one. If that had not been the case, we could have normalized the density matrix with the `normalize!` function again.
 
-Density matrices can also be created directly from a matrix or from a ket with the [`density`](@ref) function:
+Density matrices can also be created directly from a matrix or from a ket with the [`Density`](@ref) function:
 
 ```jldoctest threelevel
-julia> ρ += density(basis(3,2))
+julia> ρ += Density(basis(3,2))
 3×3 Schrodinger.Density{SparseMatrixCSC{Float64,Int64},1} with space dimensions 3:
  0.166667  0.166667  0.0
  0.166667  0.833333  0.0
@@ -122,17 +122,17 @@ julia> normalize!(ρ)
 
 Operators are used to act on quantum states, either continuously, through time evolution under a Hamiltonian, or discretely. As mentioned previously, kets are element of a Hilbert space. Operators are not elements of that space, they *act* on elements to take them to other elements.
 
-Operators can be created from a Julia matrix with the [`operator`](@ref) function and are by default stored as sparse matrices. As with states, Schrodinger.jl contains functions to create common operators:
+Operators can be created from a Julia matrix with the [`Operator`](@ref) function and are by default stored as sparse matrices. As with states, Schrodinger.jl contains functions to create common operators:
 
-| Function                 | Type       | Notes                                                   |
-|--------------------------|------------|---------------------------------------------------------|
-| [`qzero`](@ref)          | `Operator` | The zero operator.                                      |
-| [`qeye`](@ref)           | `Operator` | The identity operator.                                  |
-| [`numberop`](@ref)       | `Operator` | The particle number operator.                           |
-| [`destroy`](@ref)        | `Operator` | The quantum harmonic oscillator lowering operator.      |
-| [`create`](@ref)         | `Operator` | The quantum harmonic oscillator raising operator.       |
-| [`displacementop`](@ref) | `Operator` | The quantum harmonic oscillator displacement operator.  |
-| [`squeezeop`](@ref)      | `Operator` | The quantum harmonic oscillator squeeze operator.       |
+| Function                 | Type              | Notes                                                   |
+|--------------------------|-------------------|---------------------------------------------------------|
+| [`qzero`](@ref)          | sparse `Operator` | The zero operator.                                      |
+| [`qeye`](@ref)           | sparse `Operator` | The identity operator.                                  |
+| [`numberop`](@ref)       | sparse `Operator` | The particle number operator.                           |
+| [`destroy`](@ref)        | sparse `Operator` | The quantum harmonic oscillator lowering operator.      |
+| [`create`](@ref)         | sparse `Operator` | The quantum harmonic oscillator raising operator.       |
+| [`displacementop`](@ref) | dense `Operator`  | The quantum harmonic oscillator displacement operator.  |
+| [`squeezeop`](@ref)      | dense `Operator`  | The quantum harmonic oscillator squeeze operator.       |
 
 Schordinger.jl also exposes the 3 Pauli matrices, the identity operator, and the raising and lowering operators for two-level systems (qubits) as built-in constants. Those are `σx`, `σy`, `σz`, `σ0`, `σ₊`, and `σ₋`. Note that unlike QuTiP, the qubit raising operator will raise $$|0⟩$$ to $$|1⟩$$.
 
@@ -188,7 +188,7 @@ julia> 2.5im*basis(2,0)
 2-d Schrodinger.Ket{SparseVector{Complex{Float64},Int64},1} with space dimensions 2:
 2.50∠90°|0⟩
 
-julia> thermal(4,0.3)/2 + density(coherent(4,1))/2
+julia> thermal(4,0.3)/2 + Density(coherent(4,1))/2
 4×4 Schrodinger.Density{Array{Float64,2},1} with space dimensions 4:
  0.569363   0.184874   0.124977   0.0911074
  0.184874   0.275112   0.125807   0.0917127

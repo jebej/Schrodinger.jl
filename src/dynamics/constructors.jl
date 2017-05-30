@@ -81,16 +81,20 @@ function SchrodingerProp(H₀::Operator, Hₙ::Vector, Δt::Float64, n::Int)
     N = length(Hₙ); D = length(dims(H₀));
     for i=1:N; dimsmatch(H₀,Hₙ[i][1]); end
     # Sampling times and spacing dt
-    ts = linspace(0,Δt,n+1)[2:end]; dt = t[2]-t[1]
+    ts = linspace(0,Δt,n+1)[2:end]; dt = ts[2]-ts[1]
     # Constant Hamiltonian term
     U₀ = expim(Hermitian(-full(H₀).*dt))
     # Multiply-in sampled time-dependent terms interleaved with constant term
     U = eye(Complex128,prod(dims(H₀)))
-    for t in ts, i in 1:N
-        U *= U₀
-        f = fₙ[i][2]
-        p = length(Hₙ[i])==3?Hₙ[i][3]:[]
-        U *= expim(Hermitian(-full(Hₙ[i][1]).*(f(t,p)*dt)))
+    for t in ts
+        U = U₀*U
+        H = zeros(U)
+        for i in 1:N
+            f = Hₙ[i][2]
+            p = length(Hₙ[i])==3?Hₙ[i][3]:[]
+            H .+= full(Hₙ[i][1]).*(f(t,p)*dt)
+        end
+        U = expim(Hermitian(-H))*U
     end
     return Propagator{D}(dims(H₀),U,Δt)
 end
@@ -124,7 +128,7 @@ function LindbladProp(H₀::Operator, Hₙ::Vector, Cₘ::Vector, Δt::Float64, 
     for i=1:N; dimsmatch(H₀,Hₙ[i][1]); end
     for i=1:M; dimsmatch(H₀,Cₘ[i]); end
     # Sampling times and spacing dt
-    ts = linspace(0,Δt,n+1)[2:end]; dt = t[2]-t[1]
+    ts = linspace(0,Δt,n+1)[2:end]; dt = ts[2]-ts[1]
     Id = data(qeye(prod(dims(H₀))))
     # Constant Hamiltonian term
     L₀ = -1.0im.*(Id⊗data(H₀) .- data(H₀).'⊗Id)
@@ -137,17 +141,22 @@ function LindbladProp(H₀::Operator, Hₙ::Vector, Cₘ::Vector, Δt::Float64, 
     # Build constant propagator part
     U₀ = expm(full(L₀).*dt)
     # Multiply-in sampled time-dependent terms interleaved with constant term
-    U = eye(Complex128,prod(dims(H₀)))
-    for t in ts, i in 1:N
-        U *= U₀
-        ft = fₙ[i][2](t,length(Hₙ[i])==3?Hₙ[i][3]:[])*dt
-        U *= expim(Hermitian(-full(Hₙ[i][1]).*ft))
+    U = eye(Complex128,prod(dims(H₀))^2)
+    for t in ts
+        U = U₀*U
+        L = zeros(U)
+        for i in 1:N
+            f = Hₙ[i][2]
+            p = length(Hₙ[i])==3?Hₙ[i][3]:[]
+            L .+= full(Id⊗data(Hₙ[i][1]) .- data(Hₙ[i][1]).'⊗Id).*(f(t,p)*dt)
+        end
+        U = expim(-L)*U
     end
     return Propagator{D}(dims(H₀),U,Δt)
 end
 function LindbladProp(H::Vector, Cₘ::Vector, Δt::Float64, n::Int)
     H₀ = H[1]::Operator
     Hₙ = H[2:end]::Vector
-    return LindbladProp(H₀,Hₙ,Δt,n)
+    return LindbladProp(H₀,Hₙ,Cₘ,Δt,n)
 end
 LindbladProp(H) = throw(ArgumentError("invalid Propagator specification"))

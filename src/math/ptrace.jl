@@ -9,7 +9,7 @@ Compute the partial trace of a `Density` matrix or `Operator` ρ by tracing out 
 ```jldoctest
 Φ₊ = normalize!(basis(2,0)⊗basis(2,0) + basis(2,1)⊗basis(2,1)) # Bell pair
 Ψ₊ = normalize!(basis(2,0)⊗basis(2,1) + basis(2,1)⊗basis(2,0)) # Bell pair
-ρ  = 0.25 * density(Φ₊) + 0.75 * density(Ψ₊) # density matrix
+ρ  = 0.25 * Density(Φ₊) + 0.75 * Density(Ψ₊) # density matrix
 ptrace(ρ,2) # trace out qubit 2
 # output
 2×2 Schrodinger.Density{Array{Float64,2},1} with space dimensions 2:

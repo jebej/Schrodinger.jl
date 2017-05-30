@@ -1,17 +1,16 @@
 module Schrodinger
 using DiffEqBase, OrdinaryDiffEq, ParameterizedFunctions, Compat
 
-export Operator, operator, Density, density, Ket, ket, Bra, bra,
+export Operator, Density, Ket, Bra,
     data, dims, isnormalized, dimsmatch, dense, braket,
     ptrace, expect, tensor,
     fock, basis, coherent, thermal, maxmixed,
     qzero, qeye, create, destroy, numberop, displacementop, squeezeop,
     Liouvillian, SchrodingerEvo, LindbladEvo,
     Propagator, SchrodingerProp, LindbladProp,
-    sesolve, mesolve, lsolve, psolve, expim, gaussian
+    sesolve, mesolve, lsolve, psolve, psteady, expim, gaussian
 
 include("quobj/types.jl")
-include("quobj/constructors.jl")
 include("quobj/basicmethods.jl")
 include("math/basemath.jl")
 include("math/eigen.jl")

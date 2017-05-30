@@ -20,21 +20,21 @@ In quantum mechanics, one of the most fundamental object for describing the [sta
 
 Schrodinger.jl uses the ubiquitous "[bra-ket](https://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation)" formalism to describe pure states. A ket is nothing more than a normal (column) vector, which in linear algebra lingo are elements of a vector space. In quantum mechanics, the vector space within which ket vectors live is called a [Hilbert space](https://en.wikipedia.org/wiki/Hilbert_space).
 
-Kets (and their dual, bras) are therefore finite-, or infinite-dimensional vectors. To create a ket in Schrodinger.jl, use the [`ket`](@ref) function with a vector as an argument:
+Kets (and their dual, bras) are therefore finite-, or infinite-dimensional vectors. To create a ket in Schrodinger.jl, use the [`Ket`](@ref) function with a vector as an argument:
 
 ```jldoctest example1
-julia> g = ket([1,0])
-2-d Schrodinger.Ket{SparseVector{Float64,Int64},1} with space dimensions 2:
+julia> g = Ket([1,0])
+2-d Schrodinger.Ket{Array{Float64,1},1} with space dimensions 2:
 1.00∠0°|0⟩
 ```
 
 The output is a bit busy, so let us go through it.
 
-The input to the `ket` function was a 2-d vector `[1,0]`. This can be seen of the first line of the output, which starts with "2-d". The next term is the type of the object, which is a `Schrodinger` (the package name) `Ket` (the type itself). The `Ket` type is parameterized by two values, which are seen within the curly brackets and separated by a comma: first, the type of the underlying data, which here is a `SparseVector` of `Float64` values (by default, kets and other objects are stored in sparse format), and second, the total number of subspaces in the full Hilbert space that the `Ket` lives in. Here, the number is simply 1. The end of the line states the subspace dimensions, but since we have only 1 subspace with dimension 2, this is not very interesting.
+The input to the `Ket` function was a 2-d vector `[1,0]`. This can be seen of the first line of the output, which starts with "2-d". The next term is the type of the object, which is a `Schrodinger` (the package name) `Ket` (the type itself). The `Ket` type is parameterized by two values, which are seen within the curly brackets and separated by a comma: first, the type of the underlying data, which here is a 1-d `Array` of `Float64` values (by default, kets and other objects are stored in the format you give to the constructor, although the elements will be converted to floating point values), and second, the total number of subspaces in the full Hilbert space that the `Ket` lives in. Here, the number is simply 1. The end of the line states the subspace dimensions, but since we have only 1 subspace with dimension 2, this is not very interesting.
 
 The second line prints the vector in bra-ket polar notation. Since the vector we passed had the entry "1" in the "zeroth" (which is the first) dimension, the ket we get is simply $$|0⟩$$.
 
-Schrodinger.jl supports only finite dimensional Hilbert spaces. If the physical system you want to describe is infinite-dimensional, it will need to be truncated.
+Schrodinger.jl only supports finite dimensional Hilbert spaces. If the physical system you want to describe is infinite-dimensional, it will need to be truncated.
 
 !!! note
     All objects in Schrodinger.jl are expressed in the computational or number basis. This means that the ground state is $$|0⟩$$, and exited states are numbered starting from 1: $$|1⟩, |2⟩, |3⟩...$$
@@ -43,7 +43,7 @@ To learn more about quantum states in Schrodinger.jl, including mixed states rep
 
 ## Operators
 
-States are useful, but we need to do something with them. This is what an [`Operator`](@ref) is for. Operators act on elements of a Hilbert space (that is, on kets) to modify them. An operator is thus a like a function that takes an input a ket, and returns a new one. The natural representation for an operator is a matrix, but in Schrodinger.jl you need to use the `Operator` type, which stores a matrix and other important information about the operator.
+States are useful, but we need to do something with them. This is what an [`Operator`](@ref) is for. Operators act on elements of a Hilbert space (that is, on kets) to modify them. An operator is thus a like a function that takes as input a ket, and returns a new one. The natural representation for an operator is a matrix, but in Schrodinger.jl you need to use the `Operator` type, which stores a matrix and other important information about the operator.
 
 Arbitrary operators can of course be created, but let's take a look at one that is built-in, the $$σ_x$$ operator:
 
@@ -60,7 +60,7 @@ The state `g` that we created in the previous section is a ground state with the
 
 ```jldoctest example1
 julia> σx*g
-2-d Schrodinger.Ket{SparseVector{Float64,Int64},1} with space dimensions 2:
+2-d Schrodinger.Ket{Array{Float64,1},1} with space dimensions 2:
 1.00∠0°|1⟩
 ```
 
@@ -68,7 +68,7 @@ As expected, the output is a `Ket`, but notice the state is now $$|1⟩$$! By ac
 
 ```jldoctest example1
 julia> σx*σx*g
-2-d Schrodinger.Ket{SparseVector{Float64,Int64},1} with space dimensions 2:
+2-d Schrodinger.Ket{Array{Float64,1},1} with space dimensions 2:
 1.00∠0°|0⟩
 ```
 
@@ -114,7 +114,7 @@ print("Loading Plots.jl...")
 using Plots
 println(" done!")
 print("Plotting for the first time...")
-plot([1,2,3],[1,2,3])
+plot([1,2,3],[1,2,3]);
 println(" done!")
 !isdir("img") && mkdir("img")
 ```

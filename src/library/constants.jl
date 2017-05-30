@@ -12,19 +12,21 @@ const ϕ₀ = 3.291059757E-16 # Reduced flux quantum (ℏ/2ℯ), in Weber, 2014 
 const ln2 = 0.6931471805599453 # Natural logarithm of 2
 
 # Pauli matrices (spin-1/2 operators)
-const sigma0 = operator([1.0 0.0 ; 0.0 1.0],(2,))
-const sigmax = operator([0.0 1.0 ; 1.0 0.0],(2,))
-const sigmay = operator([0.0 -im ; im 0.0],(2,))
-const sigmaz = operator([1.0 0.0 ; 0.0 -1.0],(2,))
+const sigma0 = qeye(2)
+const sigmax = Operator(sparse([1,2],[2,1],[1.0,1.0],2,2),(2,))
+const sigmay = Operator(sparse([1,2],[2,1],[-1.0im,1.0im],2,2),(2,))
+const sigmaz = Operator(sparse([1,2],[1,2],[1.0,-1.0],2,2),(2,))
 const σ0 = sigma0
 const σx = sigmax
 const σy = sigmay
 const σz = sigmaz
-const sigmaplus  = operator([0.0 0.0 ; 1.0 0.0],(2,)) # σ₊*[1,0] = [0,1]
-const sigmaminus = operator([0.0 1.0 ; 0.0 0.0],(2,))
+const sigmaplus  = Operator(sparse([2],[1],[1.0],2,2),(2,)) # σ₊*[1,0] = [0,1]
+const sigmaminus = Operator(sparse([1],[2],[1.0],2,2),(2,))
 const σ₊ = sigmaplus
 const σ₋ = sigmaminus
 
 # Function aliases
 const ⊗ = kron
 const tensor = kron
+const fock = basis
+const qzeros = qzero

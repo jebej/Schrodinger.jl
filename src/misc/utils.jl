@@ -13,7 +13,7 @@ end
 
 reverse(n::Number) = n
 
-function expim(A::LinAlg.RealHermSymComplexHerm)
+function expim(A::AbstractMatrix)
     # First decompose A into U*Λ*Uᴴ
     (Λ,U) = eig(A)
     # U must be a complex matrix
@@ -23,7 +23,7 @@ function expim(A::LinAlg.RealHermSymComplexHerm)
     n = length(Λ)
     B = similar(U)
     @inbounds for j = 1:n
-        a = Complex(cos(Λ[j]),sin(Λ[j]))
+        a = cis(Λ[j])
         @simd for i = 1:n
             B[i,j] = a * U[i,j]
         end

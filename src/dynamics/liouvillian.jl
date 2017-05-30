@@ -6,7 +6,7 @@ immutable Liouvillian{N,F,D} <: AbstractParameterizedFunction{true}
     fₙ::F
     pₙ::NTuple{N,Vector{Complex128}}
     tmp::Vector{Complex128}
-    dims::SchroDims{D}
+    dims::SDims{D}
     function (::Type{Liouvillian{N,D}}){N,D}(dims,L₀,Lₙ=(),fₙ=(),pₙ=())
         tmp = Vector{Complex128}(size(L₀,1))
         return new{N,typeof(fₙ),D}(L₀,Lₙ,fₙ,pₙ,tmp,dims)

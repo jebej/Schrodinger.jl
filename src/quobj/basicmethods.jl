@@ -1,5 +1,5 @@
-import Base: length, size, LinAlg.checksquare, getindex, setindex!, diag,
-     full, norm, trace, normalize!, scale!, similar, ishermitian, show
+import Base: complex, length, size, LinAlg.checksquare, getindex, setindex!,
+     diag, full, norm, trace, normalize!, scale!, similar, ishermitian, show
 
 # Special QuObject methods
 data(A::QuObject) = A.data
@@ -10,10 +10,11 @@ function dimsmatch(A::QuObject,B::QuObject)
     dims(A)==dims(B) || throw(DimensionMismatch("subspace dimensions must match"))
     return nothing
 end
-dense(x::Ket) = ket(full(x),x.dims,true)
-dense(x::Bra) = bra(full(x),x.dims,true)
-dense(A::Density) = density(full(A),A.dims,true)
-dense(A::Operator) = operator(full(A),A.dims,true)
+dense(x::Ket) = Ket(full(x),x.dims)
+dense(x::Bra) = Bra(full(x),x.dims)
+dense(A::Density) = Density(full(A),A.dims)
+dense(A::Operator) = Operator(full(A),A.dims)
+
 
 # Translate basic Base array methods to QuObjects
 length(A::QuObject) = length(A.data)
@@ -24,12 +25,17 @@ getindex(A::QuObject, idx...) = getindex(A.data,idx...)
 setindex!(A::QuObject, idx...) = setindex!(A.data,v,idx...)
 diag(A::QuMatrix) = diag(A.data)
 full(A::QuObject) = full(A.data)
+complex(x::Ket) = Ket(complex(x.data),x.dims)
+complex(x::Bra) = Bra(complex(x.data),x.dims)
+complex(A::Density) = Density(complex(A.data),A.dims)
+complex(A::Operator) = Operator(complex(A.data),A.dims)
 norm(x::QuVector,n=2) = norm(x.data,n)
 trace(A::QuMatrix) = trace(A.data)
 normalize!(x::QuVector) = (normalize!(x.data,2);x)
 normalize!(A::QuMatrix) = (scale!(A.data,1/trace(A.data));A)
 scale!(A::QuObject,b::Number) = (scale!(A.data,b);A)
 similar{T<:QuObject}(A::T) = T(similar(A.data),A.dims)
+
 ishermitian(A::Density) = true
 ishermitian(A::Operator) = A.herm
 
@@ -70,7 +76,7 @@ end
 prettybraket(::Ket,coeffs,labels) = join(string.(coeffs,["|"],labels,["⟩"])," + ")
 prettybraket(::Bra,coeffs,labels) = join(string.(coeffs,["⟨"],labels,["|"])," + ")
 
-function braketlabels{N}(n::Integer,bases::SchroDims{N})
+function braketlabels{N}(n::Integer,bases::SDims{N})
     l = zeros(Int,N)
     for i in 1:N
         l[i] = rem(n, bases[N-i+1])

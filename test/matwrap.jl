@@ -1,22 +1,22 @@
 using BenchmarkTools, Schrodinger
 n = 10
-A = operator(rand(n,n),(n,),true);
-B = operator(rand(n,n),(n,),true);
+A = Operator(rand(n,n),(n,),true);
+B = Operator(rand(n,n),(n,),true);
 A*B;
 A.data*B.data;
 @time for i=1:300000;A*B;end
 @time for i=1:300000;A.data*B.data;end
 
-function test_operator()
+function test_Operator()
     for n in [10,16,30]
-        A = operator(rand(n,n),(n,),true)
-        B = operator(rand(n,n),(n,),true)
+        A = Operator(rand(n,n),(n,),true)
+        B = Operator(rand(n,n),(n,),true)
         @show @benchmark $A*$B
         @show @benchmark $A.data*$B.data
     end
 end
 
-test_operator()
+test_Operator()
 
 @benchmark begin
 N = 10
