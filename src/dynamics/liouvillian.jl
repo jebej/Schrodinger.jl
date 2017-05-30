@@ -1,5 +1,3 @@
-import ParameterizedFunctions.AbstractParameterizedFunction
-
 immutable Liouvillian{N,F,D} <: AbstractParameterizedFunction{true}
     L₀::SparseMatrixCSC{Complex128,Int}
     Lₙ::NTuple{N,SparseMatrixCSC{Complex128,Int}}
