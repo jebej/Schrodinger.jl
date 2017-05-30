@@ -69,7 +69,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Getting Started",
     "title": "Quantum States",
     "category": "section",
-    "text": "In quantum mechanics, one of the most fundamental object for describing the state of a system is a state vector. State vectors represent pure quantum states, as opposed to mixed quantum stated, but we will get to that later.Schrodinger.jl uses the ubiquitous \"bra-ket\" formalism to describe pure states. A ket is nothing more than a normal (column) vector, which in linear algebra lingo are elements of a vector space. In quantum mechanics, the vector space within which ket vectors live is called a Hilbert space.Kets (and their dual, bras) are therefore finite-, or infinite-dimensional vectors. To create a ket in Schrodinger.jl, use the ket function with a vector as an argument:julia> g = ket([1,0])\n2-d Schrodinger.Ket{SparseVector{Float64,Int64},1} with space dimensions 2:\n1.00∠0°|0⟩The output is a bit busy, so let us go through it.The input to the ket function was a 2-d vector [1,0]. This can be seen of the first line of the output, which starts with \"2-d\". The next term is the type of the object, which is a Schrodinger (the package name) Ket (the type itself). The Ket type is parameterized by two values, which are seen within the curly brackets and separated by a comma: first, the type of the underlying data, which here is a SparseVector of Float64 values (by default, kets and other objects are stored in sparse format), and second, the total number of subspaces in the full Hilbert space that the Ket lives in. Here, the number is simply 1. The end of the line states the subspace dimensions, but since we have only 1 subspace with dimension 2, this is not very interesting.The second line prints the vector in bra-ket polar notation. Since the vector we passed had the entry \"1\" in the \"zeroth\" (which is the first) dimension, the ket we get is simply 0.Schrodinger.jl supports only finite dimensional Hilbert spaces. If the physical system you want to describe is infinite-dimensional, it will need to be truncated.note: Note\nAll objects in Schrodinger.jl are expressed in the computational or number basis. This means that the ground state is 0, and exited states are numbered starting from 1: 1 2 3To learn more about quantum states in Schrodinger.jl, including mixed states represented by density matrices, please see the next section."
+    "text": "In quantum mechanics, one of the most fundamental object for describing the state of a system is a state vector. State vectors represent pure quantum states, as opposed to mixed quantum stated, but we will get to that later.Schrodinger.jl uses the ubiquitous \"bra-ket\" formalism to describe pure states. A ket is nothing more than a normal (column) vector, which in linear algebra lingo are elements of a vector space. In quantum mechanics, the vector space within which ket vectors live is called a Hilbert space.Kets (and their dual, bras) are therefore finite-, or infinite-dimensional vectors. To create a ket in Schrodinger.jl, use the Ket function with a vector as an argument:julia> g = Ket([1,0])\n2-d Schrodinger.Ket{Array{Float64,1},1} with space dimensions 2:\n1.00∠0°|0⟩The output is a bit busy, so let us go through it.The input to the Ket function was a 2-d vector [1,0]. This can be seen of the first line of the output, which starts with \"2-d\". The next term is the type of the object, which is a Schrodinger (the package name) Ket (the type itself). The Ket type is parameterized by two values, which are seen within the curly brackets and separated by a comma: first, the type of the underlying data, which here is a 1-d Array of Float64 values (by default, kets and other objects are stored in the format you give to the constructor, although the elements will be converted to floating point values), and second, the total number of subspaces in the full Hilbert space that the Ket lives in. Here, the number is simply 1. The end of the line states the subspace dimensions, but since we have only 1 subspace with dimension 2, this is not very interesting.The second line prints the vector in bra-ket polar notation. Since the vector we passed had the entry \"1\" in the \"zeroth\" (which is the first) dimension, the ket we get is simply 0.Schrodinger.jl only supports finite dimensional Hilbert spaces. If the physical system you want to describe is infinite-dimensional, it will need to be truncated.note: Note\nAll objects in Schrodinger.jl are expressed in the computational or number basis. This means that the ground state is 0, and exited states are numbered starting from 1: 1 2 3To learn more about quantum states in Schrodinger.jl, including mixed states represented by density matrices, please see the next section."
 },
 
 {
@@ -77,7 +77,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Getting Started",
     "title": "Operators",
     "category": "section",
-    "text": "States are useful, but we need to do something with them. This is what an Operator is for. Operators act on elements of a Hilbert space (that is, on kets) to modify them. An operator is thus a like a function that takes an input a ket, and returns a new one. The natural representation for an operator is a matrix, but in Schrodinger.jl you need to use the Operator type, which stores a matrix and other important information about the operator.Arbitrary operators can of course be created, but let's take a look at one that is built-in, the _x operator:julia> σx\n2×2 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 2:\n 0.0  1.0\n 1.0  0.0Notice that the first line of the output is very similar to that of the ket we created above. It lists the dimensions of the matrix, the type and the space dimensions (which again is just a single 2-d space).The state g that we created in the previous section is a ground state with the same dimensions. Thus, the _x operator can act on it! This is done simply by multiplying the two objects, with the operator acting to the right on the ket:julia> σx*g\n2-d Schrodinger.Ket{SparseVector{Float64,Int64},1} with space dimensions 2:\n1.00∠0°|1⟩As expected, the output is a Ket, but notice the state is now 1! By acting on the ground state 0 with the _x operator, we obtained the excited state. This is because the _x operator is the \"flip\" operator. It takes 0 to 1, and 1 to 0. If we apply _x twice then, we get 0 back:julia> σx*σx*g\n2-d Schrodinger.Ket{SparseVector{Float64,Int64},1} with space dimensions 2:\n1.00∠0°|0⟩"
+    "text": "States are useful, but we need to do something with them. This is what an Operator is for. Operators act on elements of a Hilbert space (that is, on kets) to modify them. An operator is thus a like a function that takes as input a ket, and returns a new one. The natural representation for an operator is a matrix, but in Schrodinger.jl you need to use the Operator type, which stores a matrix and other important information about the operator.Arbitrary operators can of course be created, but let's take a look at one that is built-in, the _x operator:julia> σx\n2×2 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 2:\n 0.0  1.0\n 1.0  0.0Notice that the first line of the output is very similar to that of the ket we created above. It lists the dimensions of the matrix, the type and the space dimensions (which again is just a single 2-d space).The state g that we created in the previous section is a ground state with the same dimensions. Thus, the _x operator can act on it! This is done simply by multiplying the two objects, with the operator acting to the right on the ket:julia> σx*g\n2-d Schrodinger.Ket{Array{Float64,1},1} with space dimensions 2:\n1.00∠0°|1⟩As expected, the output is a Ket, but notice the state is now 1! By acting on the ground state 0 with the _x operator, we obtained the excited state. This is because the _x operator is the \"flip\" operator. It takes 0 to 1, and 1 to 0. If we apply _x twice then, we get 0 back:julia> σx*σx*g\n2-d Schrodinger.Ket{Array{Float64,1},1} with space dimensions 2:\n1.00∠0°|0⟩"
 },
 
 {
@@ -85,7 +85,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Getting Started",
     "title": "Simple Dynamics",
     "category": "section",
-    "text": "Now that we have a state and an operator, we can perform some time dynamics! The _x operator, in the context of a spin-1/2 system, can represent a transverse magnetic field. In such a situation, a particle starting in the ground state will undergo sinusoidal oscillations between 0 and 1 due to the action of the field. Let's simulate it!We first set up the Hamiltonian, assuming our field has an angular frequency =102 (i.e. 1 Hz). If we look at a 2 sec timespan, we should thus see 2 full periods. To measure the value of the spin at each instant in time, we choose the -_z operator as our observable. The minus sign ensures that the 0 state is the lowest energy one (again, because we are in the computational basis).ω = 1.0*2π # angular frequency\nH = ω/2*σx # Hamiltonian\nt = (0.0,2.0) # timespan\nO = -σz # observable\n# output\n2×2 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 2:\n -1.0  0.0\n  0.0  1.0note: Note\nSchrodinger.jl uses units where  is equal to 1. Make sure that your Hamiltonian is expressed in units of angular frequency, not energy. If you do have a Hamiltonian expressed in energy units, just use the scale! function: scale!(H,1/ħ). The variable ħ is exported by the module and so can be used as-is.We can now pass all three arguments (H, g and O) to the sesolve function (Schrodinger Equation solver) to solve for the time dynamics! We also pass a keyword argument saveat to make sure we have enough points. As can be seen, the results match with theory:res = sesolve(H, g, t, [O], saveat=linspace(0,2,101))\nreal.(res.evals) ≈ -cos(ω.*res.times) # check against theory\n# output\ntrueLet's plot the results!print(\"Loading Schrodinger.jl...\")\nusing Schrodinger\nprintln(\" done!\")\nprint(\"Running differential equation solver for the first time...\")\nres = sesolve(π*σx, basis(2,0), (0.0,2.0), [-σz], saveat=linspace(0,2,101))\nprintln(\" done!\")\nprint(\"Loading Plots.jl...\")\nusing Plots\nprintln(\" done!\")\nprint(\"Plotting for the first time...\")\nplot([1,2,3],[1,2,3])\nprintln(\" done!\")\n!isdir(\"img\") && mkdir(\"img\")using Plots\nplot(res.times, real.(res.evals), xlabel=\"time (s)\", label=\"\\$⟨-σ_z⟩\\$\")\nsavefig(joinpath(\"img\",\"example1-plot.svg\")); nothing # hide(Image: spin-1/2 system oscillations)As we predicted, the system oscillates between -1, the expectation value of -_z when in the ground state, and 1 when in the excited state.This concludes the first section of the manual. Hopefully you now know enough to get started with simple quantum operations. If you would like to learn more about the other features of Schrodinger.jl, keep reading!"
+    "text": "Now that we have a state and an operator, we can perform some time dynamics! The _x operator, in the context of a spin-1/2 system, can represent a transverse magnetic field. In such a situation, a particle starting in the ground state will undergo sinusoidal oscillations between 0 and 1 due to the action of the field. Let's simulate it!We first set up the Hamiltonian, assuming our field has an angular frequency =102 (i.e. 1 Hz). If we look at a 2 sec timespan, we should thus see 2 full periods. To measure the value of the spin at each instant in time, we choose the -_z operator as our observable. The minus sign ensures that the 0 state is the lowest energy one (again, because we are in the computational basis).ω = 1.0*2π # angular frequency\nH = ω/2*σx # Hamiltonian\nt = (0.0,2.0) # timespan\nO = -σz # observable\n# output\n2×2 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 2:\n -1.0  0.0\n  0.0  1.0note: Note\nSchrodinger.jl uses units where  is equal to 1. Make sure that your Hamiltonian is expressed in units of angular frequency, not energy. If you do have a Hamiltonian expressed in energy units, just use the scale! function: scale!(H,1/ħ). The variable ħ is exported by the module and so can be used as-is.We can now pass all three arguments (H, g and O) to the sesolve function (Schrodinger Equation solver) to solve for the time dynamics! We also pass a keyword argument saveat to make sure we have enough points. As can be seen, the results match with theory:res = sesolve(H, g, t, [O], saveat=linspace(0,2,101))\nreal.(res.evals) ≈ -cos(ω.*res.times) # check against theory\n# output\ntrueLet's plot the results!print(\"Loading Schrodinger.jl...\")\nusing Schrodinger\nprintln(\" done!\")\nprint(\"Running differential equation solver for the first time...\")\nres = sesolve(π*σx, basis(2,0), (0.0,2.0), [-σz], saveat=linspace(0,2,101))\nprintln(\" done!\")\nprint(\"Loading Plots.jl...\")\nusing Plots\nprintln(\" done!\")\nprint(\"Plotting for the first time...\")\nplot([1,2,3],[1,2,3]);\nprintln(\" done!\")\n!isdir(\"img\") && mkdir(\"img\")using Plots\nplot(res.times, real.(res.evals), xlabel=\"time (s)\", label=\"\\$⟨-σ_z⟩\\$\")\nsavefig(joinpath(\"img\",\"example1-plot.svg\")); nothing # hide(Image: spin-1/2 system oscillations)As we predicted, the system oscillates between -1, the expectation value of -_z when in the ground state, and 1 when in the excited state.This concludes the first section of the manual. Hopefully you now know enough to get started with simple quantum operations. If you would like to learn more about the other features of Schrodinger.jl, keep reading!"
 },
 
 {
@@ -109,7 +109,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Quantum Objects",
     "title": "Creating States",
     "category": "section",
-    "text": "There are three ways of representing quantum states: with Ket or Bra vectors for pure states, and with Density matrices for both pure and mixed states.We already saw that it is possible to create a pure ket state from a Julia vector using the ket function. Kets (and bras) are by default stored as sparse vectors. Schrodinger.jl exposes a few functions to generate common states. These functions are listed in the table below; click on the function name for more details.Function Type Notes\nbasis Ket A simple basis vector. The function fock is an alias to this one.\ncoherent Ket A quantum harmonic oscillator coherent state.\nmaxmixed Density The maximally mixed state.\nthermal Density A thermal state."
+    "text": "There are three ways of representing quantum states: with Ket or Bra vectors for pure states, and with Density matrices for both pure and mixed states.We already saw that it is possible to create a pure ket state from a Julia vector using the Ket function. Kets (and bras) are by default stored as sparse vectors. Schrodinger.jl exposes a few functions to generate common states. These functions are listed in the table below; click on the function name for more details.Function Type Notes\nbasis sparse Ket A simple basis vector. The function fock is an alias to this one.\ncoherent dense Ket A quantum harmonic oscillator coherent state.\nmaxmixed sparse Density The maximally mixed state.\nthermal sparse Density A thermal state."
 },
 
 {
@@ -125,7 +125,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Quantum Objects",
     "title": "Density Matrices",
     "category": "section",
-    "text": "Let's now imagine that we have a device that creates three-level atoms, but every time you ask for an one, the machine creates an atom in the state ψ with probability 1/3, and in the state e1 with probability 2/3. After pressing the \"new atom\" button and obtaining a fresh atom, but before looking at it, the state of that atom is unknown. This situation describes a mixed state, and such a state can only be represented by a density matrix.In bra-ket notation, the a pure state can be transformed in a density matrix by multiplying it on the right with its dual bra: . This is done with the complex transpose operation in Schrodinger.jl. This is therefore how we create the correct state for our mystery atom:julia> ρ = 1/3 * ψ*ψ' + 2/3 * e1*e1'\n3×3 Schrodinger.Density{SparseMatrixCSC{Float64,Int64},1} with space dimensions 3:\n 0.166667  0.166667  0.0\n 0.166667  0.833333  0.0\n 0.0       0.0       0.0Notice that because the probabilities 1/2 and 2/3 add up to 1, the density matrix is already properly normalized: its trace is one. If that had not been the case, we could have normalized the density matrix with the normalize! function again.Density matrices can also be created directly from a matrix or from a ket with the density function:julia> ρ += density(basis(3,2))\n3×3 Schrodinger.Density{SparseMatrixCSC{Float64,Int64},1} with space dimensions 3:\n 0.166667  0.166667  0.0\n 0.166667  0.833333  0.0\n 0.0       0.0       1.0\n\njulia> normalize!(ρ)\n3×3 Schrodinger.Density{SparseMatrixCSC{Float64,Int64},1} with space dimensions 3:\n 0.0833333  0.0833333  0.0\n 0.0833333  0.416667   0.0\n 0.0        0.0        0.5"
+    "text": "Let's now imagine that we have a device that creates three-level atoms, but every time you ask for an one, the machine creates an atom in the state ψ with probability 1/3, and in the state e1 with probability 2/3. After pressing the \"new atom\" button and obtaining a fresh atom, but before looking at it, the state of that atom is unknown. This situation describes a mixed state, and such a state can only be represented by a density matrix.In bra-ket notation, the a pure state can be transformed in a density matrix by multiplying it on the right with its dual bra: . This is done with the complex transpose operation in Schrodinger.jl. This is therefore how we create the correct state for our mystery atom:julia> ρ = 1/3 * ψ*ψ' + 2/3 * e1*e1'\n3×3 Schrodinger.Density{SparseMatrixCSC{Float64,Int64},1} with space dimensions 3:\n 0.166667  0.166667  0.0\n 0.166667  0.833333  0.0\n 0.0       0.0       0.0Notice that because the probabilities 1/2 and 2/3 add up to 1, the density matrix is already properly normalized: its trace is one. If that had not been the case, we could have normalized the density matrix with the normalize! function again.Density matrices can also be created directly from a matrix or from a ket with the Density function:julia> ρ += Density(basis(3,2))\n3×3 Schrodinger.Density{SparseMatrixCSC{Float64,Int64},1} with space dimensions 3:\n 0.166667  0.166667  0.0\n 0.166667  0.833333  0.0\n 0.0       0.0       1.0\n\njulia> normalize!(ρ)\n3×3 Schrodinger.Density{SparseMatrixCSC{Float64,Int64},1} with space dimensions 3:\n 0.0833333  0.0833333  0.0\n 0.0833333  0.416667   0.0\n 0.0        0.0        0.5"
 },
 
 {
@@ -133,7 +133,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Quantum Objects",
     "title": "Creating Operators",
     "category": "section",
-    "text": "Operators are used to act on quantum states, either continuously, through time evolution under a Hamiltonian, or discretely. As mentioned previously, kets are element of a Hilbert space. Operators are not elements of that space, they act on elements to take them to other elements.Operators can be created from a Julia matrix with the operator function and are by default stored as sparse matrices. As with states, Schrodinger.jl contains functions to create common operators:Function Type Notes\nqzero Operator The zero operator.\nqeye Operator The identity operator.\nnumberop Operator The particle number operator.\ndestroy Operator The quantum harmonic oscillator lowering operator.\ncreate Operator The quantum harmonic oscillator raising operator.\ndisplacementop Operator The quantum harmonic oscillator displacement operator.\nsqueezeop Operator The quantum harmonic oscillator squeeze operator.Schordinger.jl also exposes the 3 Pauli matrices, the identity operator, and the raising and lowering operators for two-level systems (qubits) as built-in constants. Those are σx, σy, σz, σ0, σ₊, and σ₋. Note that unlike QuTiP, the qubit raising operator will raise 0 to 1.New operators can be constructed from existing ones by adding them or multiplying them together or with numbers.julia> a = destroy(5)\n5×5 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 5:\n 0.0  1.0  0.0      0.0      0.0\n 0.0  0.0  1.41421  0.0      0.0\n 0.0  0.0  0.0      1.73205  0.0\n 0.0  0.0  0.0      0.0      2.0\n 0.0  0.0  0.0      0.0      0.0\n\njulia> a'*a + 1/2\n5×5 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 5:\n 0.5  0.0  0.0  0.0  0.0\n 0.0  1.5  0.0  0.0  0.0\n 0.0  0.0  2.5  0.0  0.0\n 0.0  0.0  0.0  3.5  0.0\n 0.0  0.0  0.0  0.0  4.5\n\njulia> a' + a\n5×5 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 5:\n 0.0  1.0      0.0      0.0      0.0\n 1.0  0.0      1.41421  0.0      0.0\n 0.0  1.41421  0.0      1.73205  0.0\n 0.0  0.0      1.73205  0.0      2.0\n 0.0  0.0      0.0      2.0      0.0note: Note\nAdding and substracting numbers to and from operators adds (substracts) the identity matrix multiplied by that number."
+    "text": "Operators are used to act on quantum states, either continuously, through time evolution under a Hamiltonian, or discretely. As mentioned previously, kets are element of a Hilbert space. Operators are not elements of that space, they act on elements to take them to other elements.Operators can be created from a Julia matrix with the Operator function and are by default stored as sparse matrices. As with states, Schrodinger.jl contains functions to create common operators:Function Type Notes\nqzero sparse Operator The zero operator.\nqeye sparse Operator The identity operator.\nnumberop sparse Operator The particle number operator.\ndestroy sparse Operator The quantum harmonic oscillator lowering operator.\ncreate sparse Operator The quantum harmonic oscillator raising operator.\ndisplacementop dense Operator The quantum harmonic oscillator displacement operator.\nsqueezeop dense Operator The quantum harmonic oscillator squeeze operator.Schordinger.jl also exposes the 3 Pauli matrices, the identity operator, and the raising and lowering operators for two-level systems (qubits) as built-in constants. Those are σx, σy, σz, σ0, σ₊, and σ₋. Note that unlike QuTiP, the qubit raising operator will raise 0 to 1.New operators can be constructed from existing ones by adding them or multiplying them together or with numbers.julia> a = destroy(5)\n5×5 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 5:\n 0.0  1.0  0.0      0.0      0.0\n 0.0  0.0  1.41421  0.0      0.0\n 0.0  0.0  0.0      1.73205  0.0\n 0.0  0.0  0.0      0.0      2.0\n 0.0  0.0  0.0      0.0      0.0\n\njulia> a'*a + 1/2\n5×5 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 5:\n 0.5  0.0  0.0  0.0  0.0\n 0.0  1.5  0.0  0.0  0.0\n 0.0  0.0  2.5  0.0  0.0\n 0.0  0.0  0.0  3.5  0.0\n 0.0  0.0  0.0  0.0  4.5\n\njulia> a' + a\n5×5 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 5:\n 0.0  1.0      0.0      0.0      0.0\n 1.0  0.0      1.41421  0.0      0.0\n 0.0  1.41421  0.0      1.73205  0.0\n 0.0  0.0      1.73205  0.0      2.0\n 0.0  0.0      0.0      2.0      0.0note: Note\nAdding and substracting numbers to and from operators adds (substracts) the identity matrix multiplied by that number."
 },
 
 {
@@ -149,7 +149,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Quantum Objects",
     "title": "Algebra",
     "category": "section",
-    "text": "All basic algebra functions work as expected:julia> basis(2,0) + basis(2,1)\n2-d Schrodinger.Ket{SparseVector{Float64,Int64},1} with space dimensions 2:\n1.00∠0°|0⟩ + 1.00∠0°|1⟩\n\njulia> basis(3,0) + 1\n3-d Schrodinger.Ket{SparseVector{Float64,Int64},1} with space dimensions 3:\n2.00∠0°|0⟩ + 1.00∠0°|1⟩ + 1.00∠0°|2⟩\n\njulia> 2.5im*basis(2,0)\n2-d Schrodinger.Ket{SparseVector{Complex{Float64},Int64},1} with space dimensions 2:\n2.50∠90°|0⟩\n\njulia> thermal(4,0.3)/2 + density(coherent(4,1))/2\n4×4 Schrodinger.Density{Array{Float64,2},1} with space dimensions 4:\n 0.569363   0.184874   0.124977   0.0911074\n 0.184874   0.275112   0.125807   0.0917127\n 0.124977   0.125807   0.105588   0.0619989\n 0.0911074  0.0917127  0.0619989  0.049937\n\njulia> numberop(4) + 1/2\n4×4 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 4:\n 0.5  0.0  0.0  0.0\n 0.0  1.5  0.0  0.0\n 0.0  0.0  2.5  0.0\n 0.0  0.0  0.0  3.5\n\njulia> create(4)^2\n4×4 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 4:\n 0.0      0.0      0.0  0.0\n 0.0      0.0      0.0  0.0\n 1.41421  0.0      0.0  0.0\n 0.0      2.44949  0.0  0.0note: Note\nAs explained previously, adding and substracting numbers to and from density matrices and operators adds (substracts) the identity matrix multiplied by that number. Adding and substracting quantum objects might also lead to non-normalized states. See the Norms section for more details."
+    "text": "All basic algebra functions work as expected:julia> basis(2,0) + basis(2,1)\n2-d Schrodinger.Ket{SparseVector{Float64,Int64},1} with space dimensions 2:\n1.00∠0°|0⟩ + 1.00∠0°|1⟩\n\njulia> basis(3,0) + 1\n3-d Schrodinger.Ket{SparseVector{Float64,Int64},1} with space dimensions 3:\n2.00∠0°|0⟩ + 1.00∠0°|1⟩ + 1.00∠0°|2⟩\n\njulia> 2.5im*basis(2,0)\n2-d Schrodinger.Ket{SparseVector{Complex{Float64},Int64},1} with space dimensions 2:\n2.50∠90°|0⟩\n\njulia> thermal(4,0.3)/2 + Density(coherent(4,1))/2\n4×4 Schrodinger.Density{Array{Float64,2},1} with space dimensions 4:\n 0.569363   0.184874   0.124977   0.0911074\n 0.184874   0.275112   0.125807   0.0917127\n 0.124977   0.125807   0.105588   0.0619989\n 0.0911074  0.0917127  0.0619989  0.049937\n\njulia> numberop(4) + 1/2\n4×4 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 4:\n 0.5  0.0  0.0  0.0\n 0.0  1.5  0.0  0.0\n 0.0  0.0  2.5  0.0\n 0.0  0.0  0.0  3.5\n\njulia> create(4)^2\n4×4 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 4:\n 0.0      0.0      0.0  0.0\n 0.0      0.0      0.0  0.0\n 1.41421  0.0      0.0  0.0\n 0.0      2.44949  0.0  0.0note: Note\nAs explained previously, adding and substracting numbers to and from density matrices and operators adds (substracts) the identity matrix multiplied by that number. Adding and substracting quantum objects might also lead to non-normalized states. See the Norms section for more details."
 },
 
 {
@@ -253,7 +253,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Quantum Object Types",
     "title": "Schrodinger.Bra",
     "category": "Type",
-    "text": "Bra\n\nBra vector type. The dual vector to the Ket\n\n\n\n"
+    "text": "Bra(x, dims=(length(x),))\n\nBra vector type. The dual vector to the Ket\n\n\n\n"
 },
 
 {
@@ -261,7 +261,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Quantum Object Types",
     "title": "Schrodinger.Density",
     "category": "Type",
-    "text": "Density\n\nDensity matrix type. This type has two fields, data and dims, which store the vector data and the subspace dimensions. A Density matrix, like a Ket or an Operator, is parameterized by the number of subspaces it lives in. Two different density matrices must have the same system dimensions in order to be added together. A Density matrix is always Hermitian, this is enforced on construction by \"hermitianizing\" the given matrix.\n\n\n\n"
+    "text": "Density(A, dims=(size(A,1),))\n\nConstruct a density matrix (a.k.a. density operator) from the Hermitian matrix A. An N×N matrix will by default be assumed to describe a single Hilbert space of dimension N. If the matrix represents a tensor product of Hilbert spaces, the dimensions can be defined manually by passing a tuple of subspace dimensions dims. In that case, prod(dims) must equal size(A,1). By default, the matrix is stored in sparse format.\n\nThe Density type has two fields, data and dims, which store the matrix data and the subspace dimensions. A Density matrix, like a Ket or an Operator, is parameterized by the number of subspaces it lives in. Two different density matrices must have the same system dimensions in order to be added together. A Density matrix is always Hermitian, this is enforced on construction by \"hermitianizing\" the given matrix.\n\nIt is possible to normalize the density matrix after construction with the normalize! function.\n\nExample\n\njulia> A = [1 5 2; 5 1 0; 2 0 2]\n3×3 Array{Int64,2}:\n 1  5  2\n 5  1  0\n 2  0  2\njulia> σ = normalize!(Density(A))\n3×3 Schrodinger.Density{Array{Float64,2},1} with space dimensions 3:\n 0.25  1.25  0.5\n 1.25  0.25  0.0\n 0.5   0.0   0.5\njulia> trace(σ)\n1.0\n\n\n\n"
 },
 
 {
@@ -269,7 +269,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Quantum Object Types",
     "title": "Schrodinger.Ket",
     "category": "Type",
-    "text": "Ket\n\nKet vector type. This type has two fields, data and dims, which store the vector data and the subspace dimensions. A Ket, like a Density matrix or and Operator is parameterized by the number of subspaces it lives in. Two different kets must have the same system dimensions in order to be added together.\n\n\n\n"
+    "text": "Ket(x, dims=(length(x),))\n\nConstruct a ket state vector from the vector x. A vector of length N will by default be assumed to be an element of a single Hilbert space of dimension N. If the vector is an element of a tensor product of Hilbert spaces, the dimensions can be defined manually by passing a tuple of subspace dimensions dims. In that case, prod(dims) must equal length(x). By default, the vector is stored in sparse format.\n\nThe Ket type has two fields, data and dims, which store the vector data and the subspace dimensions. A Ket, like a Density matrix or and Operator is parameterized by the number of subspaces it lives in. Two different kets must have the same system dimensions in order to be added together.\n\nIt is possible to normalize the ket vector after construction with the normalize! function.\n\nExample\n\njulia> ψ = normalize!(Ket([1,1]))\n2-d Schrodinger.Ket{Array{Float64,1},1} with space dimensions 2:\n0.71∠0°|0⟩ + 0.71∠0°|1⟩\n\n\n\n"
 },
 
 {
@@ -277,31 +277,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Quantum Object Types",
     "title": "Schrodinger.Operator",
     "category": "Type",
-    "text": "Operator\n\nOperator type. An Operator, like a Ket or a Density matrix, is parameterized by the number of subspaces it lives in. Two different density matrices must have the same system dimensions in order to be added together. An Operator may or may not be Hermitian.\n\n\n\n"
-},
-
-{
-    "location": "api/quobj.html#Schrodinger.density",
-    "page": "Quantum Object Types",
-    "title": "Schrodinger.density",
-    "category": "Function",
-    "text": "density(A, dims=(size(A,1),), dense=false)\n\nConstruct a density matrix (or density operator) from the Hermitian matrix A. An N×N matrix will by default be assumed to describe a single Hilbert space of dimension N. If the matrix represents a tensor product of Hilbert spaces, the dimensions can be defined manually by passing a tuple of subspace dimensions dims. In that case, prod(dims) must equal size(A,1). By default, the matrix is stored in sparse format.\n\nIt is possible to normalize the density matrix after construction with the normalize! function.\n\nExample\n\njulia> A = [1 5 2; 5 1 0; 2 0 2]\n3×3 Array{Int64,2}:\n 1  5  2\n 5  1  0\n 2  0  2\njulia> σ = normalize!(density(A))\n3×3 Schrodinger.Density{SparseMatrixCSC{Float64,Int64},1} with space dimensions 3:\n 0.25  1.25  0.5\n 1.25  0.25  0.0\n 0.5   0.0   0.5\njulia> trace(σ)\n1.0\n\n\n\n"
-},
-
-{
-    "location": "api/quobj.html#Schrodinger.ket",
-    "page": "Quantum Object Types",
-    "title": "Schrodinger.ket",
-    "category": "Function",
-    "text": "ket(x, dims=(length(x),), dense=false)\n\nConstruct a ket state vector from the vector x. A vector of length N will by default be assumed to be an element of a single Hilbert space of dimension N. If the vector is an element of a tensor product of Hilbert spaces, the dimensions can be defined manually by passing a tuple of subspace dimensions dims. In that case, prod(dims) must equal length(a). By default, the vector is stored in sparse format.\n\nIt is possible to normalize the ket vector after construction with the normalize! function.\n\nExample\n\njulia> ψ = normalize!(ket([1,1]))\n2-d Schrodinger.Ket{SparseVector{Float64,Int64},1} with space dimensions 2:\n0.71∠0°|0⟩ + 0.71∠0°|1⟩\n\n\n\n"
-},
-
-{
-    "location": "api/quobj.html#Schrodinger.operator",
-    "page": "Quantum Object Types",
-    "title": "Schrodinger.operator",
-    "category": "Function",
-    "text": "operator(B, dims=(size(B,1),), dense=false)\n\nConstruct a linear operator from the matrix B. An N×N matrix will by default be assumed to describe an operator that acts on a single Hilbert space of dimension N. If the matrix represents a linear operator on a tensor product of Hilbert spaces, the dimensions can be defined manually by passing a tuple of subspace dimensions dims. In that case, prod(dims) must equal size(B,1). By default, the matrix is stored in sparse format.\n\nExample\n\njulia> σ = operator([0 -im ; im 0])\n2×2 Schrodinger.Operator{SparseMatrixCSC{Complex{Float64},Int64},1} with space dimensions 2:\n 0.0+0.0im  0.0-1.0im\n 0.0+1.0im  0.0+0.0im\n\n\n\n"
+    "text": "Operator(B, dims=(size(B,1),))\n\nConstruct a linear operator from the matrix B. An N×N matrix will by default be assumed to describe an operator that acts on a single Hilbert space of dimension N. If the matrix represents a linear operator on a tensor product of Hilbert spaces, the dimensions can be defined manually by passing a tuple of subspace dimensions dims. In that case, prod(dims) must equal size(B,1).\n\nThe Operator type has two fields, data and dims, which store the matrix data and the subspace dimensions. An Operator, like a Ket or a Density matrix, is parameterized by the number of subspaces it lives in. Two different density matrices must have the same system dimensions in order to be added together. An Operator may or may not be Hermitian.\n\nExample\n\njulia> σ = Operator([0 -im ; im 0])\n2×2 Schrodinger.Operator{Array{Complex{Float64},2},1} with space dimensions 2:\n 0.0+0.0im  0.0-1.0im\n 0.0+1.0im  0.0+0.0im\n\n\n\n"
 },
 
 {
@@ -309,7 +285,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Quantum Object Types",
     "title": "Quantum Object Types",
     "category": "section",
-    "text": "Modules = [Schrodinger]\nPages   = [\"quobj/types.jl\",\"quobj/constructors.jl\"]\nOrder   = [:type, :function]\nPrivate = false"
+    "text": "Modules = [Schrodinger]\nPages   = [\"quobj/types.jl\"]\nOrder   = [:type, :function]\nPrivate = false"
 },
 
 {
@@ -321,35 +297,35 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "api/states.html#Schrodinger.basis",
+    "location": "api/states.html#Schrodinger.basis-Tuple{Integer,Integer}",
     "page": "State Library",
     "title": "Schrodinger.basis",
-    "category": "Function",
-    "text": "basis(N, n, dense=false)\n\nGenerate a basis state (a.k.a. Fock or number state) ket n, in a Hilbert space of size N. Note that the size of the Hilbert space must be at least n+1. The function fock is an alias for basis.\n\nExample\n\njulia> ψ = basis(3,2)\n3-d Schrodinger.Ket{SparseVector{Float64,Int64},1} with space dimensions 3:\n1.00∠0°|2⟩\n\n\n\n"
+    "category": "Method",
+    "text": "basis(N, n)\n\nGenerate a basis state (a.k.a. Fock or number state) ket n, in a Hilbert space of size N. Note that the size of the Hilbert space must be at least n+1. The function fock is an alias for basis.\n\nReturns a sparse vector.\n\nExample\n\njulia> ψ = basis(3,2)\n3-d Schrodinger.Ket{SparseVector{Float64,Int64},1} with space dimensions 3:\n1.00∠0°|2⟩\n\n\n\n"
 },
 
 {
-    "location": "api/states.html#Schrodinger.coherent",
+    "location": "api/states.html#Schrodinger.coherent-Tuple{Integer,Number}",
     "page": "State Library",
     "title": "Schrodinger.coherent",
-    "category": "Function",
-    "text": "coherent(N, α, dense=false; analytic=false)\n\nGenerate a coherent state ket , in a Hilbert space of size N. To create a coherent density matrix, use the density function: density(coherent(N,n)).\n\nTwo methods can be used for generating a coherent state: via application of a displacment operator on a ground state (the default), or analytically, with the formula\n\n = e^-frac^22 sum_n=0^N-1 frac^nsqrtn n\n\nWhile the operator method will return a normalized ket, the analytic method will not. Both methods converge as N gets larger. The analytic method is also much faster, especially for large N.\n\nExample\n\njulia> coherent(6,0.4+1im)\n6-d Schrodinger.Ket{Array{Complex{Float64},1},1} with space dimensions 6:\n0.60∠68°|1⟩ + 0.56∠0°|0⟩ + 0.46∠136°|2⟩ + 0.29∠-155°|3⟩ + 0.15∠-87°|4⟩\n\n\n\n"
+    "category": "Method",
+    "text": "coherent(N, α; analytic=false)\n\nGenerate a coherent state ket , in a Hilbert space of size N. To create a coherent density matrix, use the Density function: Density(coherent(N,n)).\n\nTwo methods can be used for generating a coherent state: via application of a displacment operator on a ground state (the default), or analytically, with the formula\n\n = e^-frac^22 sum_n=0^N-1 frac^nsqrtn n\n\nWhile the operator method will return a normalized ket, the analytic method will not. Both methods converge as N gets larger. The analytic method is also much faster, especially for large N.\n\nReturns a dense vector.\n\nExample\n\njulia> coherent(6,0.4+1im)\n6-d Schrodinger.Ket{Array{Complex{Float64},1},1} with space dimensions 6:\n0.60∠68°|1⟩ + 0.56∠0°|0⟩ + 0.46∠136°|2⟩ + 0.29∠-155°|3⟩ + 0.15∠-87°|4⟩\n\n\n\n"
 },
 
 {
-    "location": "api/states.html#Schrodinger.maxmixed",
+    "location": "api/states.html#Schrodinger.maxmixed-Tuple{Integer}",
     "page": "State Library",
     "title": "Schrodinger.maxmixed",
-    "category": "Function",
-    "text": "maxmixed(N, dense=false)\n\nGenerate a maximally mixed density matrix. The maximally mixed state is a mixture of basis states with uniform probability.\n\nExample\n\njulia> maxmixed(4)\n4×4 Schrodinger.Density{SparseMatrixCSC{Float64,Int64},1} with space dimensions 4:\n 0.25  0.0   0.0   0.0\n 0.0   0.25  0.0   0.0\n 0.0   0.0   0.25  0.0\n 0.0   0.0   0.0   0.25\n\n\n\n"
+    "category": "Method",
+    "text": "maxmixed(N)\n\nGenerate a maximally mixed density matrix. The maximally mixed state is a mixture of basis states with uniform probability.\n\nReturns a sparse matrix.\n\nExample\n\njulia> maxmixed(4)\n4×4 Schrodinger.Density{SparseMatrixCSC{Float64,Int64},1} with space dimensions 4:\n 0.25  0.0   0.0   0.0\n 0.0   0.25  0.0   0.0\n 0.0   0.0   0.25  0.0\n 0.0   0.0   0.0   0.25\n\n\n\n"
 },
 
 {
-    "location": "api/states.html#Schrodinger.thermal",
+    "location": "api/states.html#Schrodinger.thermal-Tuple{Integer,Real}",
     "page": "State Library",
     "title": "Schrodinger.thermal",
-    "category": "Function",
-    "text": "thermal(N, n, dense=false)\n\nGenerate a thermal state density matrix _n with particle number n, in a Hilbert space of size N. A thermal state _n is a probabilistic mixture of basis states such that the expectation value of the number operator hatn is n. Note that this is true only if Nn. The returned density matrix is always normalized.\n\nExample\n\njulia> N=5;n=0.2;\n\njulia> ρ = thermal(N,n)\n5×5 Schrodinger.Density{SparseMatrixCSC{Float64,Int64},1} with space dimensions 5:\n 0.833441  0.0       0.0        0.0         0.0\n 0.0       0.138907  0.0        0.0         0.0\n 0.0       0.0       0.0231511  0.0         0.0\n 0.0       0.0       0.0        0.00385852  0.0\n 0.0       0.0       0.0        0.0         0.000643087\n\njulia> expect(numberop(N),ρ)\n0.19935691318327978\n\n\n\n"
+    "category": "Method",
+    "text": "thermal(N, n)\n\nGenerate a thermal state density matrix _n with particle number n, in a Hilbert space of size N. A thermal state _n is a probabilistic mixture of basis states such that the expectation value of the number operator hatn is n. Note that this is true only if Nn. The returned density matrix is always normalized.\n\nReturns a sparse matrix.\n\nExample\n\njulia> N=5;n=0.2;\n\njulia> ρ = thermal(N,n)\n5×5 Schrodinger.Density{SparseMatrixCSC{Float64,Int64},1} with space dimensions 5:\n 0.833441  0.0       0.0        0.0         0.0\n 0.0       0.138907  0.0        0.0         0.0\n 0.0       0.0       0.0231511  0.0         0.0\n 0.0       0.0       0.0        0.00385852  0.0\n 0.0       0.0       0.0        0.0         0.000643087\n\njulia> expect(numberop(N),ρ)\n0.19935691318327978\n\n\n\n"
 },
 
 {
@@ -369,35 +345,35 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "api/operators.html#Schrodinger.create",
+    "location": "api/operators.html#Schrodinger.create-Tuple{Integer}",
     "page": "Operator Library",
     "title": "Schrodinger.create",
-    "category": "Function",
-    "text": "create(N, dense=false)\n\nGenerate a quantum harmonic oscillator raising (creation) operator hata^ in a truncated Hilbert space of size N.\n\nExample\n\njulia> create(4)\n4×4 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 4:\n 0.0  0.0      0.0      0.0\n 1.0  0.0      0.0      0.0\n 0.0  1.41421  0.0      0.0\n 0.0  0.0      1.73205  0.0\n\n\n\n"
+    "category": "Method",
+    "text": "create(N)\n\nGenerate a quantum harmonic oscillator raising (creation) operator hata^ in a truncated Hilbert space of size N. Returns a sparse matrix.\n\nExample\n\njulia> create(4)\n4×4 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 4:\n 0.0  0.0      0.0      0.0\n 1.0  0.0      0.0      0.0\n 0.0  1.41421  0.0      0.0\n 0.0  0.0      1.73205  0.0\n\n\n\n"
 },
 
 {
-    "location": "api/operators.html#Schrodinger.destroy",
+    "location": "api/operators.html#Schrodinger.destroy-Tuple{Integer}",
     "page": "Operator Library",
     "title": "Schrodinger.destroy",
-    "category": "Function",
-    "text": "destroy(N, dense=false)\n\nGenerate a quantum harmonic oscillator lowering (annihilation) operator hata in a truncated Hilbert space of size N.\n\nExample\n\njulia> destroy(4)\n4×4 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 4:\n 0.0  1.0  0.0      0.0\n 0.0  0.0  1.41421  0.0\n 0.0  0.0  0.0      1.73205\n 0.0  0.0  0.0      0.0\n\n\n\n"
+    "category": "Method",
+    "text": "destroy(N)\n\nGenerate a quantum harmonic oscillator lowering (annihilation) operator hata in a truncated Hilbert space of size N. Returns a sparse matrix.\n\nExample\n\njulia> destroy(4)\n4×4 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 4:\n 0.0  1.0  0.0      0.0\n 0.0  0.0  1.41421  0.0\n 0.0  0.0  0.0      1.73205\n 0.0  0.0  0.0      0.0\n\n\n\n"
 },
 
 {
-    "location": "api/operators.html#Schrodinger.displacementop",
+    "location": "api/operators.html#Schrodinger.displacementop-Tuple{Integer,Number}",
     "page": "Operator Library",
     "title": "Schrodinger.displacementop",
-    "category": "Function",
-    "text": "displacementop(N, α, dense=true)\n\nGenerate a quantum harmonic oscillator displacement operator hatD() in a truncated Hilbert space of size N.\n\nhatD() = expleft(hata^ - ^*hataright)\n\nExample\n\njulia> displacementop(3,0.5im)\n3×3 Schrodinger.Operator{Array{Complex{Float64},2},1} with space dimensions 3:\n   0.88262+0.0im            0.0+0.439802im  -0.166001+0.0im\n       0.0+0.439802im  0.647859+0.0im             0.0+0.621974im\n -0.166001+0.0im            0.0+0.621974im    0.76524+0.0im\n\n\n\n"
+    "category": "Method",
+    "text": "displacementop(N, α)\n\nGenerate a quantum harmonic oscillator displacement operator hatD() in a truncated Hilbert space of size N. Returns a dense matrix.\n\nhatD() = expleft(hata^ - ^*hataright)\n\nExample\n\njulia> displacementop(3,0.5im)\n3×3 Schrodinger.Operator{Array{Complex{Float64},2},1} with space dimensions 3:\n   0.88262+0.0im            0.0+0.439802im  -0.166001+0.0im\n       0.0+0.439802im  0.647859+0.0im             0.0+0.621974im\n -0.166001+0.0im            0.0+0.621974im    0.76524+0.0im\n\n\n\n"
 },
 
 {
-    "location": "api/operators.html#Schrodinger.numberop",
+    "location": "api/operators.html#Schrodinger.numberop-Tuple{Integer}",
     "page": "Operator Library",
     "title": "Schrodinger.numberop",
-    "category": "Function",
-    "text": "numberop(N, dense=false)\n\nGenerate a number operator hatn in a Hilbert space of size N.\n\nExample\n\njulia> numberop(4)\n4×4 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 4:\n 0.0  0.0  0.0  0.0\n 0.0  1.0  0.0  0.0\n 0.0  0.0  2.0  0.0\n 0.0  0.0  0.0  3.0\n\n\n\n"
+    "category": "Method",
+    "text": "numberop(N)\n\nGenerate a number operator hatn in a Hilbert space of size N. Returns a sparse matrix.\n\nExample\n\njulia> numberop(4)\n4×4 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 4:\n 0.0  0.0  0.0  0.0\n 0.0  1.0  0.0  0.0\n 0.0  0.0  2.0  0.0\n 0.0  0.0  0.0  3.0\n\n\n\n"
 },
 
 {
@@ -405,7 +381,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Operator Library",
     "title": "Schrodinger.qeye",
     "category": "Function",
-    "text": "qeye(N, dims=(N,), dense=false)\n\nGenerate an identity operator for a Hilbert space of size N. It is possible to specify the subspace dimensions with the dims argument.\n\nExample\n\njulia> qeye(4,(2,2))\n4×4 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},2} with space dimensions 2⊗2:\n 1.0  0.0  0.0  0.0\n 0.0  1.0  0.0  0.0\n 0.0  0.0  1.0  0.0\n 0.0  0.0  0.0  1.0\n\n\n\n"
+    "text": "qeye(N, dims=(N,))\n\nGenerate an identity operator for a Hilbert space of size N. It is possible to specify the subspace dimensions with the dims argument. Returns a sparse matrix.\n\nExample\n\njulia> qeye(4,(2,2))\n4×4 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},2} with space dimensions 2⊗2:\n 1.0  0.0  0.0  0.0\n 0.0  1.0  0.0  0.0\n 0.0  0.0  1.0  0.0\n 0.0  0.0  0.0  1.0\n\n\n\n"
 },
 
 {
@@ -413,15 +389,15 @@ var documenterSearchIndex = {"docs": [
     "page": "Operator Library",
     "title": "Schrodinger.qzero",
     "category": "Function",
-    "text": "qzero(N, dims=(N,), dense=false)\n\nGenerate a zero operator for a Hilbert space of size N. It is possible to specify the subspace dimensions with the dims argument.\n\nExample\n\njulia> qzero(4,(2,2))\n4×4 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},2} with space dimensions 2⊗2:\n 0.0  0.0  0.0  0.0\n 0.0  0.0  0.0  0.0\n 0.0  0.0  0.0  0.0\n 0.0  0.0  0.0  0.0\n\n\n\n"
+    "text": "qzero(N, dims=(N,))\n\nGenerate a zero operator for a Hilbert space of size N. It is possible to specify the subspace dimensions with the dims argument. Returns a sparse matrix.\n\nExample\n\njulia> qzero(4,(2,2))\n4×4 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},2} with space dimensions 2⊗2:\n 0.0  0.0  0.0  0.0\n 0.0  0.0  0.0  0.0\n 0.0  0.0  0.0  0.0\n 0.0  0.0  0.0  0.0\n\n\n\n"
 },
 
 {
-    "location": "api/operators.html#Schrodinger.squeezeop",
+    "location": "api/operators.html#Schrodinger.squeezeop-Tuple{Integer,Number}",
     "page": "Operator Library",
     "title": "Schrodinger.squeezeop",
-    "category": "Function",
-    "text": "squeezeop(N, z, dense=true)\n\nGenerate a quantum harmonic oscillator squeeze operator hatS(z) in a truncated Hilbert space of size N.\n\nhatS(z) = expleft(frac12left(z^*hata^2 - zhata^2right)right)\n\nExample\n\njulia> squeezeop(3,0.5im)\n3×3 Schrodinger.Operator{Array{Complex{Float64},2},1} with space dimensions 3:\n 0.938148+0.0im       0.0+0.0im       0.0-0.346234im\n      0.0+0.0im       1.0+0.0im       0.0+0.0im\n      0.0-0.346234im  0.0+0.0im  0.938148+0.0im\n\n\n\n"
+    "category": "Method",
+    "text": "squeezeop(N, z)\n\nGenerate a quantum harmonic oscillator squeeze operator hatS(z) in a truncated Hilbert space of size N. Returns a dense matrix.\n\nhatS(z) = expleft(frac12left(z^*hata^2 - zhata^2right)right)\n\nExample\n\njulia> squeezeop(3,0.5im)\n3×3 Schrodinger.Operator{Array{Complex{Float64},2},1} with space dimensions 3:\n 0.938148+0.0im       0.0+0.0im       0.0-0.346234im\n      0.0+0.0im       1.0+0.0im       0.0+0.0im\n      0.0-0.346234im  0.0+0.0im  0.938148+0.0im\n\n\n\n"
 },
 
 {
@@ -445,7 +421,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Function Library",
     "title": "Schrodinger.ptrace",
     "category": "Method",
-    "text": "ptrace(ρ, out)\n\nCompute the partial trace of a Density matrix or Operator ρ by tracing out the subsystems specified by out. Multiple subsystems can be traced out by passing a sorted tuple of subsystem indices.\n\nExample\n\nΦ₊ = normalize!(basis(2,0)⊗basis(2,0) + basis(2,1)⊗basis(2,1)) # Bell pair\nΨ₊ = normalize!(basis(2,0)⊗basis(2,1) + basis(2,1)⊗basis(2,0)) # Bell pair\nρ  = 0.25 * density(Φ₊) + 0.75 * density(Ψ₊) # density matrix\nptrace(ρ,2) # trace out qubit 2\n# output\n2×2 Schrodinger.Density{Array{Float64,2},1} with space dimensions 2:\n 0.5  0.0\n 0.0  0.5\n\n\n\n"
+    "text": "ptrace(ρ, out)\n\nCompute the partial trace of a Density matrix or Operator ρ by tracing out the subsystems specified by out. Multiple subsystems can be traced out by passing a sorted tuple of subsystem indices.\n\nExample\n\nΦ₊ = normalize!(basis(2,0)⊗basis(2,0) + basis(2,1)⊗basis(2,1)) # Bell pair\nΨ₊ = normalize!(basis(2,0)⊗basis(2,1) + basis(2,1)⊗basis(2,0)) # Bell pair\nρ  = 0.25 * Density(Φ₊) + 0.75 * Density(Ψ₊) # density matrix\nptrace(ρ,2) # trace out qubit 2\n# output\n2×2 Schrodinger.Density{Array{Float64,2},1} with space dimensions 2:\n 0.5  0.0\n 0.0  0.5\n\n\n\n"
 },
 
 {
