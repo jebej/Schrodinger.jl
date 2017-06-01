@@ -77,6 +77,7 @@ end
 
 function calc_expvals(e_ops,states)
     isempty(e_ops) && return Matrix{Complex128}(0,0)
+    dimsmatch.([states[1]],e_ops)
     M = length(e_ops); N = length(states)
     expvals = Matrix{Complex128}(N,M)
     for (j,σ) in enumerate(e_ops)

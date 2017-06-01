@@ -30,5 +30,6 @@ include("library/constants.jl")
 # 0.5
 #scale!(A::Union{Diagonal,Symmetric,Hermitian},b::Number) = (scale!(A.data,b);A)
 
+const CACHE = Dict{UInt64,Matrix{Complex128}}()
 
 end

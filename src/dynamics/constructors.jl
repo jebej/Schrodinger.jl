@@ -131,27 +131,37 @@ function LindbladProp(H₀::Operator, Hₙ::Vector, Cₘ::Vector, Δt::Float64, 
     ts = linspace(0,Δt,n+1)[2:end]; dt = ts[2]-ts[1]
     Id = data(qeye(prod(dims(H₀))))
     # Constant Hamiltonian term
-    L₀ = -1.0im.*(Id⊗data(H₀) - data(H₀).'⊗Id)
-    # Constant collapse operator terms
-    for i = 1:M
-        C = data(Cₘ[i])
-        CdC = C'*C
-        L₀ .+= conj(C)⊗C - 0.5.*(Id⊗CdC + CdC.'⊗Id)
+    U₀_hash = hash((H₀,Cₘ))
+    if haskey(CACHE,U₀_hash) # Check if U₀ was calculated and is in the CACHE
+        U₀ = CACHE[U₀_hash]
+    else # Otherwise calulate it (and add it to the cache)
+        L₀ = -1.0im.*(Id⊗data(H₀) - data(H₀).'⊗Id)
+        # Constant collapse operator terms
+        for i = 1:M
+            C = data(Cₘ[i])
+            CdC = C'*C
+            L₀ .+= conj(C)⊗C - 0.5.*(Id⊗CdC + CdC.'⊗Id)
+        end
+        # Build constant propagator part
+        U₀ = expm(full(L₀).*dt)
+        # Add to cache
+        CACHE[U₀_hash] = U₀
     end
-    # Build constant propagator part
-    U₀ = expm(full(L₀).*dt)
     # Multiply-in sampled time-dependent terms interleaved with constant term
     U = eye(Complex128,prod(dims(H₀))^2)
+    tmp = similar(U)
     for t in ts
         U = U₀*U
-        L = zeros(U)
+        L = zeros(Complex128,prod(dims(H₀)),prod(dims(H₀)))
         for i in 1:N
             f = Hₙ[i][2]
             p = length(Hₙ[i])==3?Hₙ[i][3]:[]
-            L .+= full(Id⊗data(Hₙ[i][1]) - data(Hₙ[i][1]).'⊗Id).*(f(t,p)*dt)
+            L .+= full(Hₙ[i][1]).*(f(t,p)*dt)
         end
-        println(ishermitian(L))
-        U = expim(Hermitian(-L))*U
+        A = expim(Hermitian(-L))
+        invA = LinAlg.inv!(lufact(A))
+        At_mul_B!(tmp,invA⊗Id,U)
+        A_mul_B!(U,Id⊗A,tmp)
     end
     return Propagator{D}(dims(H₀),U,Δt)
 end
