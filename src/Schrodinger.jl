@@ -29,9 +29,8 @@ include("library/operators.jl")
 include("library/states.jl")
 include("library/constants.jl")
 
+#const CACHE = Dict{UInt64,Matrix{Complex128}}()
+
 # 0.5
 #scale!(A::Union{Diagonal,Symmetric,Hermitian},b::Number) = (scale!(A.data,b);A)
-
-const CACHE = Dict{UInt64,Matrix{Complex128}}()
-
 end
