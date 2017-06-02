@@ -11,9 +11,9 @@ function SchrodingerEvo(H₀::Operator, Hₙ::Vector)
     # Constant Hamiltonian term
     L₀ = -1.0im.*data(H₀)
     # Time-dependent Hamiltonian terms
-    Lₙ = ([-1.0im.*data(H[1]) for H in Hₙ]...)
-    fₙ = ([H[2] for H in Hₙ]...)
-    pₙ = ([length(H)==3?H[3]:[] for H in Hₙ]...)
+    Lₙ = ((-1.0im.*data(H[1]) for H in Hₙ)...)
+    fₙ = ((H[2] for H in Hₙ)...)
+    pₙ = ((length(H)==3?H[3]:[] for H in Hₙ)...)
     return Liouvillian{N,D}(dims(H₀),L₀,Lₙ,fₙ,pₙ)
 end
 function SchrodingerEvo(H::Vector)
@@ -57,9 +57,9 @@ function LindbladEvo(H₀::Operator, Hₙ::Vector, Cₘ::Vector)
         L₀ .+= conj(C)⊗C - 0.5.*(Id⊗CdC + CdC.'⊗Id)
     end
     # Time-dependent Hamiltonian terms
-    Lₙ = ([-1.0im.*(Id⊗data(H[1]) - data(H[1]).'⊗Id) for H in Hₙ]...)
-    fₙ = ([H[2] for H in Hₙ]...)
-    pₙ = ([length(H)==3?H[3]:[] for H in Hₙ]...)
+    Lₙ = ((-1.0im.*(Id⊗data(H[1]) - data(H[1]).'⊗Id) for H in Hₙ)...)
+    fₙ = ((H[2] for H in Hₙ)...)
+    pₙ = ((length(H)==3?H[3]:[] for H in Hₙ)...)
     return Liouvillian{N,D}(dims(H₀),L₀,Lₙ,fₙ,pₙ)
 end
 function LindbladEvo(H::Vector, Cₘ::Vector)
@@ -117,7 +117,7 @@ function LindbladProp(H₀::Operator, Cₘ::Vector, Δt::Float64)
     for i = 1:M
         C = data(Cₘ[i])
         CdC = C'*C
-        L₀ .+= conj(C)⊗C - 0.5.*(Id⊗CdC + CdC.'⊗Id)
+        L₀ += conj(C)⊗C - 0.5.*(Id⊗CdC + CdC.'⊗Id)
     end
     # Build constant propagator
     U = expm(full(L₀).*Δt)
@@ -140,25 +140,27 @@ function LindbladProp(H₀::Operator, Hₙ::Vector, Cₘ::Vector, Δt::Float64, 
         for i = 1:M
             C = data(Cₘ[i])
             CdC = C'*C
-            L₀ .+= conj(C)⊗C - 0.5.*(Id⊗CdC + CdC.'⊗Id)
+            L₀ += conj(C)⊗C - 0.5.*(Id⊗CdC + CdC.'⊗Id)
         end
         # Build constant propagator part
-        U₀ = expm(full(L₀).*dt)
+        U₀ = LinAlg.expm!(full(L₀).*dt)
         # Add to cache
         CACHE[U₀_hash] = U₀
     end
     # Multiply-in sampled time-dependent terms interleaved with constant term
+    Lₙ = ((-full(H[1]) for H in Hₙ)...)
+    fₙ = ((H[2] for H in Hₙ)...)
+    pₙ = ((length(H)==3?H[3]:[] for H in Hₙ)...)
     U = eye(Complex128,prod(dims(H₀))^2)
+    L = Matrix{Complex128}(prod(dims(H₀)),prod(dims(H₀)))
     tmp = similar(U)
     for t in ts
         U = U₀*U
-        L = zeros(Complex128,prod(dims(H₀)),prod(dims(H₀)))
+        fill!(L,0)
         for i in 1:N
-            f = Hₙ[i][2]
-            p = length(Hₙ[i])==3?Hₙ[i][3]:[]
-            L .+= full(Hₙ[i][1]).*(f(t,p)*dt)
+            L .+= Lₙ[i].*(fₙ[i](t,pₙ[i])*dt)
         end
-        A = expim(Hermitian(-L))
+        A = expim!(Hermitian(L))
         invA = LinAlg.inv!(lufact(A))
         At_mul_B!(tmp,invA⊗Id,U)
         A_mul_B!(U,Id⊗A,tmp)

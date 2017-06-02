@@ -1,5 +1,6 @@
 import Base: complex, length, size, LinAlg.checksquare, getindex, setindex!,
-     diag, full, norm, trace, normalize!, scale!, similar, ishermitian, show
+     diag, full, norm, trace, normalize!, scale!, similar, copy,
+     ishermitian, show
 
 # Special QuObject methods
 data(A::QuObject) = A.data
@@ -35,6 +36,7 @@ normalize!(x::QuVector) = (normalize!(x.data,2);x)
 normalize!(A::QuMatrix) = (scale!(A.data,1/trace(A.data));A)
 scale!(A::QuObject,b::Number) = (scale!(A.data,b);A)
 similar{T<:QuObject}(A::T) = T(similar(A.data),A.dims)
+copy{T<:QuObject}(A::T) = T(copy(A.data),A.dims)
 
 ishermitian(A::Density) = true
 ishermitian(A::Operator) = A.herm
