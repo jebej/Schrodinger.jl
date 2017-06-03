@@ -64,15 +64,19 @@ for f in (:*, :A_mul_Bc, :Ac_mul_B, :Ac_mul_Bc)
 end
 
 # Operator/Ket
-for f in (:*, :Ac_mul_B)
-    @eval ($f)(σ::Operator,ψ::Ket) = (dimsmatch(σ,ψ);Ket(($f)(σ.data,ψ.data),σ.dims))
-end
+*(σ::Operator,ψ::Ket) = (dimsmatch(σ,ψ);Ket(*(σ.data,ψ.data),σ.dims))
+Ac_mul_B(σ::Operator,ψ::Ket) = (dimsmatch(σ,ψ);Ket(Ac_mul_B(σ.data,ψ.data),σ.dims))
+
+# Bra/Operator
+# remember that bras are actually stored as regular vectors (not row vectors)
+*(ψ::Bra,σ::Operator) = (dimsmatch(σ,ψ);Bra(At_mul_B(σ.data,ψ.data),σ.dims))
+A_mul_Bc(ψ::Bra,σ::Operator) = (dimsmatch(σ,ψ);Bra(*(conj.(σ.data),ψ.data),σ.dims))
 
 # Ket/Ket and Bra
+*(ψ::Bra,ϕ::Ket) = (dimsmatch(ψ,ϕ);BLAS.dotu(ψ.data,ϕ.data))
+dot(ψ::Ket,ϕ::Ket) = (dimsmatch(ψ,ϕ);dot(ψ.data,ϕ.data))
+Ac_mul_B(ψ::Ket,ϕ::Ket) = (dimsmatch(ψ,ϕ);dot(ψ.data,ϕ.data))
 A_mul_Bc(ψ::Ket,ϕ::Ket) = (dimsmatch(ψ,ϕ);Density(A_mul_Bc(ψ.data,ϕ.data),ψ.dims))
-Ac_mul_B(ψ::Ket,ϕ::Ket) = (dimsmatch(ψ,ϕ);Ac_mul_B(ψ.data,ϕ.data)[1])
-dot(ψ::Ket,ϕ::Ket) = dot(ψ.data,ϕ.data)
-*(ψ::Bra,ϕ::Ket) = (dimsmatch(ψ,ϕ);sum(ψ.data.*ϕ.data))
 *(ψ::Ket,ϕ::Bra) = (dimsmatch(ψ,ϕ);Density(A_mul_Bt(ψ.data,ϕ.data),ψ.dims))
 
 # Transposition and conjugation
