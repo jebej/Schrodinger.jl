@@ -1,7 +1,7 @@
 # Julia Base math definitions translation
 import Base: +, -, *, /, ^, .+, .-, .*, ./, .^,
     A_mul_Bc, Ac_mul_B, Ac_mul_Bc, A_mul_Bt, kron, dot,
-    ctranspose, transpose, conj,
+    ctranspose, transpose, conj, BLAS.dotu,
     sqrt, exp, log, real, imag, abs, abs2
 
 # Additive identity and inverse
@@ -73,7 +73,7 @@ Ac_mul_B(σ::Operator,ψ::Ket) = (dimsmatch(σ,ψ);Ket(Ac_mul_B(σ.data,ψ.data)
 A_mul_Bc(ψ::Bra,σ::Operator) = (dimsmatch(σ,ψ);Bra(*(conj.(σ.data),ψ.data),σ.dims))
 
 # Ket/Ket and Bra
-*(ψ::Bra,ϕ::Ket) = (dimsmatch(ψ,ϕ);BLAS.dotu(ψ.data,ϕ.data))
+*(ψ::Bra,ϕ::Ket) = (dimsmatch(ψ,ϕ);dotu(ψ.data,ϕ.data))
 dot(ψ::Ket,ϕ::Ket) = (dimsmatch(ψ,ϕ);dot(ψ.data,ϕ.data))
 Ac_mul_B(ψ::Ket,ϕ::Ket) = (dimsmatch(ψ,ϕ);dot(ψ.data,ϕ.data))
 A_mul_Bc(ψ::Ket,ϕ::Ket) = (dimsmatch(ψ,ϕ);Density(A_mul_Bc(ψ.data,ϕ.data),ψ.dims))
