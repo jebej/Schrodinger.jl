@@ -146,17 +146,17 @@ function LindbladProp(H₀::Operator, Hₙ::Vector, Cₘ::Vector, Δt::Float64, 
     pₙ = ((length(H)==3?H[3]:[] for H in Hₙ)...)
     U = eye(Complex128,prod(dims(H₀))^2)
     L = Matrix{Complex128}(prod(dims(H₀)),prod(dims(H₀)))
-    tmp = similar(U)
+    C = similar(U)
     for t in ts
-        U = U₀*U
+        A_mul_B!(C,U₀,U); copy!(U,C) # U = U₀*U, slow for large matrices
         fill!(L,0)
         for i in 1:N
             L .-= Lₙ[i].*(fₙ[i](t,pₙ[i])*dt)
         end
         A = expim!(Hermitian(L))
         invA = LinAlg.inv!(lufact(A))
-        At_mul_B!(tmp,invA⊗Id,U)
-        A_mul_B!(U,Id⊗A,tmp)
+        At_mul_B!(C,invA⊗Id,U)
+        I_kron_A_mul_B!(U,A,C) # A_mul_B!(U,Id⊗A,C)
     end
     return Propagator{D}(dims(H₀),U,Δt)
 end

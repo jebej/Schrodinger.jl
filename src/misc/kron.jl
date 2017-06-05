@@ -48,3 +48,37 @@ function I_kron_A{T}(d::Int, A::AbstractMatrix{T})
     end
     return B
 end
+
+function I_kron_A_mul_B!(C,A,B)
+    n = checksquare(A)
+    n^2 == checksquare(B) == checksquare(C) || throw(DimensionMismatch("invalid dimensions"))
+    for j = 1:n
+        jj = (j-1)*n+1 : (j-1)*n+n
+        for i = 1:n
+            ii = (i-1)*n+1 : (i-1)*n+n
+            Cij = view(C,ii,jj)
+            Bij = view(B,ii,jj)
+            A_mul_B!(Cij,A,Bij)
+        end
+    end
+    return C
+end
+
+# Not too useful:
+function At_kron_I_mul_B!(C,A,B)
+    n = checksquare(A)
+    n^2 == checksquare(B) == checksquare(C) || throw(DimensionMismatch("invalid dimensions"))
+    fill!(C,0)
+    kk = 1:n
+    for j = 1:n
+        jj = (j-1)*n+1 : (j-1)*n+n
+        for i = 1:n
+            ii = (i-1)*n+1 : (i-1)*n+n
+            Cij = view(C,ii,jj)
+            for k = 1:n
+                Cij .+= A[k,i] .* view(B,kk+(k-1)*n,jj)
+            end
+        end
+    end
+    return C
+end
