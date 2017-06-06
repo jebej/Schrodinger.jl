@@ -1,6 +1,6 @@
 import Base: complex, length, size, LinAlg.checksquare, getindex, setindex!,
-     diag, full, norm, trace, normalize!, scale!, similar, copy, hash, isequal,
-     ishermitian, show
+     diag, full, norm, trace, normalize!, scale!, ishermitian,
+     similar, copy, hash, isequal, ==, isapprox, show
 
 # Special QuObject methods
 data(A::QuObject) = A.data
@@ -35,12 +35,20 @@ trace(A::QuMatrix) = trace(A.data)
 normalize!(x::QuVector) = (normalize!(x.data,2);x)
 normalize!(A::QuMatrix) = (scale!(A.data,1/trace(A.data));A)
 scale!(A::QuObject,b::Number) = (scale!(A.data,b);A)
+ishermitian(A::Density) = true
+ishermitian(A::Operator) = A.herm
 similar{T<:QuObject}(A::T) = T(similar(A.data),A.dims)
 copy{T<:QuObject}(A::T) = T(copy(A.data),A.dims)
 hash{T<:QuObject}(A::T,h::UInt) = hash(hash(data(A),hash(dims(A),hash(T))),h)
 isequal{T<:QuObject}(A::T,B::T) = isequal(data(A),data(B))&&isequal(dims(A),dims(B))
-ishermitian(A::Density) = true
-ishermitian(A::Operator) = A.herm
+==(A::Ket,B::Ket) = (data(A)==data(B))&&(dims(A)==dims(B))
+==(A::Bra,B::Bra) = (data(A)==data(B))&&(dims(A)==dims(B))
+==(A::Density,B::Density) = (data(A)==data(B))&&(dims(A)==dims(B))
+==(A::Operator,B::Operator) = (data(A)==data(B))&&(dims(A)==dims(B))
+isapprox(A::Ket,B::Ket) =  isapprox(data(A),data(B))&&isapprox(dims(A),dims(B))
+isapprox(A::Bra,B::Bra) =  isapprox(data(A),data(B))&&isapprox(dims(A),dims(B))
+isapprox(A::Density,B::Density) = isapprox(data(A),data(B))&&isapprox(dims(A),dims(B))
+isapprox(A::Operator,B::Operator) = isapprox(data(A),data(B))&&isapprox(dims(A),dims(B))
 
 # Show methods
 function show{T<:QuMatrix}(io::IO, A::T)

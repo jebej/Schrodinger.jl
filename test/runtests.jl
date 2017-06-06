@@ -1,4 +1,7 @@
-using Schrodinger
-using Base.Test
+# Schrodinger.jl Tests
+using Base.Test, Schrodinger
 
-include("ptracetests.jl")
+@testset "Schrodinger.jl Tests" begin
+include("quobj.jl")
+include("misc.jl")
+end

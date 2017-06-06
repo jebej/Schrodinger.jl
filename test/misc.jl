@@ -1,3 +1,11 @@
+# Misc. Tests
+using Base.Test, Schrodinger
+
+@testset "Misc. Tests" begin
+
+
+@testset "Partial Trace" begin
+
 cases = [
     (rand(4,4), (2,), (2,2)),
     (rand(6,6), (1,), (2,3)),
@@ -53,4 +61,7 @@ for (A, out, sysdims) in cases
     #a = median(@benchmark(ptrace($A,$out,$sysdims)))
     #b = median(@benchmark(ptrace_ref($A,$out,$sysdims)))
     #println("ptrace speedup: $(ratio(a,b))")
+end
+end
+
 end
