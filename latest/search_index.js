@@ -253,7 +253,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Quantum Object Types",
     "title": "Schrodinger.Bra",
     "category": "Type",
-    "text": "Bra(x, dims=(length(x),))\n\nBra vector type. The dual vector to the Ket\n\n\n\n"
+    "text": "Bra(x, dims=(length(x),))\n\nBra vector type. The dual vector to the Ket.\n\nThe Bra type has two fields, data and dims, which store the vector data and the subspace dimensions. A Bra, like a Density matrix or and Operator is parameterized by the number of subspaces it lives in. Two different kets must have the same system dimensions in order to be added together.\n\nIt is possible to normalize the bra vector after construction with the normalize! function.\n\n\n\n"
 },
 
 {
@@ -305,11 +305,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "api/states.html#Schrodinger.coherent-Tuple{Integer,Number}",
+    "location": "api/states.html#Schrodinger.coherent",
     "page": "State Library",
     "title": "Schrodinger.coherent",
-    "category": "Method",
-    "text": "coherent(N, α; analytic=false)\n\nGenerate a coherent state ket , in a Hilbert space of size N. To create a coherent density matrix, use the Density function: Density(coherent(N,n)).\n\nTwo methods can be used for generating a coherent state: via application of a displacment operator on a ground state (the default), or analytically, with the formula\n\n = e^-frac^22 sum_n=0^N-1 frac^nsqrtn n\n\nWhile the operator method will return a normalized ket, the analytic method will not. Both methods converge as N gets larger. The analytic method is also much faster, especially for large N.\n\nReturns a dense vector.\n\nExample\n\njulia> coherent(6,0.4+1im)\n6-d Schrodinger.Ket{Array{Complex{Float64},1},1} with space dimensions 6:\n0.60∠68°|1⟩ + 0.56∠0°|0⟩ + 0.46∠136°|2⟩ + 0.29∠-155°|3⟩ + 0.15∠-87°|4⟩\n\n\n\n"
+    "category": "Function",
+    "text": "coherent(N, α, analytic=false)\n\nGenerate a coherent state ket , in a Hilbert space of size N. To create a coherent density matrix, use the Density function: Density(coherent(N,n)).\n\nTwo methods can be used for generating a coherent state: via application of a displacment operator on a ground state (the default), or analytically, with the formula\n\n = e^-frac^22 sum_n=0^N-1 frac^nsqrtn n\n\nWhile the operator method will return a normalized ket, the analytic method will not. Both methods converge as N gets larger. The analytic method is also much faster, especially for large N.\n\nReturns a dense vector.\n\nExample\n\njulia> coherent(6,0.4+1im)\n6-d Schrodinger.Ket{Array{Complex{Float64},1},1} with space dimensions 6:\n0.60∠68°|1⟩ + 0.56∠0°|0⟩ + 0.46∠136°|2⟩ + 0.29∠-155°|3⟩ + 0.15∠-87°|4⟩\n\n\n\n"
 },
 
 {
@@ -325,7 +325,7 @@ var documenterSearchIndex = {"docs": [
     "page": "State Library",
     "title": "Schrodinger.thermal",
     "category": "Method",
-    "text": "thermal(N, n)\n\nGenerate a thermal state density matrix _n with particle number n, in a Hilbert space of size N. A thermal state _n is a probabilistic mixture of basis states such that the expectation value of the number operator hatn is n. Note that this is true only if Nn. The returned density matrix is always normalized.\n\nReturns a sparse matrix.\n\nExample\n\njulia> N=5;n=0.2;\n\njulia> ρ = thermal(N,n)\n5×5 Schrodinger.Density{SparseMatrixCSC{Float64,Int64},1} with space dimensions 5:\n 0.833441  0.0       0.0        0.0         0.0\n 0.0       0.138907  0.0        0.0         0.0\n 0.0       0.0       0.0231511  0.0         0.0\n 0.0       0.0       0.0        0.00385852  0.0\n 0.0       0.0       0.0        0.0         0.000643087\n\njulia> expect(numberop(N),ρ)\n0.19935691318327978\n\n\n\n"
+    "text": "thermal(N, n)\n\nGenerate a thermal state density matrix _n with particle number n, in a Hilbert space of size N. A thermal state _n is a probabilistic mixture of basis states such that the expectation value of the number operator hatn is n. Note that this is true only if Nn. The returned density matrix is always normalized.\n\nReturns a sparse matrix.\n\nExample\n\njulia> N=5; n=0.2;\n\njulia> ρ = thermal(N,n)\n5×5 Schrodinger.Density{SparseMatrixCSC{Float64,Int64},1} with space dimensions 5:\n 0.833441  0.0       0.0        0.0         0.0\n 0.0       0.138907  0.0        0.0         0.0\n 0.0       0.0       0.0231511  0.0         0.0\n 0.0       0.0       0.0        0.00385852  0.0\n 0.0       0.0       0.0        0.0         0.000643087\n\njulia> expect(numberop(N),ρ)\n0.19935691318327978\n\n\n\n"
 },
 
 {
