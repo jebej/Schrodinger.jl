@@ -1,9 +1,7 @@
-MIT License
+Copyright (c) 2017 and later, Jérémy Béjanin.
+Schrodinger.jl is licensed under the MIT License. If you make use of this 
+project or parts of it, I would appreciate it if you mentioned me.
 
-The Schrodinger.jl package is licensed under the MIT License.
-If you use this project or parts of it, I would appreciate it if you mentioned me.
-
-Copyright (c) 2017 Jérémy Béjanin
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

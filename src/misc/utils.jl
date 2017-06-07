@@ -6,11 +6,13 @@ function gaussian(x,w)
     return exp(-4ln2*(x/w)^2)
 end
 
-function sqrfact(n::Integer)
-    if 0 <= n <= 20
-        return sqrt(factorial(n))
-    else # Stirling's formula to avoid overflow for n > 20
-        return sqrt(sqrt(2π*n)*(n/e)^n)
+function sqrtfact(n::Integer)
+    if 0 <= n < 128
+        return sqrtfact_table[n+1]
+    elseif n >= 128 # Stirling series for values not stored in the table
+        return sqrt(sqrt(2π*n)*(n/e)^n*(1.0+1/12n+1/288n^2))
+    else
+        throw(ArgumentError("n must be larger than or equal to 0"))
     end
 end
 

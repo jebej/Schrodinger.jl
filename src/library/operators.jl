@@ -59,9 +59,10 @@ julia> destroy(4)
 ```
 """
 function destroy(N::Integer)
-    I = 1:N-1; J = 2:N
-    V = [sqrt(i) for i in I]
-    return Operator(sparse(I,J,V,N,N), (N,))
+    rowval = collect(1:N-1)
+    colptr = Vector{Int}(N+1); colptr[1] = 1; colptr[2:end] = 1:N
+    nzval  = [sqrt(i) for i in 1:N-1]
+    return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval), (N,))
 end
 
 """
@@ -80,9 +81,10 @@ julia> create(4)
 ```
 """
 function create(N::Integer)
-    I = 2:N; J = 1:N-1
-    V = [sqrt(j) for j in J]
-    return Operator(sparse(I,J,V,N,N), (N,))
+rowval = collect(2:N)
+colptr = Vector{Int}(N+1); colptr[1:N] = 1:N; colptr[end] = N
+nzval  = [sqrt(i) for i in 1:N-1]
+return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval), (N,))
 end
 
 """
@@ -127,8 +129,8 @@ julia> displacementop(3,0.5im)
 ```
 """
 function displacementop(N::Integer, α::Number)
-    a = full(data(destroy(N)))
-    return Operator(expm(α*a' - α'*a), (N,))
+    a = full(destroy(N))
+    return Operator(expm(α.*a' .- α'.*a), (N,))
 end
 
 """
@@ -150,6 +152,6 @@ julia> squeezeop(3,0.5im)
 ```
 """
 function squeezeop(N::Integer, z::Number)
-    a = full(data(destroy(N)))
-    return Operator(expm(0.5*(z'*a^2 - z*a'^2)), (N,))
+    a = full(destroy(N))
+    return Operator(expm(0.5.*(z'.*a^2 .- z.*a'^2)), (N,))
 end

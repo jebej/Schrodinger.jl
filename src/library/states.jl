@@ -20,7 +20,7 @@ end
 
 
 """
-    coherent(N, α; analytic=false)
+    coherent(N, α, analytic=false)
 
 Generate a coherent state ket \$|α⟩\$, in a Hilbert space of size `N`. To create a coherent density matrix, use the `Density` function: `Density(coherent(N,n))`.
 
@@ -41,13 +41,13 @@ julia> coherent(6,0.4+1im)
 0.60∠68°|1⟩ + 0.56∠0°|0⟩ + 0.46∠136°|2⟩ + 0.29∠-155°|3⟩ + 0.15∠-87°|4⟩
 ```
 """
-function coherent(N::Integer, α::Number; analytic::Bool=false)
+function coherent(N::Integer, α::Number, analytic::Bool=false)
+    a = exp(-abs2(α)/2) # needs to be here for type stability...
     if analytic
-        a = exp(-abs2(α)/2)
-        x = [a*α^n/sqrfact(n) for n = 0:N-1]
+        x = [a*α^n/sqrtfact(n) for n = 0:N-1]
         return Ket(x,(N,))
     else
-        return displacementop(N,α)*dense(basis(N,0))
+        return Ket(data(displacementop(N,α))[:,1],(N,)) # first column of D(α)
     end
 end
 
@@ -60,7 +60,7 @@ Returns a sparse matrix.
 
 # Example
 ```jldoctest
-julia> N=5;n=0.2;
+julia> N=5; n=0.2;
 
 julia> ρ = thermal(N,n)
 5×5 Schrodinger.Density{SparseMatrixCSC{Float64,Int64},1} with space dimensions 5:

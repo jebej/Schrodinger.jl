@@ -1,5 +1,5 @@
 import Base: complex, length, size, LinAlg.checksquare, getindex, setindex!,
-     diag, full, norm, trace, normalize!, scale!, ishermitian,
+     diag, full, norm, trace, normalize!, scale!, ishermitian, issymmetric, isdiag,
      similar, copy, hash, isequal, ==, isapprox, show
 
 # Special QuObject methods
@@ -8,13 +8,13 @@ dims(A::QuObject) = A.dims
 isnormalized(A::QuVector) = norm(A) ≈ 1.0
 isnormalized(A::QuMatrix) = trace(A) ≈ 1.0
 function dimsmatch(A::QuObject,B::QuObject)
-    dims(A)==dims(B) || throw(DimensionMismatch("subspace dimensions must match"))
+    A.dims==B.dims || throw(DimensionMismatch("subspace dimensions do not match"))
     return nothing
 end
-dense(x::Ket) = Ket(full(x),x.dims)
-dense(x::Bra) = Bra(full(x),x.dims)
-dense(A::Density) = Density(full(A),A.dims)
-dense(A::Operator) = Operator(full(A),A.dims)
+dense(x::Ket) = Ket(full(x.data),x.dims)
+dense(x::Bra) = Bra(full(x.data),x.dims)
+dense(A::Density) = Density(full(A.data),A.dims)
+dense(A::Operator) = Operator(full(A.data),A.dims)
 
 
 # Translate basic Base array methods to QuObjects
@@ -24,31 +24,33 @@ size(A::QuObject) = size(A.data)
 checksquare(A::QuMatrix) = checksquare(A.data)
 getindex(A::QuObject, idx...) = getindex(A.data,idx...)
 setindex!(A::QuObject, idx...) = setindex!(A.data,v,idx...)
-diag(A::QuMatrix) = diag(A.data)
+diag(A::QuMatrix,k::Int=0) = diag(A.data,k)
 full(A::QuObject) = full(A.data)
 complex(x::Ket) = Ket(complex(x.data),x.dims)
 complex(x::Bra) = Bra(complex(x.data),x.dims)
 complex(A::Density) = Density(complex(A.data),A.dims)
 complex(A::Operator) = Operator(complex(A.data),A.dims)
-norm(x::QuVector,n=2) = norm(x.data,n)
+norm(x::QuVector,n::Int=2) = norm(x.data,n)
 trace(A::QuMatrix) = trace(A.data)
 normalize!(x::QuVector) = (normalize!(x.data,2);x)
 normalize!(A::QuMatrix) = (scale!(A.data,1/trace(A.data));A)
 scale!(A::QuObject,b::Number) = (scale!(A.data,b);A)
 ishermitian(A::Density) = true
 ishermitian(A::Operator) = A.herm
+issymmetric(A::QuMatrix) = issymmetric(A.data)
+isdiag(A::QuMatrix) = isdiag(A.data)
 similar{T<:QuObject}(A::T) = T(similar(A.data),A.dims)
 copy{T<:QuObject}(A::T) = T(copy(A.data),A.dims)
-hash{T<:QuObject}(A::T,h::UInt) = hash(hash(data(A),hash(dims(A),hash(T))),h)
-isequal{T<:QuObject}(A::T,B::T) = isequal(data(A),data(B))&&isequal(dims(A),dims(B))
-==(A::Ket,B::Ket) = (data(A)==data(B))&&(dims(A)==dims(B))
-==(A::Bra,B::Bra) = (data(A)==data(B))&&(dims(A)==dims(B))
-==(A::Density,B::Density) = (data(A)==data(B))&&(dims(A)==dims(B))
-==(A::Operator,B::Operator) = (data(A)==data(B))&&(dims(A)==dims(B))
-isapprox(A::Ket,B::Ket) =  isapprox(data(A),data(B))&&isapprox(dims(A),dims(B))
-isapprox(A::Bra,B::Bra) =  isapprox(data(A),data(B))&&isapprox(dims(A),dims(B))
-isapprox(A::Density,B::Density) = isapprox(data(A),data(B))&&isapprox(dims(A),dims(B))
-isapprox(A::Operator,B::Operator) = isapprox(data(A),data(B))&&isapprox(dims(A),dims(B))
+hash{T<:QuObject}(A::T,h::UInt) = hash(hash(A.data,hash(A.dims,hash(T))),h)
+isequal{T<:QuObject}(A::T,B::T) = isequal(A.dims,B.dims)&&isequal(A.data,B.data)
+==(A::Ket,B::Ket) = isequal(A.dims,B.dims)&&(A.data==B.data)
+==(A::Bra,B::Bra) = isequal(A.dims,B.dims)&&(A.data==B.data)
+==(A::Density,B::Density) = isequal(A.dims,B.dims)&&(A.data==B.data)
+==(A::Operator,B::Operator) = isequal(A.dims,B.dims)&&(A.data==B.data)
+isapprox(A::Ket,B::Ket) =  isequal(A.dims,B.dims)&&isapprox(A.data,B.data)
+isapprox(A::Bra,B::Bra) =  isequal(A.dims,B.dims)&&isapprox(A.data,B.data)
+isapprox(A::Density,B::Density) = isequal(A.dims,B.dims)&&isapprox(A.data,B.data)
+isapprox(A::Operator,B::Operator) = isequal(A.dims,B.dims)&&isapprox(A.data,B.data)
 
 # Show methods
 function show{T<:QuMatrix}(io::IO, A::T)

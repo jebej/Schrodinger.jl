@@ -36,13 +36,16 @@ immutable Ket{T<:SVector,D} <: QuVector
     end
 end
 Ket{T<:SVector,D}(x::T, dims::SDims{D}=(length(x),)) = Ket{T,D}(x,dims)
-Ket(x::AbstractVector, dims::SDims=(length(x),)) = Ket(float.(x),dims)
-
+Ket(x::AbstractVector, dims::SDims=(length(x),)) = Ket(float(x),dims)
 
 """
     Bra(x, dims=(length(x),))
 
-Bra vector type. The dual vector to the `Ket`
+Bra vector type. The dual vector to the `Ket`.
+
+The `Bra` type has two fields, `data` and `dims`, which store the vector data and the subspace dimensions. A `Bra`, like a [`Density`](@ref) matrix or and [`Operator`](@ref) is parameterized by the number of subspaces it lives in. Two different kets must have the same system dimensions in order to be added together.
+
+It is possible to normalize the bra vector after construction with the `normalize!` function.
 """
 immutable Bra{T<:SVector,D} <: QuVector
     data::T
@@ -53,8 +56,9 @@ immutable Bra{T<:SVector,D} <: QuVector
     end
 end
 Bra{T<:SVector,D}(x::T, dims::SDims{D}=(length(x),)) = Bra{T,D}(x,dims)
-Bra(x::AbstractVector, dims::SDims=(length(x),)) = Bra(float.(x),dims)
-
+Bra(x::AbstractVector, dims::SDims=(length(x),)) = Bra(float(x),dims)
+Bra(x::Ket) = x'
+Ket(x::Bra) = x' # Needs to be defined here, after Bra
 
 """
     Density(A, dims=(size(A,1),))
@@ -87,12 +91,12 @@ immutable Density{T<:SMatrix,D} <: QuMatrix
     function (::Type{Density{T,D}}){T<:SMatrix,D}(A,dims)
         N = checksquare(A)
         prod(dims)==N || throw(ArgumentError("subspace dimensions $dims are not consistent with a matrix of size $N"))
-        #isapproxhermitian(A) || throw(ArgumentError("a density matrix must be Hermitian"))
+        isapproxhermitian(A) || throw(ArgumentError("a density matrix must be Hermitian"))
         return new{T,D}(A, dims)
     end
 end
 Density{T<:SMatrix,D}(A::T, dims::SDims{D}=(size(A,1),)) = Density{T,D}(A,dims)
-Density(A::AbstractMatrix, dims::SDims=(size(A,1),)) = Density(float.(A),dims)
+Density(A::AbstractMatrix, dims::SDims=(size(A,1),)) = Density(float(A),dims)
 Density(x::Ket) = Density(x.data*x.data',x.dims)
 Density(x::Bra) = Density(conj(x.data)*x.data.',x.dims)
 
@@ -123,9 +127,9 @@ immutable Operator{T<:SMatrix,D} <: QuMatrix
     end
 end
 Operator{T<:SMatrix,D}(B::T, dims::SDims{D}=(size(B,1),)) = Operator{T,D}(B,dims)
-Operator(B::AbstractMatrix, dims::SDims=(size(B,1),)) = Operator(float.(B),dims)
+Operator(B::AbstractMatrix, dims::SDims=(size(B,1),)) = Operator(float(B),dims)
 Operator(x::Ket) = Operator(x.data*x.data',x.dims)
 Operator(x::Bra) = Operator(conj(x.data)*x.data.',x.dims)
 
 # A quantum state can be a ket/bra vector or a density matrix
-@compat const QuState = Union{Density, Ket, Bra}
+@compat const QuState = Union{Ket, Bra, Density}
