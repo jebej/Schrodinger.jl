@@ -1,4 +1,4 @@
-immutable Result{T<:QuState,A}
+immutable Result{T<:QuObject,A}
     times::Vector{Float64}
     states::Vector{T}
     evals::Matrix{Complex128}
@@ -16,11 +16,11 @@ function lsolve(L::Liouvillian,ψ₀::Ket,tspan,e_ops,alg;kwargs...)
     return Result(sol.t,states,evals,sol.alg)
 end
 
-function lsolve(L::Liouvillian,ρ₀::Density,tspan,e_ops,alg;kwargs...)
+function lsolve(L::Liouvillian,ρ₀::Operator,tspan,e_ops,alg;kwargs...)
     dimsmatch(L,ρ₀)
     prob = ODEProblem(L,vec(complex(full(ρ₀))),tspan)
     sol  = solve(prob,alg;dense=false,abstol=1E-8,reltol=1E-6,kwargs...)
-    states = Density.(oper.(sol.u),[dims(ρ₀)])
+    states = Operator.(oper.(sol.u),[dims(ρ₀)])
     evals  = calc_expvals(e_ops,states)
     return Result(sol.t,states,evals,sol.alg)
 end
@@ -30,13 +30,13 @@ function sesolve(H,ψ₀::Ket,tspan,e_ops=[],alg=Vern8();kwargs...)
     return lsolve(L,ψ₀,tspan,e_ops,alg;kwargs...)
 end
 
-function mesolve(H,C,ρ₀::Density,tspan,e_ops=[],alg=Tsit5();kwargs...)
+function mesolve(H,C,ρ₀::Operator,tspan,e_ops=[],alg=Tsit5();kwargs...)
     L = LindbladEvo(H,C)
     return lsolve(L,ρ₀,tspan,e_ops,alg;kwargs...)
 end
 
 function mesolve(H,C,ψ₀::Ket,tspan,e_ops=[],alg=Tsit5();kwargs...)
-    return mesolve(H,C,Density(ψ₀),tspan,e_ops,alg;kwargs...)
+    return mesolve(H,C,Operator(ψ₀),tspan,e_ops,alg;kwargs...)
 end
 
 function psolve(U::Propagator,ψ₀::Ket,steps,e_ops)
@@ -52,9 +52,9 @@ function psolve(U::Propagator,ψ₀::Ket,steps,e_ops)
     return Result(t,states,evals,:SchrodingerPropSolver)
 end
 
-function psolve(U::Propagator,ρ₀::Density,steps,e_ops)
+function psolve(U::Propagator,ρ₀::Operator,steps,e_ops)
     dimsmatch(U,ρ₀)
-    states = Vector{Density{Matrix{Complex{Float64}},length(dims(ρ₀))}}(steps+1)
+    states = Vector{Operator{Matrix{Complex{Float64}},length(dims(ρ₀))}}(steps+1)
     states[1] = complex(dense(ρ₀))
     for s = 2:steps+1
         states[s] = U(0.0,states[s-1])
@@ -65,9 +65,9 @@ function psolve(U::Propagator,ρ₀::Density,steps,e_ops)
     return Result(t,states,evals,:SchrodingerPropSolver)
 end
 
-function psteady(U::Propagator,ρ₀::Density,steps,e_ops)
+function psteady(U::Propagator,ρ₀::Operator,steps,e_ops)
     dimsmatch(U,ρ₀)
-    states = Vector{Density{Matrix{Complex{Float64}},length(dims(ρ₀))}}(2)
+    states = Vector{Operator{Matrix{Complex{Float64}},length(dims(ρ₀))}}(2)
     states[1] = complex(dense(ρ₀))
     states[2] = U(0.0,states[1],steps)
     evals  = calc_expvals(e_ops,states)
@@ -136,7 +136,7 @@ function _expect!{T,M}(res,σ::Operator,states::Vector{Ket{T,M}})
     end
 end
 
-function _expect!{T,M}(res,σ::Operator,states::Vector{Density{T,M}})
+function _expect!{T,M}(res,σ::Operator,states::Vector{Operator{T,M}})
     superσ = super(data(σ))
     tmp = similar(vec(data(states[1])))
     N = length(tmp)

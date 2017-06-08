@@ -1,4 +1,4 @@
-# The functions below check if a matrix is approximately hermitian, with a tolerance on the real and imaginary parts of HERMERR. The diagonal still must be fully real.
+# The functions below check if a matrix is approximately hermitian, with a tolerance on the real and imaginary parts.
 const HERMERR = 1E-12
 
 function isapproxhermitian(A::AbstractMatrix)
@@ -7,7 +7,7 @@ function isapproxhermitian(A::AbstractMatrix)
         return false
     end
     @inbounds for j = 1:N
-        if !isreal(A[j,j]) #abs(imag(A[j,j]))>HERMERR
+        if abs(imag(A[j,j]))>HERMERR
             return false
         end
         for i = 1:j-1
@@ -43,7 +43,7 @@ function isapproxhermitian(A::SparseMatrixCSC)
             end
             # Diagonal element
             if row == col
-                if !isreal(val) #abs(imag(val))>HERMERR
+                if abs(imag(val))>HERMERR
                     return false
                 end
             else

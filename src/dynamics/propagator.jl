@@ -13,8 +13,8 @@ function (U::Propagator{D}){D}(t, ψ::Ket, n::Int=1)
     return Ket(U.U^n*data(ψ),dims(ψ))
 end
 
-function (U::Propagator{D}){D}(t, ρ::Density, n::Int=1)
+function (U::Propagator{D}){D}(t, ρ::Operator, n::Int=1)
     vecρ = vec(data(ρ))
     d = prod(dims(ρ))
-    return Density(reshape(U.U^n*vecρ,(d,d)),dims(ρ))
+    return Operator(reshape(U.U^n*vecρ,(d,d)),dims(ρ))
 end

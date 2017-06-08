@@ -3,24 +3,20 @@ using Base: product, tail
 """
     ptrace(ρ, out)
 
-Compute the partial trace of a `Density` matrix or `Operator` ρ by tracing out the subsystems specified by `out`. Multiple subsystems can be traced out by passing a sorted tuple of subsystem indices.
+Compute the partial trace of a linear `Operator` ρ by tracing out the subsystems specified by `out`. Multiple subsystems can be traced out by passing a sorted tuple of subsystem indices.
 
 # Example
 ```jldoctest
 Φ₊ = normalize!(basis(2,0)⊗basis(2,0) + basis(2,1)⊗basis(2,1)) # Bell pair
 Ψ₊ = normalize!(basis(2,0)⊗basis(2,1) + basis(2,1)⊗basis(2,0)) # Bell pair
-ρ  = 0.25 * Density(Φ₊) + 0.75 * Density(Ψ₊) # density matrix
+ρ  = 0.25 * Operator(Φ₊) + 0.75 * Operator(Ψ₊) # density matrix
 ptrace(ρ,2) # trace out qubit 2
 # output
-2×2 Schrodinger.Density{Array{Float64,2},1} with space dimensions 2:
+2×2 Schrodinger.Operator{Schrodinger.Herm,Array{Float64,2},1} with space dimensions 2:
  0.5  0.0
  0.0  0.5
 ```
 """
-function ptrace(ρ::Density, out)
-    res = ptrace(full(ρ),out,dims(ρ))
-    return Density(res[1],res[2])
-end
 function ptrace(σ::Operator, out)
     res = ptrace(full(σ),out,dims(σ))
     return Operator(res[1],res[2])
@@ -39,14 +35,14 @@ julia> Φ₊ = normalize!(basis(2,0)⊗basis(2,0) + basis(2,1)⊗basis(2,1)) # B
 0.71∠0°|0,0⟩ + 0.71∠0°|1,1⟩
 
 julia> ptrace(Φ₊,1) # trace out qubit 1
-2×2 Schrodinger.Density{Array{Float64,2},1} with space dimensions 2:
+2×2 Schrodinger.Operator{Schrodinger.Herm,Array{Float64,2},1} with space dimensions 2:
  0.5  0.0
  0.0  0.5
 ```
 """
 function ptrace(ψ::Ket, out)
     res = ptrace(full(ψ),out,dims(ψ))
-    return Density(res[1], res[2])
+    return Operator(res[1], res[2])
 end
 ptrace(ψ::Bra, out) = ptrace(ψ',out)
 

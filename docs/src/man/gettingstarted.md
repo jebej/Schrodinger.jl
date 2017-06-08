@@ -43,18 +43,20 @@ To learn more about quantum states in Schrodinger.jl, including mixed states rep
 
 ## Operators
 
-States are useful, but we need to do something with them. This is what an [`Operator`](@ref) is for. Operators act on elements of a Hilbert space (that is, on kets) to modify them. An operator is thus a like a function that takes as input a ket, and returns a new one. The natural representation for an operator is a matrix, but in Schrodinger.jl you need to use the `Operator` type, which stores a matrix and other important information about the operator.
+States are useful, but we need to do something with them. This is what an [`Operator`](@ref) is for. Note that Operators have the same Julia type as density matrices (the `Operator` type), but they can be non-Hermitian, and are in general not normalized.
+
+Operators act on elements of a Hilbert space (that is, on kets) to modify them. An operator is thus a like a function that takes as input a ket, and returns a new one. The natural representation for an operator is a matrix, but in Schrodinger.jl you need to use the `Operator` type, which stores a matrix and other important information about the operator.
 
 Arbitrary operators can of course be created, but let's take a look at one that is built-in, the $$σ_x$$ operator:
 
 ```jldoctest
 julia> σx
-2×2 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 2:
+2×2 Schrodinger.Operator{Schrodinger.Herm,SparseMatrixCSC{Float64,Int64},1} with space dimensions 2:
  0.0  1.0
  1.0  0.0
 ```
 
-Notice that the first line of the output is very similar to that of the ket we created above. It lists the dimensions of the matrix, the type and the space dimensions (which again is just a single 2-d space).
+Notice that the first line of the output is very similar to that of the ket we created above. It lists the dimensions of the matrix, the type (including whether the operator is Hermitian or not) d the space dimensions (which again is just a single 2-d space).
 
 The state `g` that we created in the previous section is a ground state with the same dimensions. Thus, the $$σ_x$$ operator can act on it! This is done simply by multiplying the two objects, with the operator acting to the right on the ket:
 
@@ -84,7 +86,7 @@ H = ω/2*σx # Hamiltonian
 t = (0.0,2.0) # timespan
 O = -σz # observable
 # output
-2×2 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 2:
+2×2 Schrodinger.Operator{Schrodinger.Herm,SparseMatrixCSC{Float64,Int64},1} with space dimensions 2:
  -1.0  0.0
   0.0  1.0
 ```
@@ -104,23 +106,13 @@ true
 Let's plot the results!
 
 ```@setup example1plot
-print("Loading Schrodinger.jl...")
 using Schrodinger
-println(" done!")
-print("Running differential equation solver for the first time...")
 res = sesolve(π*σx, basis(2,0), (0.0,2.0), [-σz], saveat=linspace(0,2,101))
-println(" done!")
-print("Loading Plots.jl...")
-using Plots
-println(" done!")
-print("Plotting for the first time...")
-plot([1,2,3],[1,2,3]);
-println(" done!")
 !isdir("img") && mkdir("img")
 ```
 ```@example example1plot
-using Plots
-plot(res.times, real.(res.evals), xlabel="time (s)", label="\$⟨-σ_z⟩\$")
+using PyPlot
+plot(res.times,real.(res.evals)); xlabel("time (s)"); legend(["\$⟨-σ_z⟩\$"])
 savefig(joinpath("img","example1-plot.svg")); nothing # hide
 ```
 

@@ -26,23 +26,14 @@ end
     @test Bra(coherent(30,α))[6] ≈ exp(-0.5*abs2(α))*conj(α)^5/sqrt(factorial(5))
 end
 
-@testset "Density Matrix Generation" begin
-    # Test density matrix generation from arrays and functions
-    @test data(Density([0 0;0 0])) == zeros(2,2)
-    @test dims(Density([0 0 0;0 1 0;0 0 0])) == (3,)
-    @test_throws ArgumentError Density([0 1;0 0])
-    @test_throws ArgumentError Density([0 0;0 0],(3,))
-    @test_throws DimensionMismatch Density([0 1 0;0 0 0])
-    @test (A=maxmixed(4); diag(A)== 0.25*ones(4)&&isdiag(A))
-    @test (A=thermal(10,0.45); diag(A)[1:2]≈[6.89660888E-1,2.14032689E-1]&&isdiag(A))
-end
-
 @testset "Operator Generation" begin
     # Test operator generation from arrays and functions
     @test data(Operator([0 0;0 0])) == zeros(2,2)
     @test dims(Operator([0 0 0;0 1 0;0 0 0])) == (3,)
     @test_throws ArgumentError Operator([0 0;0 0],(3,))
     @test_throws DimensionMismatch Operator([0 1 0;0 0 0])
+    @test (A=maxmixed(4); diag(A)== 0.25*ones(4)&&isdiag(A))
+    @test (A=thermal(10,0.45); diag(A)[1:2]≈[6.89660888E-1,2.14032689E-1]&&isdiag(A))
     @test data(qzero(6,(2,3))) == zeros(6,6)
     @test data(qeye(6,(2,3))) == eye(6)
     @test data(qeye(6,(2,3))) == eye(6)

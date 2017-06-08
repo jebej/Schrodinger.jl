@@ -6,7 +6,7 @@ end
 
 # Quantum Objects
 
-This section is an introduction to the basic objects used in Schrodinger.jl. It contains an overview of the quantum object generation capabilities offered, and basic mathematical operations. There are 4 types of basic quantum objects: [`Ket`](@ref), [`Bra`](@ref), [`Density`](@ref), and [`Operator`](@ref). All of these objects can be created from a Julia vector or matrix, as appropriate, with a generating function, or by composition of previously made objects.
+This section is an introduction to the basic objects used in Schrodinger.jl. It contains an overview of the quantum object generation capabilities offered, and basic mathematical operations. There are 3 types of basic quantum objects: [`Ket`](@ref), [`Bra`](@ref), and [`Operator`](@ref). All of these objects can be created from a Julia vector or matrix, as appropriate, with a generating function, or by composition of previously made objects.
 
 Since these objects are very similar to regular vectors and matrices, simple mathematics and functions behave as would be expected.
 
@@ -14,16 +14,16 @@ Functions for creating states and operators are listed in the API sections [Stat
 
 ## [Creating States] (@id creating_states)
 
-There are three ways of representing quantum states: with `Ket` or `Bra` vectors for pure states, and with `Density` matrices for both pure and mixed states.
+There are three ways of representing quantum states: with `Ket` or `Bra` vectors for pure states, and with density `Operator`s for both pure and mixed states. Note that a density operator is just a normalized, Hermitian `Operator`.
 
 We already saw that it is possible to create a pure ket state from a Julia vector using the [`Ket`](@ref) function. Kets (and bras) are by default stored as sparse vectors. Schrodinger.jl exposes a few functions to generate common states. These functions are listed in the table below; click on the function name for more details.
 
-| Function           | Type             | Notes                                                               |
-|--------------------|------------------|---------------------------------------------------------------------|
-| [`basis`](@ref)    | sparse `Ket`     | A simple basis vector. The function `fock` is an alias to this one. |
-| [`coherent`](@ref) | dense `Ket`      | A quantum harmonic oscillator coherent state.                       |
-| [`maxmixed`](@ref) | sparse `Density` | The maximally mixed state.                                          |
-| [`thermal`](@ref)  | sparse `Density` | A thermal state.                                                    |
+| Function           | Type              | Notes                                                               |
+|--------------------|-------------------|---------------------------------------------------------------------|
+| [`basis`](@ref)    | sparse `Ket`      | A simple basis vector. The function `fock` is an alias to this one. |
+| [`coherent`](@ref) | dense `Ket`       | A quantum harmonic oscillator coherent state.                       |
+| [`maxmixed`](@ref) | sparse `Operator` | The maximally mixed state.                                          |
+| [`thermal`](@ref)  | sparse `Operator` | A thermal state.                                                    |
 
 ### Kets
 
@@ -87,31 +87,31 @@ This pure state now represents a physical quantum superposition.
 
 ### Density Matrices
 
-Let's now imagine that we have a device that creates three-level atoms, but every time you ask for an one, the machine creates an atom in the state `ψ` with probability 1/3, and in the state `e1` with probability 2/3. After pressing the "new atom" button and obtaining a fresh atom, but *before* looking at it, the state of that atom is unknown. This situation describes a mixed state, and such a state can only be represented by a density matrix.
+Let's now imagine that we have a device that creates three-level atoms, but every time you ask for an one, the machine creates an atom in the state `ψ` with probability 1/3, and in the state `e1` with probability 2/3. After pressing the "new atom" button and obtaining a fresh atom, but *before* looking at it, the state of that atom is unknown. This situation describes a mixed state, and such a state can only be represented by a density matrix (or density operator).
 
 In bra-ket notation, the a pure state can be transformed in a density matrix by multiplying it on the right with its dual bra: $$|ψ⟩⟨ψ|$$. This is done with the complex transpose operation in Schrodinger.jl. This is therefore how we create the correct state for our mystery atom:
 
 ```jldoctest threelevel
 julia> ρ = 1/3 * ψ*ψ' + 2/3 * e1*e1'
-3×3 Schrodinger.Density{SparseMatrixCSC{Float64,Int64},1} with space dimensions 3:
+3×3 Schrodinger.Operator{Schrodinger.Herm,SparseMatrixCSC{Float64,Int64},1} with space dimensions 3:
  0.166667  0.166667  0.0
  0.166667  0.833333  0.0
  0.0       0.0       0.0
 ```
 
-Notice that because the probabilities 1/2 and 2/3 add up to 1, the density matrix is already properly normalized: its trace is one. If that had not been the case, we could have normalized the density matrix with the `normalize!` function again.
+Notice that because the probabilities 1/2 and 2/3 add up to 1, the matrix is already properly normalized: its trace is one. If that had not been the case, we could have normalized the density operator with the `normalize!` function again. The density operator of the atom is Hermitian, as it should be. Schrodinger.jl uses the same type (`Operator`) to represent both density matrices and "regular" linear operators.
 
-Density matrices can also be created directly from a matrix or from a ket with the [`Density`](@ref) function:
+Density matrices can be created directly from a matrix or from a ket with the [`Operator`](@ref) function:
 
 ```jldoctest threelevel
-julia> ρ += Density(basis(3,2))
-3×3 Schrodinger.Density{SparseMatrixCSC{Float64,Int64},1} with space dimensions 3:
+julia> ρ += Operator(basis(3,2))
+3×3 Schrodinger.Operator{Schrodinger.Herm,SparseMatrixCSC{Float64,Int64},1} with space dimensions 3:
  0.166667  0.166667  0.0
  0.166667  0.833333  0.0
  0.0       0.0       1.0
 
 julia> normalize!(ρ)
-3×3 Schrodinger.Density{SparseMatrixCSC{Float64,Int64},1} with space dimensions 3:
+3×3 Schrodinger.Operator{Schrodinger.Herm,SparseMatrixCSC{Float64,Int64},1} with space dimensions 3:
  0.0833333  0.0833333  0.0
  0.0833333  0.416667   0.0
  0.0        0.0        0.5
@@ -120,7 +120,7 @@ julia> normalize!(ρ)
 
 ## Creating Operators
 
-Operators are used to act on quantum states, either continuously, through time evolution under a Hamiltonian, or discretely. As mentioned previously, kets are element of a Hilbert space. Operators are not elements of that space, they *act* on elements to take them to other elements.
+Linear operators are used to act on quantum states, either continuously, through time evolution under a Hamiltonian, or discretely. As mentioned previously, kets are element of a Hilbert space. Operators are not elements of that space, they *act* on elements to take them to other elements.
 
 Operators can be created from a Julia matrix with the [`Operator`](@ref) function and are by default stored as sparse matrices. As with states, Schrodinger.jl contains functions to create common operators:
 
@@ -136,11 +136,11 @@ Operators can be created from a Julia matrix with the [`Operator`](@ref) functio
 
 Schordinger.jl also exposes the 3 Pauli matrices, the identity operator, and the raising and lowering operators for two-level systems (qubits) as built-in constants. Those are `σx`, `σy`, `σz`, `σ0`, `σ₊`, and `σ₋`. Note that unlike QuTiP, the qubit raising operator will raise $$|0⟩$$ to $$|1⟩$$.
 
-New operators can be constructed from existing ones by adding them or multiplying them together or with numbers.
+New operators can be constructed from existing ones by adding them or multiplying them together or with numbers. Operators can be non-Hermitian, unlike density matrices.
 
 ```jldoctest
 julia> a = destroy(5)
-5×5 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 5:
+5×5 Schrodinger.Operator{Schrodinger.NonHerm,SparseMatrixCSC{Float64,Int64},1} with space dimensions 5:
  0.0  1.0  0.0      0.0      0.0
  0.0  0.0  1.41421  0.0      0.0
  0.0  0.0  0.0      1.73205  0.0
@@ -148,7 +148,7 @@ julia> a = destroy(5)
  0.0  0.0  0.0      0.0      0.0
 
 julia> a'*a + 1/2
-5×5 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 5:
+5×5 Schrodinger.Operator{Schrodinger.Herm,SparseMatrixCSC{Float64,Int64},1} with space dimensions 5:
  0.5  0.0  0.0  0.0  0.0
  0.0  1.5  0.0  0.0  0.0
  0.0  0.0  2.5  0.0  0.0
@@ -156,7 +156,7 @@ julia> a'*a + 1/2
  0.0  0.0  0.0  0.0  4.5
 
 julia> a' + a
-5×5 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 5:
+5×5 Schrodinger.Operator{Schrodinger.Herm,SparseMatrixCSC{Float64,Int64},1} with space dimensions 5:
  0.0  1.0      0.0      0.0      0.0
  1.0  0.0      1.41421  0.0      0.0
  0.0  1.41421  0.0      1.73205  0.0
@@ -188,22 +188,22 @@ julia> 2.5im*basis(2,0)
 2-d Schrodinger.Ket{SparseVector{Complex{Float64},Int64},1} with space dimensions 2:
 2.50∠90°|0⟩
 
-julia> thermal(4,0.3)/2 + Density(coherent(4,1))/2
-4×4 Schrodinger.Density{Array{Float64,2},1} with space dimensions 4:
+julia> thermal(4,0.3)/2 + Operator(coherent(4,1))/2
+4×4 Schrodinger.Operator{Schrodinger.Herm,Array{Float64,2},1} with space dimensions 4:
  0.569363   0.184874   0.124977   0.0911074
  0.184874   0.275112   0.125807   0.0917127
  0.124977   0.125807   0.105588   0.0619989
  0.0911074  0.0917127  0.0619989  0.049937
 
 julia> numberop(4) + 1/2
-4×4 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 4:
+4×4 Schrodinger.Operator{Schrodinger.Herm,SparseMatrixCSC{Float64,Int64},1} with space dimensions 4:
  0.5  0.0  0.0  0.0
  0.0  1.5  0.0  0.0
  0.0  0.0  2.5  0.0
  0.0  0.0  0.0  3.5
 
 julia> create(4)^2
-4×4 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 4:
+4×4 Schrodinger.Operator{Schrodinger.NonHerm,SparseMatrixCSC{Float64,Int64},1} with space dimensions 4:
  0.0      0.0      0.0  0.0
  0.0      0.0      0.0  0.0
  1.41421  0.0      0.0  0.0
@@ -211,7 +211,7 @@ julia> create(4)^2
 ```
 
 !!! note
-    As explained previously, adding and substracting numbers to and from density matrices and operators adds (substracts) the identity matrix multiplied by that number. Adding and substracting quantum objects might also lead to non-normalized states. See the [Norms](@ref) section for more details.
+    As explained previously, adding and substracting numbers to and from operators adds (substracts) the identity matrix multiplied by that number. Adding and substracting quantum objects might also lead to non-normalized states. See the [Norms](@ref) section for more details.
 
 ### Functions
 
