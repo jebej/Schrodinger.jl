@@ -39,7 +39,7 @@ function LindbladEvo(H₀::Operator, Cₘ::Vector)
     for i = 1:M
         C = data(Cₘ[i])
         CdC = C'*C
-        L₀ .+= conj(C)⊗C - 0.5.*(Id⊗CdC + CdC.'⊗Id)
+        L₀ += conj(C)⊗C - 0.5.*(Id⊗CdC + CdC.'⊗Id)
     end
     return Liouvillian{0,D}(dims(H₀),L₀)
 end
@@ -54,7 +54,7 @@ function LindbladEvo(H₀::Operator, Hₙ::Vector, Cₘ::Vector)
     for i = 1:M
         C = data(Cₘ[i])
         CdC = C'*C
-        L₀ .+= conj(C)⊗C - 0.5.*(Id⊗CdC + CdC.'⊗Id)
+        L₀ += conj(C)⊗C - 0.5.*(Id⊗CdC + CdC.'⊗Id)
     end
     # Time-dependent Hamiltonian terms
     Lₙ = ((-1.0im.*(Id⊗data(H[1]) - data(H[1]).'⊗Id) for H in Hₙ)...)
