@@ -9,11 +9,6 @@
 @compat abstract type QuVector <: QuObject end
 @compat abstract type QuMatrix <: QuObject end
 
-# Hermitian indicator type
-abstract HermOrNot
-immutable Herm <: HermOrNot end
-immutable NonHerm <: HermOrNot end
-
 
 """
     Ket(x, dims=(length(x),))
@@ -72,28 +67,29 @@ The `Operator` type has two fields, `data` and `dims`, which store the matrix da
 # Example
 ```jldoctest
 julia> σ = Operator([0 -im ; im 0])
-2×2 Schrodinger.Operator{Schrodinger.Herm,Array{Complex{Float64},2},1} with space dimensions 2:
+2×2 Schrodinger.Operator{Array{Complex{Float64},2},1} with space dimensions 2:
  0.0+0.0im  0.0-1.0im
  0.0+1.0im  0.0+0.0im
 ```
 """
-immutable Operator{H<:HermOrNot,T<:SMatrix,D} <: QuMatrix
+immutable Operator{T<:SMatrix,D} <: QuMatrix
     data::T
     dims::SDims{D}
-    function (::Type{Operator{H,T,D}}){H,T<:SMatrix,D}(B,dims)
+    herm::Bool
+    function (::Type{Operator{T,D}}){T<:SMatrix,D}(B,dims,herm=isapproxhermitian(B))
         N = checksquare(B)
         prod(dims)==N || throw(ArgumentError("subspace dimensions $dims are not consistent with a matrix of size $N"))
-        return new{H,T,D}(B, dims)
+        return new{T,D}(B, dims, herm)
     end
 end
-Operator{T<:SMatrix,D}(B::T, dims::SDims{D}=(size(B,1),)) = Operator{isapproxhermitian(B)?Herm:NonHerm,T,D}(B,dims)
-Operator(B::AbstractMatrix, dims::SDims=(size(B,1),)) = Operator(float(B),dims)
+Operator{T<:SMatrix,D}(B::T, dims::SDims{D}=(size(B,1),), herm=isapproxhermitian(B)) = Operator{T,D}(B,dims,herm)
+Operator(B::AbstractMatrix, dims::SDims=(size(B,1),), herm=isapproxhermitian(B)) = Operator(float(B),dims,herm)
 
 # Conversion between different QuObjects
 Bra(x::Ket) = Bra(conj(x.data),x.dims)
 Ket(x::Bra) = Ket(conj(x.data),x.dims)
-Operator(x::Ket) = Operator(x.data*x.data',x.dims)
-Operator(x::Bra) = Operator(conj(x.data)*x.data.',x.dims)
+Operator(x::Ket) = Operator(x.data*x.data',x.dims,true)
+Operator(x::Bra) = Operator(conj(x.data)*x.data.',x.dims,true)
 
 
 # Density type remnants
@@ -107,5 +103,3 @@ immutable Density{T<:SMatrix,D} <: QuMatrix
         return new{T,D}(A, dims)
     end
 end
-Density{T<:SMatrix,D}(A::T, dims::SDims{D}=(size(A,1),)) = Density{T,D}(A,dims)
-Density(A::AbstractMatrix, dims::SDims=(size(A,1),)) = Density(float(A),dims)

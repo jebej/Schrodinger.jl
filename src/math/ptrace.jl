@@ -12,7 +12,7 @@ Compute the partial trace of a linear `Operator` ρ by tracing out the subsystem
 ρ  = 0.25 * Operator(Φ₊) + 0.75 * Operator(Ψ₊) # density matrix
 ptrace(ρ,2) # trace out qubit 2
 # output
-2×2 Schrodinger.Operator{Schrodinger.Herm,Array{Float64,2},1} with space dimensions 2:
+2×2 Schrodinger.Operator{Array{Float64,2},1} with space dimensions 2:
  0.5  0.0
  0.0  0.5
 ```
@@ -35,7 +35,7 @@ julia> Φ₊ = normalize!(basis(2,0)⊗basis(2,0) + basis(2,1)⊗basis(2,1)) # B
 0.71∠0°|0,0⟩ + 0.71∠0°|1,1⟩
 
 julia> ptrace(Φ₊,1) # trace out qubit 1
-2×2 Schrodinger.Operator{Schrodinger.Herm,Array{Float64,2},1} with space dimensions 2:
+2×2 Schrodinger.Operator{Array{Float64,2},1} with space dimensions 2:
  0.5  0.0
  0.0  0.5
 ```

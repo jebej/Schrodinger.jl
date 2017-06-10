@@ -93,7 +93,7 @@ In bra-ket notation, the a pure state can be transformed in a density matrix by 
 
 ```jldoctest threelevel
 julia> ρ = 1/3 * ψ*ψ' + 2/3 * e1*e1'
-3×3 Schrodinger.Operator{Schrodinger.Herm,SparseMatrixCSC{Float64,Int64},1} with space dimensions 3:
+3×3 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 3:
  0.166667  0.166667  0.0
  0.166667  0.833333  0.0
  0.0       0.0       0.0
@@ -105,13 +105,13 @@ Density matrices can be created directly from a matrix or from a ket with the [`
 
 ```jldoctest threelevel
 julia> ρ += Operator(basis(3,2))
-3×3 Schrodinger.Operator{Schrodinger.Herm,SparseMatrixCSC{Float64,Int64},1} with space dimensions 3:
+3×3 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 3:
  0.166667  0.166667  0.0
  0.166667  0.833333  0.0
  0.0       0.0       1.0
 
 julia> normalize!(ρ)
-3×3 Schrodinger.Operator{Schrodinger.Herm,SparseMatrixCSC{Float64,Int64},1} with space dimensions 3:
+3×3 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 3:
  0.0833333  0.0833333  0.0
  0.0833333  0.416667   0.0
  0.0        0.0        0.5
@@ -140,7 +140,7 @@ New operators can be constructed from existing ones by adding them or multiplyin
 
 ```jldoctest
 julia> a = destroy(5)
-5×5 Schrodinger.Operator{Schrodinger.NonHerm,SparseMatrixCSC{Float64,Int64},1} with space dimensions 5:
+5×5 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 5:
  0.0  1.0  0.0      0.0      0.0
  0.0  0.0  1.41421  0.0      0.0
  0.0  0.0  0.0      1.73205  0.0
@@ -148,7 +148,7 @@ julia> a = destroy(5)
  0.0  0.0  0.0      0.0      0.0
 
 julia> a'*a + 1/2
-5×5 Schrodinger.Operator{Schrodinger.Herm,SparseMatrixCSC{Float64,Int64},1} with space dimensions 5:
+5×5 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 5:
  0.5  0.0  0.0  0.0  0.0
  0.0  1.5  0.0  0.0  0.0
  0.0  0.0  2.5  0.0  0.0
@@ -156,7 +156,7 @@ julia> a'*a + 1/2
  0.0  0.0  0.0  0.0  4.5
 
 julia> a' + a
-5×5 Schrodinger.Operator{Schrodinger.Herm,SparseMatrixCSC{Float64,Int64},1} with space dimensions 5:
+5×5 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 5:
  0.0  1.0      0.0      0.0      0.0
  1.0  0.0      1.41421  0.0      0.0
  0.0  1.41421  0.0      1.73205  0.0
@@ -189,21 +189,21 @@ julia> 2.5im*basis(2,0)
 2.50∠90°|0⟩
 
 julia> thermal(4,0.3)/2 + Operator(coherent(4,1))/2
-4×4 Schrodinger.Operator{Schrodinger.Herm,Array{Float64,2},1} with space dimensions 4:
+4×4 Schrodinger.Operator{Array{Float64,2},1} with space dimensions 4:
  0.569363   0.184874   0.124977   0.0911074
  0.184874   0.275112   0.125807   0.0917127
  0.124977   0.125807   0.105588   0.0619989
  0.0911074  0.0917127  0.0619989  0.049937
 
 julia> numberop(4) + 1/2
-4×4 Schrodinger.Operator{Schrodinger.Herm,SparseMatrixCSC{Float64,Int64},1} with space dimensions 4:
+4×4 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 4:
  0.5  0.0  0.0  0.0
  0.0  1.5  0.0  0.0
  0.0  0.0  2.5  0.0
  0.0  0.0  0.0  3.5
 
 julia> create(4)^2
-4×4 Schrodinger.Operator{Schrodinger.NonHerm,SparseMatrixCSC{Float64,Int64},1} with space dimensions 4:
+4×4 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 4:
  0.0      0.0      0.0  0.0
  0.0      0.0      0.0  0.0
  1.41421  0.0      0.0  0.0

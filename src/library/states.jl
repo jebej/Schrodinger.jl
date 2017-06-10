@@ -62,7 +62,7 @@ Returns a sparse matrix.
 julia> N=5; n=0.2;
 
 julia> ρ = thermal(N,n)
-5×5 Schrodinger.Operator{Schrodinger.Herm,SparseMatrixCSC{Float64,Int64},1} with space dimensions 5:
+5×5 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 5:
  0.833441  0.0       0.0        0.0         0.0
  0.0       0.138907  0.0        0.0         0.0
  0.0       0.0       0.0231511  0.0         0.0
@@ -78,7 +78,7 @@ function thermal(N::Integer, n::Real)
     rowval = collect(1:N)
     colptr = Vector{Int}(N+1); colptr[1:N] = rowval; colptr[end] = N+1
     nzval  = normalize!([exp(-β*k) for k = 0:N-1],1)
-    return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,))
+    return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,),true)
 end
 
 """
@@ -91,7 +91,7 @@ Returns a sparse matrix.
 # Example
 ```jldoctest
 julia> maxmixed(4)
-4×4 Schrodinger.Operator{Schrodinger.Herm,SparseMatrixCSC{Float64,Int64},1} with space dimensions 4:
+4×4 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 4:
  0.25  0.0   0.0   0.0
  0.0   0.25  0.0   0.0
  0.0   0.0   0.25  0.0
@@ -102,5 +102,5 @@ function maxmixed(N::Integer)
     rowval = collect(1:N)
     colptr = Vector{Int}(N+1); colptr[1:N] = rowval; colptr[end] = N+1
     nzval  = Vector{Float64}(N); fill!(nzval, 1/N)
-    return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,))
+    return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,),true)
 end
