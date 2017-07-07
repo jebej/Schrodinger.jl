@@ -277,7 +277,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Quantum Object Types",
     "title": "Quantum Object Types",
     "category": "section",
-    "text": "Modules = [Schrodinger]\nPages   = [\"quobj/types.jl\"]\nOrder   = [:type, :function]\nPrivate = false"
+    "text": "Modules = [Schrodinger]\nPages   = [\"types.jl\"]\nOrder   = [:type, :function]\nPrivate = false"
 },
 
 {
@@ -302,6 +302,14 @@ var documenterSearchIndex = {"docs": [
     "title": "Schrodinger.coherent",
     "category": "Function",
     "text": "coherent(N, α, analytic=false)\n\nGenerate a coherent state ket , in a Hilbert space of size N. To create a coherent density operator, use the Operator function: Operator(coherent(N,n)).\n\nTwo methods can be used for generating a coherent state: via application of a displacment operator on a ground state (the default), or analytically, with the formula\n\n = e^-frac^22 sum_n=0^N-1 frac^nsqrtn n\n\nWhile the operator method will return a normalized ket, the analytic method will not. Both methods converge as N gets larger. The analytic method is also much faster, especially for large N.\n\nReturns a dense vector.\n\nExample\n\njulia> coherent(6,0.4+1im)\n6-d Schrodinger.Ket{Array{Complex{Float64},1},1} with space dimensions 6:\n0.60∠68°|1⟩ + 0.56∠0°|0⟩ + 0.46∠136°|2⟩ + 0.29∠-155°|3⟩ + 0.15∠-87°|4⟩\n\n\n\n"
+},
+
+{
+    "location": "api/states.html#Schrodinger.maxentangled-Tuple{Integer,Integer}",
+    "page": "State Library",
+    "title": "Schrodinger.maxentangled",
+    "category": "Method",
+    "text": "maxentangled(N,n)\n\nGenerate a maximally entangled state between n N-d systems:\n\nphi=sum_j=0^N-1frac1sqrtNj^n\n\n\n\n"
 },
 
 {
@@ -369,6 +377,14 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "api/operators.html#Schrodinger.projectorop-Tuple{Integer,AbstractArray{T<:Integer,1}}",
+    "page": "Operator Library",
+    "title": "Schrodinger.projectorop",
+    "category": "Method",
+    "text": "projectorop(N,S)\n\nGenerate a projector on the subspaces defined by an integer or a vector/range of integers S:\n\nP = sum_iS ii\n\nExample\n\njulia> projectorop(5,[1,3])\n5×5 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 5:\n 0.0  0.0  0.0  0.0  0.0\n 0.0  1.0  0.0  0.0  0.0\n 0.0  0.0  0.0  0.0  0.0\n 0.0  0.0  0.0  1.0  0.0\n 0.0  0.0  0.0  0.0  0.0\n\n\n\n"
+},
+
+{
     "location": "api/operators.html#Schrodinger.qeye",
     "page": "Operator Library",
     "title": "Schrodinger.qeye",
@@ -409,6 +425,30 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "api/functions.html#Schrodinger.expect-Tuple{Schrodinger.Operator,Schrodinger.Ket}",
+    "page": "Function Library",
+    "title": "Schrodinger.expect",
+    "category": "Method",
+    "text": "expect(σ,ψ), expect(σ,ρ)\n\nCompute the expectation value of an operator  given a state ket  or a density matrix . The expectation value is defined as\n\nbeginalign*\nE() =  \nE() = textrmtr()\nendalign*\n\n\n\n"
+},
+
+{
+    "location": "api/functions.html#Schrodinger.fidelity-Tuple{Schrodinger.Operator,Schrodinger.Operator}",
+    "page": "Function Library",
+    "title": "Schrodinger.fidelity",
+    "category": "Method",
+    "text": "fidelity(ρ,σ), fidelity(ρ,ψ), fidelity(ψ,ϕ)\n\nCompute the fidelity between density matrices  and , a density matrix  and a ket , or two kets  and . The fidelity in those three cases is defined as\n\nbeginalign*\nF() = textrmtrsqrt^12^12 \nF() = sqrt \nF() = leftright\nendalign*\n\nSee also fidelity2, which is the square of the state fidelity.\n\n\n\n"
+},
+
+{
+    "location": "api/functions.html#Schrodinger.fidelity2-Tuple{Schrodinger.Operator,Schrodinger.Operator}",
+    "page": "Function Library",
+    "title": "Schrodinger.fidelity2",
+    "category": "Method",
+    "text": "fidelity2(ρ,ψ)\n\nCompute the Uhlmann state fidelity between density matrices  and , a density matrix  and a ket , or two kets  and . The Uhlmann state fidelity is simply defined as the square of the \"regular\" state fidelity.\n\n\n\n"
+},
+
+{
     "location": "api/functions.html#Schrodinger.ptrace-Tuple{Schrodinger.Ket,Any}",
     "page": "Function Library",
     "title": "Schrodinger.ptrace",
@@ -429,7 +469,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Function Library",
     "title": "Function Library",
     "category": "section",
-    "text": "Modules = [Schrodinger]\nPages   = [\"math/special.jl\",\"math/ptrace.jl\"]\nOrder   = [:function]\nPrivate = false"
+    "text": "Modules = [Schrodinger]\nPages   = [\"special.jl\",\"ptrace.jl\"]\nOrder   = [:function]\nPrivate = false"
 },
 
 ]}
