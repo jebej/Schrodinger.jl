@@ -2,7 +2,7 @@ immutable Liouvillian{N,F,D} <: AbstractParameterizedFunction{true}
     L₀::SparseMatrixCSC{Complex128,Int}
     Lₙ::NTuple{N,SparseMatrixCSC{Complex128,Int}}
     fₙ::F
-    pₙ::NTuple{N,Vector{Complex128}}
+    pₙ::NTuple{N,Vector{Float64}}
     tmp::Vector{Complex128}
     dims::SDims{D}
     function (::Type{Liouvillian{N,D}}){N,D}(dims,L₀,Lₙ=(),fₙ=(),pₙ=())
@@ -13,17 +13,17 @@ end
 
 dimsmatch(L::Liouvillian,A::QuObject) = L.dims==dims(A) || throw(DimensionMismatch("subspace dimensions must match"))
 
-function (L::Liouvillian{N,F,D}){N,F,D}(t,ψ,dψ)
+function (L::Liouvillian{N,F,D}){N,F,D}(t,ψ,dψ) # Not sure why this function allocates 16 bytes...
     spmdv_mul!(dψ, L.L₀, ψ)
     for i = 1:N
-        applyfun!(dψ, L.Lₙ[i], L.fₙ[i], L.pₙ[i], t, ψ, L.tmp)
+        @inbounds applyfun!(dψ, L.Lₙ[i], L.fₙ[i], L.pₙ[i], t, ψ, L.tmp)
     end
 end
 
 function (L::Liouvillian{N,F,D}){N,F,D}(::Type{Val{:jac}},t,ψ,J)
     copy!(J, L.L₀)
     for i = 1:N
-        applyjac!(J, L.Lₙ[i], L.fₙ[i], L.pₙ[i])
+        @inbounds applyjac!(J, L.Lₙ[i], L.fₙ[i], L.pₙ[i])
     end
 end
 
