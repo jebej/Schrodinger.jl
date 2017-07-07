@@ -40,7 +40,7 @@ end
     @test fidelity2(basis(N,3),Operator(coherent(N,α))) ≈ abs2(coherent(N,α)[4])
     @test fidelity(Operator(coherent(N,α)),Operator(basis(N,3))) ≈ abs(coherent(N,α)[4])
     @test fidelity(Operator(basis(N,2)),Operator(coherent(N,1))) ≈ abs(coherent(N,1)[3])
-    @test fidelity2(Operator(coherent(N,α)),Operator(basis(N,3))) ≈ abs2(coherent(N,α)[4])
+    @test fidelity2(Operator(coherent(N,α,true)),Operator(basis(N,3))) ≈ abs2(coherent(N,α,true)[4])
     @test fidelity2(Operator(basis(N,2)),Operator(coherent(N,1))) ≈ abs2(coherent(N,1)[3])
 end
 
