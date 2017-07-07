@@ -82,12 +82,17 @@ See also [`fidelity2`](@ref), which is the square of the state fidelity.
 function fidelity(ρ::Operator,σ::Operator)
     dimsmatch(ρ,σ)
     ishermitian(ρ)&&ishermitian(σ) || throw(ArgumentError("the operators must be Hermitian"))
-    sqrtρ = sqrtm(data(ρ))::Matrix{eltype(data(ρ))}
+    sqrtρ = sqrtm(Hermitian(full(ρ)))
     A = sqrtρ*data(σ)*sqrtρ
-    hermitianize!(A)
-    return sum(sqrt.(eigvals(Hermitian(A))))
+    D = eigvals(A)
+    res = 0.0
+    for i = 1:prod(dims(ρ))
+        d = real(D[i])
+        (d>0) && (res += sqrt(d))
+    end
+    return res
 end
-fidelity2(ρ::Operator,ψ::Ket) = sqrt(fidelity2(ρ,σ))
+fidelity(ρ::Operator,ψ::Ket) = sqrt(fidelity2(ρ,ψ))
 fidelity(ψ::Ket,ρ::Operator) = fidelity(ρ,ψ)
 fidelity(ψ::Ket,ϕ::Ket) = abs(dot(ψ,ϕ))
 
