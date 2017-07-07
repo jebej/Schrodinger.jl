@@ -1,4 +1,4 @@
-using Base: product, tail
+using Base.product
 
 """
     ptrace(ρ, out)
@@ -94,30 +94,3 @@ end
 # Dense partial trace kernel
 @inline _ptrace_ii_jj(A::Matrix,ii,jj) = A[ii,jj]
 @inline _ptrace_ii_jj(x::Vector,ii,jj) = x[ii]*conj(x[jj])
-
-
-# ptrace supporting functions
-function tindexr{N}(rinds,rsysdims::NTuple{N,Int})
-    i = rinds[1]
-    d = 1
-    @inbounds for n = 2:N
-        d *= rsysdims[n-1]
-        i += d * (rinds[n]-1)
-    end
-    return i
-end
-
-@inline function sorted_setdiff(t1::Tuple, t2::Tuple)
-    if t1[1] == t2[1]
-        sorted_setdiff(tail(t1), tail(t2))
-    else
-        (t1[1], sorted_setdiff(tail(t1), t2)...)
-    end
-end
-@noinline sorted_setdiff(t1::Tuple{}, t2::Tuple) = throw(ArgumentError("duplicate or missing index $(t2[1])"))
-sorted_setdiff(t1::Tuple, ::Tuple{}) = t1
-sorted_setdiff(::Tuple{}, ::Tuple{}) = ()
-
-revtuple{N}(t::NTuple{N,Any}) = ntuple(i->t[N+1-i],Val{N})
-revinds{N}(t::NTuple{N,Any},ns::Int) = ntuple(i->ns+1-t[N+1-i],Val{N})
-gettuple{N}(t1::NTuple,t2::NTuple{N,Any}) = ntuple(i->t1[t2[i]],Val{N})

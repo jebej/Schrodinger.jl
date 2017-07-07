@@ -36,8 +36,6 @@ function expect!{T,D}(res,σ::Operator,states::Vector{Operator{T,D}})
 end
 
 
-tuple_sans_m{n}(m,::Type{Val{n}}) = sorted_setdiff(ntuple(identity,Val{n}),(m,))
-
 calc_probs{T}(ψ::Ket{T,1}) = abs2.(data(ψ))
 calc_probs{T,N}(ψ::Ket{T,N},s::Int) = diag(ptrace(ψ,tuple_sans_m(s,Val{N})))
 calc_probs{T,N}(ψ::Ket{T,N},out::Vector{Int}) = diag(ptrace(ψ,out))

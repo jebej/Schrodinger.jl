@@ -45,6 +45,7 @@ function expim!(A::AbstractMatrix)
     return B*U'
 end
 
+# index in a tensored system
 function tindex{N}(inds,sysdims::NTuple{N,Int})
     i = inds[N]
     d = 1
@@ -54,3 +55,33 @@ function tindex{N}(inds,sysdims::NTuple{N,Int})
     end
     return i
 end
+
+function tindexr{N}(rinds,rsysdims::NTuple{N,Int})
+    i = rinds[1]
+    d = 1
+    @inbounds for n = 2:N
+        d *= rsysdims[n-1]
+        i += d * (rinds[n]-1)
+    end
+    return i
+end
+
+revtuple{N}(t::NTuple{N,Any}) = ntuple(i->t[N+1-i],Val{N})
+revinds{N}(t::NTuple{N,Any},ns::Int) = ntuple(i->ns+1-t[N+1-i],Val{N})
+gettuple{N}(t1::NTuple,t2::NTuple{N,Any}) = ntuple(i->t1[t2[i]],Val{N})
+
+ntuple_sans_m{n}(m,::Type{Val{n}}) = sorted_setdiff(ntuple(identity,Val{n}),(m,))
+
+# Thanks to @mbauman on Discourse for the following
+# https://discourse.julialang.org/t/type-stable-difference-of-tuples/3933/4
+using Base.tail
+@inline function sorted_setdiff(t1::Tuple, t2::Tuple)
+    if t1[1] == t2[1]
+        sorted_setdiff(tail(t1), tail(t2))
+    else
+        (t1[1], sorted_setdiff(tail(t1), t2)...)
+    end
+end
+@noinline sorted_setdiff(t1::Tuple{}, t2::Tuple) = throw(ArgumentError("duplicate or missing index $(t2[1])"))
+sorted_setdiff(t1::Tuple, ::Tuple{}) = t1
+sorted_setdiff(::Tuple{}, ::Tuple{}) = ()
