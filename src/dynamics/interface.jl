@@ -12,7 +12,7 @@ function lsolve(L::Liouvillian,ψ₀::Ket,tspan,e_ops,alg;kwargs...)
     sol  = solve(prob,alg;dense=false,abstol=1E-8,reltol=1E-6,kwargs...)
     states = Ket.(sol.u,[dims(ψ₀)])
     evals  = calc_expvals(e_ops,states)
-    #probs  = calc_probs(states)
+    #probs  = levelprobs(states)
     return Result(sol.t,states,evals,sol.alg)
 end
 
@@ -47,7 +47,7 @@ function psolve(U::Propagator,ψ₀::Ket,steps,e_ops)
         states[s] = U(0.0,states[s-1])
     end
     evals  = calc_expvals(e_ops,states)
-    #probs  = calc_probs(states)
+    #probs  = levelprobs(states)
     t = collect(linspace(0,steps*U.Δt,steps+1))
     return Result(t,states,evals,:SchrodingerPropSolver)
 end
@@ -60,7 +60,7 @@ function psolve(U::Propagator,ρ₀::Operator,steps,e_ops)
         states[s] = U(0.0,states[s-1])
     end
     evals  = calc_expvals(e_ops,states)
-    #probs  = calc_probs(states)
+    #probs  = levelprobs(states)
     t = collect(linspace(0,steps*U.Δt,steps+1))
     return Result(t,states,evals,:SchrodingerPropSolver)
 end
@@ -71,7 +71,7 @@ function psteady(U::Propagator,ρ₀::Operator,steps,e_ops)
     states[1] = complex(dense(ρ₀))
     states[2] = U(0.0,states[1],steps)
     evals  = calc_expvals(e_ops,states)
-    #probs  = calc_probs(states)
+    #probs  = levelprobs(states)
     return Result([0.0,steps*U.Δt],states,evals,:SchrodingerPropSteady)
 end
 
