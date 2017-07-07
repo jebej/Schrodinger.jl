@@ -82,6 +82,22 @@ function thermal(N::Integer, n::Real)
 end
 
 """
+    maxentangled(N,n)
+
+Generate a maximally entangled state between `n` `N`-d systems:
+
+```math
+|\\phi⟩=\\sum_{j=0}^{N-1}\\frac{1}{\\sqrt{N}}|j⟩^{⊗n}.
+```
+"""
+function maxentangled(N::Integer,n::Integer)
+    c = div(N^n-1,N-1)
+    nzind = [1+m*c for m=0:N-1]
+    nzval = fill(1/sqrt(N),(N,))
+    return Ket(SparseVector(N^n,nzind,nzval),ntuple(_->N,Val{n}))
+end
+
+"""
     maxmixed(N)
 
 Generate a maximally mixed density matrix. The maximally mixed state is a mixture of basis states with uniform probability.
