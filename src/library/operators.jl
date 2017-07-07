@@ -81,10 +81,10 @@ julia> create(4)
 ```
 """
 function create(N::Integer)
-rowval = collect(2:N)
-colptr = Vector{Int}(N+1); colptr[1:N] = 1:N; colptr[end] = N
-nzval  = [sqrt(i) for i in 1:N-1]
-return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,),false)
+    rowval = collect(2:N)
+    colptr = Vector{Int}(N+1); colptr[1:N] = 1:N; colptr[end] = N
+    nzval  = [sqrt(i) for i in 1:N-1]
+    return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,),false)
 end
 
 """
@@ -154,4 +154,61 @@ julia> squeezeop(3,0.5im)
 function squeezeop(N::Integer, z::Number)
     a = full(destroy(N))
     return Operator(expm(0.5.*(z'.*a^2 .- z.*a'^2)),(N,),false)
+end
+
+"""
+    projectorop(N,S)
+
+Generate a projector on the subspaces defined by an integer or a vector/range of integers `S`:
+
+```math
+P = \\sum_{i∈S} |i⟩⟨i|.
+```
+
+# Example
+```jldoctest
+julia> projectorop(5,[1,3])
+5×5 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 5:
+ 0.0  0.0  0.0  0.0  0.0
+ 0.0  1.0  0.0  0.0  0.0
+ 0.0  0.0  0.0  0.0  0.0
+ 0.0  0.0  0.0  1.0  0.0
+ 0.0  0.0  0.0  0.0  0.0
+```
+"""
+function projectorop{T<:Integer}(N::Integer,S::AbstractVector{T})
+    maximum(S)<N || throw(ArgumentError("a $N-d space cannot be projected on level $(maximum(S))"))
+    I = S.+1
+    V = ones(length(S))
+    return Operator(sparse(I,I,V,N,N),(N,),true)
+end
+projectorop(N::Integer,S::Integer) = projectorop(N,S:S)
+
+"""
+    sylvesterop(N,k,l)
+
+Generate the \$(i,j)^{\textrm{th}}\$ Sylvester generalized Pauli matrix in N-d.
+https://en.wikipedia.org/wiki/Generalizations_of_Pauli_matrices
+"""
+function sylvesterop(N::Integer,k::Integer,l::Integer)
+    ωˡ = Complex(cospi(2l/N),sinpi(2l/N))
+    rowval = mod1.(collect(1:N).+k,N)
+    colptr = Vector{Int}(N+1); colptr[1:N] = 1:N; colptr[end] = N+1
+    nzval  = [ωˡ^m for m in 0:N-1]
+    return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,),false)
+end
+
+function Sigma1(N)
+    rowval = circshift(collect(1:N),-1)
+    colptr = Vector{Int}(N+1); colptr[1:N] = 1:N; colptr[end] = N+1
+    nzval  = ones(N)
+    return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,),false)
+end
+
+function Sigma3(N)
+    ω = Complex(cospi(2/N),sinpi(2/N))
+    rowval = collect(1:N)
+    colptr = Vector{Int}(N+1); colptr[1:N] = 1:N; colptr[end] = N+1
+    nzval  = [ω^m for m=0:N-1]
+    return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,),false)
 end
