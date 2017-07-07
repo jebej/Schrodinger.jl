@@ -36,8 +36,8 @@ end
     @test fidelity2(g,normalize!(g+e1)) ≈ 1/2
     @test fidelity(Operator(coherent(N,α)),basis(N,3)) ≈ abs(coherent(N,α)[4])
     @test fidelity(basis(N,3),Operator(coherent(N,0.5α))) ≈ abs(coherent(N,0.5α)[4])
-    @test fidelity2(Operator(coherent(N,α)),basis(N,3)) ≈ abs2(coherent(N,α)[4])
-    @test fidelity2(basis(N,3),Operator(coherent(N,0.5α))) ≈ abs2(coherent(N,0.5α)[4])
+    @test fidelity2(Operator(coherent(N,0.5α)),basis(N,3)) ≈ abs2(coherent(N,0.5α)[4])
+    @test fidelity2(basis(N,3),Operator(coherent(N,α))) ≈ abs2(coherent(N,α)[4])
     @test fidelity(Operator(coherent(N,α)),Operator(basis(N,3))) ≈ abs(coherent(N,α)[4])
     @test fidelity(Operator(basis(N,2)),Operator(coherent(N,1))) ≈ abs(coherent(N,1)[3])
     @test fidelity2(Operator(coherent(N,α)),Operator(basis(N,3))) ≈ abs2(coherent(N,α)[4])
