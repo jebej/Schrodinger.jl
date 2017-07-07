@@ -3,31 +3,33 @@ using DiffEqBase, OrdinaryDiffEq, Compat
 
 export Operator, Ket, Bra,
     data, dims, isnormalized, dimsmatch, dense, braket,
-    ptrace, expect, tensor,
-    fock, basis, coherent, thermal, maxmixed,
-    qzero, qeye, create, destroy, numberop, displacementop, squeezeop,
+    ptrace, expect, fidelity, fidelity2, levelprobs, tensor,
+    fock, basis, coherent, thermal, maxmixed, maxentangled,
+    qzero, qeye, create, destroy, numberop, projectorop,
+    displacementop, squeezeop,
     Liouvillian, SchrodingerEvo, LindbladEvo,
     Propagator, SchrodingerProp, LindbladProp,
     sesolve, mesolve, lsolve, psolve, psteady,
     expim, gaussian
 
-include("quobj/types.jl")
-include("quobj/basicmethods.jl")
-include("math/basemath.jl")
-include("math/eigen.jl")
-include("math/special.jl")
-include("math/ptrace.jl")
-include("dynamics/liouvillian.jl")
-include("dynamics/propagator.jl")
-include("dynamics/constructors.jl")
-include("dynamics/interface.jl")
-include("misc/utils.jl")
-include("misc/kron.jl")
-include("misc/sparsevec.jl")
-include("misc/approxherm.jl")
-include("library/operators.jl")
-include("library/states.jl")
-include("library/constants.jl")
+include(joinpath("quobj","types.jl"))
+include(joinpath("quobj","basicmethods.jl"))
+include(joinpath("math","basemath.jl"))
+include(joinpath("math","eigen.jl"))
+include(joinpath("math","special.jl"))
+include(joinpath("math","ptrace.jl"))
+include(joinpath("dynamics","liouvillian.jl"))
+include(joinpath("dynamics","propagator.jl"))
+include(joinpath("dynamics","constructors.jl"))
+include(joinpath("dynamics","interface.jl"))
+include(joinpath("misc","utils.jl"))
+include(joinpath("misc","kron.jl"))
+include(joinpath("misc","sparsevec.jl"))
+include(joinpath("misc","approxherm.jl"))
+include(joinpath("library","operators.jl"))
+include(joinpath("library","states.jl"))
+include(joinpath("library","drivefuns.jl"))
+include(joinpath("library","constants.jl"))
 
 #const CACHE = Dict{UInt64,Matrix{Complex128}}()
 
