@@ -2,8 +2,17 @@ import Base: reverse
 
 reverse(n::Number) = n
 
-function gaussian(x,w)
+gaussian(x::Real,σ::Real) = exp(-0.5*(x/σ)^2)
+gaussianprime(x::Real,σ::Real) = -exp(-0.5*(x/σ)^2)*x/σ^2
+
+function gaussian_fwhm(x::Real,w)
+    # w is the full width half maximum (FWHM)
     return exp(-4ln2*(x/w)^2)
+end
+
+function gaussianprime_fwhm(x::Real,w)
+    # w is the full width half maximum (FWHM)
+    return -x*ln2*exp2(3-4(x/w)^2)/w^2
 end
 
 function sqrtfact(n::Integer)
