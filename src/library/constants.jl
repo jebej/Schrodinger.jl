@@ -2,14 +2,15 @@ export ℎ, ħ, ℏ, ℯ, Φ₀, ϕ₀, ln2,
     sigma0, σ0, sigmax, σx, sigmay, σy, sigmaz, σz, sigmaplus, σ₊, sigmaminus, σ₋,
     ⊗
 
-# Physical constants
-const ℎ = 6.626070040E-34 # Planck constant
-const ħ = 1.054571800E-34 # Reduced Planck constant, in Joules*seconds, 2014 CODATA
+# Physical and mathematical constants
+const ℎ = 6.626069934E-34 # Planck constant, in Joules*seconds, NIST 2017
+const ħ = 1.054571783E-34 # Reduced Planck constant
 const ℏ = ħ # Actual unicode symbol
 const ℯ = 1.6021766208E-19 # Elementary charge, in Coulomb, 2014 CODATA
 const Φ₀ = 2.067833831E-15 # Magnetic flux quantum (ℎ/2ℯ), in Weber, 2014 CODATA
 const ϕ₀ = 3.291059757E-16 # Reduced flux quantum (ℏ/2ℯ), in Weber, 2014 CODATA
-const ln2 = 0.6931471805599453 # Natural logarithm of 2
+const ln2 = 0.693147180559945309 # Natural logarithm of 2
+const sqrtln16 = 1.66510922231539551 # Square root of ln(16)
 
 # Pauli matrices (spin-1/2 operators)
 const sigma0 = qeye(2)
