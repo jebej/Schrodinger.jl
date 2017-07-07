@@ -7,7 +7,7 @@ end
 
 ```@autodocs
 Modules = [Schrodinger]
-Pages   = ["math/special.jl","math/ptrace.jl"]
+Pages   = ["special.jl","ptrace.jl"]
 Order   = [:function]
 Private = false
 ```

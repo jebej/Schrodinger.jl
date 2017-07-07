@@ -7,7 +7,7 @@ end
 
 ```@autodocs
 Modules = [Schrodinger]
-Pages   = ["quobj/types.jl"]
+Pages   = ["types.jl"]
 Order   = [:type, :function]
 Private = false
 ```
