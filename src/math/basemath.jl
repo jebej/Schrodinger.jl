@@ -16,6 +16,7 @@ import Base: +, -, *, /, ^,
 *(x::Ket,b::Number) = Ket(x.data*b,x.dims)
 *(b::Number,x::Ket) = Ket(x.data*b,x.dims)
 /(x::Ket,b::Number) = Ket(x.data/b,x.dims)
+/(b::Number,x::Ket) = throw(ArgumentError("cannot divide a number by a Ket"))
 +(x::Bra,b::Number) = Bra(x.data+b,x.dims)
 +(b::Number,x::Bra) = Bra(x.data+b,x.dims)
 -(x::Bra,b::Number) = Bra(x.data-b,x.dims)
@@ -23,6 +24,7 @@ import Base: +, -, *, /, ^,
 *(x::Bra,b::Number) = Bra(x.data*b,x.dims)
 *(b::Number,x::Bra) = Bra(x.data*b,x.dims)
 /(x::Bra,b::Number) = Bra(x.data/b,x.dims)
+/(b::Number,x::Bra) = throw(ArgumentError("cannot divide a number by a Bra"))
 
 # Operator/Number algebra
 +(A::Operator,b::Number) = Operator(A.data+b*I,A.dims)
@@ -32,6 +34,7 @@ import Base: +, -, *, /, ^,
 *(A::Operator,b::Number) = Operator(A.data*b,A.dims)
 *(b::Number,A::Operator) = Operator(A.data*b,A.dims)
 /(A::Operator,b::Number) = Operator(A.data/b,A.dims)
+/(b::Number,A::Operator) = throw(ArgumentError("cannot divide a number by an Operator"))
 ^(A::Operator,b::Number) = Operator(A.data^b,A.dims)
 ^(A::Operator,b::Integer) = Operator(A.data^b,A.dims) # This method is needed for some reason
 
