@@ -1,5 +1,5 @@
 # Julia Base math definitions translation
-import Base: +, -, *, /, ^, .+, .-, .*, ./, .^,
+import Base: +, -, *, /, ^,
     A_mul_Bc, Ac_mul_B, Ac_mul_Bc, A_mul_Bt, kron, dot,
     ctranspose, transpose, conj, BLAS.dotu,
     sqrt, exp, log, real, imag, abs, abs2
@@ -9,29 +9,30 @@ import Base: +, -, *, /, ^, .+, .-, .*, ./, .^,
 -{T<:QuObject}(A::T) = T(-A.data,A.dims)
 
 # QuVector / Number algebra
-+(x::Ket,b::Number) = Ket(x.data.+b,x.dims)
-+(b::Number,x::Ket) = Ket(x.data.+b,x.dims)
--(x::Ket,b::Number) = Ket(x.data.-b,x.dims)
--(b::Number,x::Ket) = Ket(b.-x.data,x.dims)
-*(x::Ket,b::Number) = Ket(x.data.*b,x.dims)
-*(b::Number,x::Ket) = Ket(x.data.*b,x.dims)
-/(x::Ket,b::Number) = Ket(x.data./b,x.dims)
-+(x::Bra,b::Number) = Bra(x.data.+b,x.dims)
-+(b::Number,x::Bra) = Bra(x.data.+b,x.dims)
--(x::Bra,b::Number) = Bra(x.data.-b,x.dims)
--(b::Number,x::Bra) = Bra(b.-x.data,x.dims)
-*(x::Bra,b::Number) = Bra(x.data.*b,x.dims)
-*(b::Number,x::Bra) = Bra(x.data.*b,x.dims)
-/(x::Bra,b::Number) = Bra(x.data./b,x.dims)
+using Base.Broadcast: broadcast_c, containertype # use broadcast_c to bypass wrong specializations with SparseVector
++(x::Ket,b::Number) = Ket(broadcast_c(+,containertype(x.data,b),x.data,b),x.dims)
++(b::Number,x::Ket) = Ket(broadcast_c(+,containertype(x.data,b),x.data,b),x.dims)
+-(x::Ket,b::Number) = Ket(broadcast_c(-,containertype(x.data,b),x.data,b),x.dims)
+-(b::Number,x::Ket) = Ket(broadcast_c(-,containertype(x.data,b),b,x.data),x.dims)
+*(x::Ket,b::Number) = Ket(broadcast_c(*,containertype(x.data,b),x.data,b),x.dims)
+*(b::Number,x::Ket) = Ket(broadcast_c(*,containertype(x.data,b),x.data,b),x.dims)
+/(x::Ket,b::Number) = Ket(broadcast_c(/,containertype(x.data,b),x.data,b),x.dims)
++(x::Bra,b::Number) = Bra(broadcast_c(+,containertype(x.data,b),x.data,b),x.dims)
++(b::Number,x::Bra) = Bra(broadcast_c(+,containertype(x.data,b),x.data,b),x.dims)
+-(x::Bra,b::Number) = Bra(broadcast_c(-,containertype(x.data,b),x.data,b),x.dims)
+-(b::Number,x::Bra) = Bra(broadcast_c(-,containertype(x.data,b),b,x.data),x.dims)
+*(x::Bra,b::Number) = Bra(broadcast_c(*,containertype(x.data,b),x.data,b),x.dims)
+*(b::Number,x::Bra) = Bra(broadcast_c(*,containertype(x.data,b),x.data,b),x.dims)
+/(x::Bra,b::Number) = Bra(broadcast_c(/,containertype(x.data,b),x.data,b),x.dims)
 
 # Operator/Number algebra
 +(A::Operator,b::Number) = Operator(A.data+b*I,A.dims)
 +(b::Number,A::Operator) = Operator(A.data+b*I,A.dims)
 -(A::Operator,b::Number) = Operator(A.data-b*I,A.dims)
 -(b::Number,A::Operator) = Operator(b*I-A.data,A.dims)
-*(A::Operator,b::Number) = Operator(A.data.*b,A.dims)
-*(b::Number,A::Operator) = Operator(A.data.*b,A.dims)
-/(A::Operator,b::Number) = Operator(A.data./b,A.dims)
+*(A::Operator,b::Number) = Operator(A.data*b,A.dims)
+*(b::Number,A::Operator) = Operator(A.data*b,A.dims)
+/(A::Operator,b::Number) = Operator(A.data/b,A.dims)
 ^(A::Operator,b::Number) = Operator(A.data^b,A.dims)
 ^(A::Operator,b::Integer) = Operator(A.data^b,A.dims) # This method is needed for some reason
 
