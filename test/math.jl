@@ -28,9 +28,10 @@ e1 = dense(basis(2,1))
     @test 2σ == σ*2 == σ+σ
     @test g/2 == Ket(sparse([0.5,0]))
     @test e1/1 == e1
-    @test (x=(g/0);isnan(x[2])&&isinf(x[1]))
+    @test_broken (x=(g/0);isnan(x[2])&&isinf(x[1])) # see julia PR #22715
     @test (x=(e1/0);isnan(x[1])&&isinf(x[2]))
     @test ρ/2 == qeye(4)/8
+    @test (x=ρ/0;isnan(x[2,1])&&isinf(x[1,1]))
     @test (x=σ/0;isnan(x[1,1])&&isinf(x[2,1]))
 end
 
