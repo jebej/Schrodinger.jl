@@ -49,7 +49,11 @@ e1 = dense(basis(2,1))
     @test_broken (x=(g/0);isnan(x[2])&&isinf(x[1])) # see julia PR #22715
     @test (x=(e1/0);isnan(x[1])&&isinf(x[2]))
     @test ρ/2 == qeye(4)/8
-    @test (x=ρ/0;isnan(x[2,1])&&isinf(x[1,1]))
+    if VERSION>=v"0.6.0"
+        @test (x=ρ/0;isnan(x[2,1])&&isinf(x[1,1]))
+    else
+        @test_broken (x=ρ/0;isnan(x[2,1])&&isinf(x[1,1])) # remove once 0.5 is dropped
+    end
     @test (x=σ/0;isnan(x[1,1])&&isinf(x[2,1]))
 end
 
