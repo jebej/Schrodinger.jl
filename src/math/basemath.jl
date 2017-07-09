@@ -16,7 +16,7 @@ import Base: +, -, *, /, ^,
 *(x::Ket,b::Number) = Ket(x.data*b,x.dims)
 *(b::Number,x::Ket) = Ket(x.data*b,x.dims)
 /(x::Ket,b::Number) = Ket(x.data/b,x.dims)
-/(b::Number,x::Ket) = throw(ArgumentError("cannot divide a number by a Ket"))
+/(b::Number,x::Ket) = throw(ArgumentError("cannot divide number by Ket"))
 +(x::Bra,b::Number) = Bra(x.data+b,x.dims)
 +(b::Number,x::Bra) = Bra(x.data+b,x.dims)
 -(x::Bra,b::Number) = Bra(x.data-b,x.dims)
@@ -24,7 +24,7 @@ import Base: +, -, *, /, ^,
 *(x::Bra,b::Number) = Bra(x.data*b,x.dims)
 *(b::Number,x::Bra) = Bra(x.data*b,x.dims)
 /(x::Bra,b::Number) = Bra(x.data/b,x.dims)
-/(b::Number,x::Bra) = throw(ArgumentError("cannot divide a number by a Bra"))
+/(b::Number,x::Bra) = throw(ArgumentError("cannot divide number by Bra"))
 
 # Operator/Number algebra
 +(A::Operator,b::Number) = Operator(A.data+b*I,A.dims)
@@ -34,25 +34,25 @@ import Base: +, -, *, /, ^,
 *(A::Operator,b::Number) = Operator(A.data*b,A.dims)
 *(b::Number,A::Operator) = Operator(A.data*b,A.dims)
 /(A::Operator,b::Number) = Operator(A.data/b,A.dims)
-/(b::Number,A::Operator) = throw(ArgumentError("cannot divide a number by an Operator"))
+/(b::Number,A::Operator) = throw(ArgumentError("cannot divide number by Operator"))
 ^(A::Operator,b::Number) = Operator(A.data^b,A.dims)
 ^(A::Operator,b::Integer) = Operator(A.data^b,A.dims) # This method is needed for some reason
 
 # QuObject/QuObject Algebra
-+(x,y::Ket) = (dimsmatch(x,y);Ket(x.data+y.data,x.dims))
++(x::Ket,y::Ket) = (dimsmatch(x,y);Ket(x.data+y.data,x.dims))
 -(x::Ket,y::Ket) = (dimsmatch(x,y);Ket(x.data-y.data,x.dims))
 +(x::Bra,y::Bra) = (dimsmatch(x,y);Bra(x.data+y.data,x.dims))
 -(x::Bra,y::Bra) = (dimsmatch(x,y);Bra(x.data-y.data,x.dims))
 +(A::Operator,B::Operator) = (dimsmatch(A,B);Operator(A.data+B.data,A.dims))
 -(A::Operator,B::Operator) = (dimsmatch(A,B);Operator(A.data-B.data,A.dims))
-kron(x::Ket,y::Ket) = Ket(kron(x.data,y.data),(x.dims...,y.dims...))
-kron(x::Bra,y::Bra) = Bra(kron(x.data,y.data),(x.dims...,y.dims...))
-kron(A::Operator,B::Operator) = Operator(kron(A.data,B.data),(A.dims...,B.dims...))
++{T1<:QuObject,T2<:QuObject}(x::T1,y::T2) = throw(ArgumentError("cannot add $(tname(T1)) to $(tname(T2))"))
+-{T1<:QuObject,T2<:QuObject}(x::T1,y::T2) = throw(ArgumentError("cannot subtract $(tname(T2)) from $(tname(T1))"))
 
 # Operator/Operator
-for f in (:*, :A_mul_Bc, :Ac_mul_B, :Ac_mul_Bc)
-    @eval ($f)(ρ::Operator,σ::Operator) = (dimsmatch(ρ,σ);Operator(($f)(ρ.data,σ.data),ρ.dims))
-end
+*(ρ::Operator,σ::Operator) = (dimsmatch(ρ,σ);Operator(*(ρ.data,σ.data),ρ.dims))
+A_mul_Bc(ρ::Operator,σ::Operator) = (dimsmatch(ρ,σ);Operator(A_mul_Bc(ρ.data,σ.data),ρ.dims))
+Ac_mul_B(ρ::Operator,σ::Operator) = (dimsmatch(ρ,σ);Operator(Ac_mul_B(ρ.data,σ.data),ρ.dims))
+Ac_mul_Bc(ρ::Operator,σ::Operator) = (dimsmatch(ρ,σ);Operator(Ac_mul_Bc(ρ.data,σ.data),ρ.dims))
 
 # Operator/Ket
 *(σ::Operator,ψ::Ket) = (dimsmatch(σ,ψ);Ket(*(σ.data,ψ.data),σ.dims))
@@ -66,9 +66,19 @@ A_mul_Bc(ψ::Bra,σ::Operator) = (dimsmatch(σ,ψ);Bra(*(conj.(σ.data),ψ.data)
 # Ket/Ket and Bra
 *(ψ::Bra,ϕ::Ket) = (dimsmatch(ψ,ϕ);dotu(ψ.data,ϕ.data))
 dot(ψ::Ket,ϕ::Ket) = (dimsmatch(ψ,ϕ);dot(ψ.data,ϕ.data))
-Ac_mul_B(ψ::Ket,ϕ::Ket) = (dimsmatch(ψ,ϕ);dot(ψ.data,ϕ.data))
+Ac_mul_B(ψ::Ket,ϕ::Ket) = dot(ψ,ϕ)
 A_mul_Bc(ψ::Ket,ϕ::Ket) = (dimsmatch(ψ,ϕ);Operator(A_mul_Bc(ψ.data,ϕ.data),ψ.dims))
 *(ψ::Ket,ϕ::Bra) = (dimsmatch(ψ,ϕ);Operator(A_mul_Bt(ψ.data,ϕ.data),ψ.dims))
+
+# Rest is disallowed
+*{T1<:QuObject,T2<:QuObject}(x::T1,y::T2) = throw(ArgumentError("cannot multiply $(tname(T1)) with $(tname(T2))"))
+/{T1<:QuObject,T2<:QuObject}(x::T1,y::T2) = throw(ArgumentError("cannot divide $(tname(T1)) with $(tname(T2))"))
+
+# Tensor Product
+kron(x::Ket,y::Ket) = Ket(kron(x.data,y.data),(x.dims...,y.dims...))
+kron(x::Bra,y::Bra) = Bra(kron(x.data,y.data),(x.dims...,y.dims...))
+kron(A::Operator,B::Operator) = Operator(kron(A.data,B.data),(A.dims...,B.dims...))
+kron{T1<:QuObject,T2<:QuObject}(x::T1,y::T2) = throw(ArgumentError("cannot tensor $(tname(T1)) with $(tname(T2))"))
 
 # Transposition and conjugation
 ctranspose(ψ::Ket) = Bra(ψ)
