@@ -89,7 +89,6 @@ end
     @test data(ρ-σ) == data(ρ)-data(σ)
     @test_throws ArgumentError g+σ
     @test_throws ArgumentError g-σ
-    @test_throws ArgumentError g*e1
     @test ρ*ρ == ρ^2
     @test σ*σ == σ^2
     @test σ*a4 ≈ numberop(4)
@@ -102,7 +101,9 @@ end
     @test g'*adag2' == Bra(g)*adag2' == e1'
     @test g'*g == Bra(e1)*e1 == 1
     @test dot(plus,plus) ≈ 1
-    @test plus*plus' ≈ normalize!(σ0 + σy)
+    @test plus*plus' == plus*Bra(plus) ≈ normalize!(σ0 + σy)
+    @test_throws ArgumentError g*e1
+    @test_throws ArgumentError g/e1
 end
 
 end
