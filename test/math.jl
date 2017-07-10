@@ -113,6 +113,28 @@ end
     @test e1 ⊗ e1 == Ket(Bra(e1) ⊗ Bra(e1)) == Ket([0,0,0,1],(2,2))
     @test data(Operator(g) ⊗ σ) == [data(σ) zeros(4,4); zeros(4,8)]
     @test data(ρ ⊗ Operator(g)) == (A=Diagonal(fill(0.25,8));A.diag[2:2:8]=0;A)
+    @test_throws ArgumentError e1 ⊗ ρ
+    @test_throws ArgumentError Bra(e1) ⊗ σ
+end
+
+@testset "Complex (or not) transposition" begin
+    @test g' == Bra([1,0])
+    @test (g+1im*e1)' == Bra([1,-1im])
+    @test conj((g+1im*e1)) == Ket([1,-1im])
+    @test ρ' == transpose(ρ) == ρ
+    @test σ' == transpose(σ)
+end
+
+@testset "Math Functions" begin
+    for f in [sqrtm,logm,expm], A in [Operator(coherent(4,1.2+3im)),ρ,create(4)+destroy(4)]
+        @test data(f(A)) == f(full(A))
+    end
+end
+
+@testset "Misc Functions" begin
+    for f in [real,imag,abs,abs2], A in [g,e1,plus,σ,ρ,Operator(coherent(4,1.2+3im))]
+        @test data(f(A)) == f.(data(A))
+    end
 end
 
 end

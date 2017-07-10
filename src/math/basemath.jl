@@ -2,7 +2,7 @@
 import Base: +, -, *, /, ^,
     A_mul_Bc, Ac_mul_B, Ac_mul_Bc, A_mul_Bt, kron, dot,
     ctranspose, transpose, conj, BLAS.dotu,
-    sqrt, exp, log, real, imag, abs, abs2
+    sqrtm, expm, logm, real, imag, abs, abs2
 
 # Additive identity and inverse
 +{T<:QuObject}(A::T) = A
@@ -91,12 +91,12 @@ ctranspose(ψ::Ket) = Bra(ψ)
 ctranspose(ψ::Bra) = Ket(ψ)
 ctranspose(ρ::Operator) = Operator(ctranspose(ρ.data),ρ.dims)
 transpose(ρ::Operator) = Operator(transpose(ρ.data),ρ.dims)
-conj(ρ::Operator) = Operator(conj.(ρ.data),ρ.dims)
+conj{T<:QuObject}(A::T) = T(conj.(A.data),A.dims)
 
 # Math
-sqrt(ρ::Operator) = Operator(sqrtm(ρ.data),ρ.dims)
-exp(ρ::Operator) = Operator(expm(ρ.data),ρ.dims)
-log(ρ::Operator) = Operator(logm(ρ.data),ρ.dims)
+sqrtm(ρ::Operator) = Operator(sqrtm(full(ρ)),ρ.dims)
+expm(ρ::Operator) = Operator(expm(full(ρ)),ρ.dims)
+logm(ρ::Operator) = Operator(logm(full(ρ)),ρ.dims)
 # TODO: julia is missing trig functions on matrices, we can do them via diagonalization
 
 # Misc
