@@ -34,8 +34,8 @@ immutable Ket{T<:SVector,D} <: QuVector
         return new{T,D}(x,dims)
     end
 end
-Ket{T<:SVector,D}(x::T, dims::SDims{D}=(length(x),)) = Ket{T,D}(x,dims)
-Ket(x::AbstractVector, dims::SDims=(length(x),)) = Ket(float(x),dims)
+Ket{T<:SVector,D}(x::T,dims::SDims{D}=(length(x),)) = Ket{T,D}(x,dims)
+Ket(x::AbstractVector,dims::SDims=(length(x),)) = Ket(float.(x),dims)
 
 """
     Bra(x, dims=(length(x),))
@@ -54,8 +54,8 @@ immutable Bra{T<:SVector,D} <: QuVector
         return new{T,D}(x, dims)
     end
 end
-Bra{T<:SVector,D}(x::T, dims::SDims{D}=(length(x),)) = Bra{T,D}(x,dims)
-Bra(x::AbstractVector, dims::SDims=(length(x),)) = Bra(float(x),dims)
+Bra{T<:SVector,D}(x::T,dims::SDims{D}=(length(x),)) = Bra{T,D}(x,dims)
+Bra(x::AbstractVector,dims::SDims=(length(x),)) = Bra(float.(x),dims)
 
 """
     Operator(B, dims=(size(B,1),))
@@ -82,8 +82,8 @@ immutable Operator{T<:SMatrix,D} <: QuMatrix
         return new{T,D}(B, dims, herm)
     end
 end
-Operator{T<:SMatrix,D}(B::T, dims::SDims{D}=(size(B,1),), herm=isapproxhermitian(B)) = Operator{T,D}(B,dims,herm)
-Operator(B::AbstractMatrix, dims::SDims=(size(B,1),), herm=isapproxhermitian(B)) = Operator(float(B),dims,herm)
+Operator{T<:SMatrix,D}(B::T,dims::SDims{D}=(size(B,1),),herm=isapproxhermitian(B)) = Operator{T,D}(B,dims,herm)
+Operator(B::AbstractMatrix,dims::SDims=(size(B,1),),herm=isapproxhermitian(B)) = Operator(float.(B),dims,herm)
 
 # Conversion between different QuObjects
 Bra(x::Ket) = Bra(conj(x.data),x.dims)

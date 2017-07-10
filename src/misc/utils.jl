@@ -2,6 +2,8 @@ import Base: reverse
 
 reverse(n::Number) = n
 
+tname(T::Type) = T.name.name
+
 gaussian(x::Real,σ::Real) = exp(-0.5*(x/σ)^2)
 gaussianprime(x::Real,σ::Real) = -exp(-0.5*(x/σ)^2)*x/σ^2
 

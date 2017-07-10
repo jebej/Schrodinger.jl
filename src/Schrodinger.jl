@@ -31,8 +31,12 @@ include(joinpath("library","states.jl"))
 include(joinpath("library","drivefuns.jl"))
 include(joinpath("library","constants.jl"))
 
-#const CACHE = Dict{UInt64,Matrix{Complex128}}()
+# A few VERSION-conditional definitions
+@static if VERSION < v"0.6.0"
+    include(joinpath("basepatch","v0.5.jl"))
+end
+@static if VERSION >= v"0.6.0"
+    include(joinpath("basepatch","v0.6.jl"))
+end
 
-# 0.5
-#scale!(A::Union{Diagonal,Symmetric,Hermitian},b::Number) = (scale!(A.data,b);A)
 end

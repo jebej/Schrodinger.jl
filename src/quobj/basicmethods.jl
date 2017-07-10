@@ -1,5 +1,6 @@
 import Base: complex, length, size, LinAlg.checksquare, getindex, setindex!,
-     diag, full, norm, trace, normalize!, scale!, ishermitian, issymmetric, isdiag,
+     diag, full, norm, trace, normalize!, normalize, scale!,
+     ishermitian, issymmetric, isdiag,
      similar, copy, hash, isequal, ==, isapprox, show
 
 # Special QuObject methods
@@ -7,22 +8,18 @@ data(A::QuObject) = A.data
 dims(A::QuObject) = A.dims
 isnormalized(A::QuVector) = norm(A) ≈ 1.0
 isnormalized(A::QuMatrix) = trace(A) ≈ 1.0
-function dimsmatch(A::QuObject,B::QuObject)
-    A.dims==B.dims || throw(DimensionMismatch("subspace dimensions do not match"))
-    return nothing
-end
 dense(x::Ket) = Ket(full(x.data),x.dims)
 dense(x::Bra) = Bra(full(x.data),x.dims)
 dense(A::Operator) = Operator(full(A.data),A.dims)
-
+dimsmatch(A::QuObject,B::QuObject) = A.dims==B.dims||throw(DimensionMismatch("subspace dimensions do not match"))
 
 # Translate basic Base array methods to QuObjects
 length(A::QuObject) = length(A.data)
-size(A::QuObject, d) = size(A.data, d)
+size(A::QuObject,d) = size(A.data,d)
 size(A::QuObject) = size(A.data)
 checksquare(A::QuMatrix) = checksquare(A.data)
-getindex(A::QuObject, idx...) = getindex(A.data,idx...)
-setindex!(A::QuObject, v, idx...) = setindex!(A.data,v,idx...)
+getindex(A::QuObject,idx...) = getindex(A.data,idx...)
+setindex!(A::QuObject,v,idx...) = setindex!(A.data,v,idx...)
 diag(A::QuMatrix,k::Int=0) = diag(A.data,k)
 full(A::QuObject) = full(A.data)
 complex(x::Ket) = Ket(complex(x.data),x.dims)
@@ -32,7 +29,9 @@ norm(x::QuVector,n::Int=2) = norm(x.data,n)
 trace(A::QuMatrix) = trace(A.data)
 normalize!(x::QuVector) = (normalize!(x.data,2);x)
 normalize!(A::QuMatrix) = (scale!(A.data,1/trace(A.data));A)
+normalize(x::QuObject) = normalize!(copy(x))
 scale!(A::QuObject,b::Number) = (scale!(A.data,b);A)
+scale(A::QuObject,b::Number) = scale!(copy(A))
 ishermitian(A::Operator) = A.herm
 issymmetric(A::QuMatrix) = issymmetric(A.data)
 isdiag(A::QuMatrix) = isdiag(A.data)
@@ -51,20 +50,20 @@ isapprox(A::Operator,B::Operator) = isequal(A.dims,B.dims)&&isapprox(A.data,B.da
 function show{T<:QuMatrix}(io::IO, A::T)
     n = size(A,1)
     dim = join(A.dims,'⊗')
-    print(io, "$n×$n $T with space dimensions $dim")
+    print(io,"$n×$n $T with space dimensions $dim")
 end
 function show{T<:QuMatrix}(io::IO, ::MIME"text/plain", A::T)
     n = size(A,1)
     dim = join(A.dims,'⊗')
-    println(io, "$n×$n $T with space dimensions $dim:")
-    Base.showarray(io, A.data, false, header=false)
+    println(io,"$n×$n $T with space dimensions $dim:")
+    Base.showarray(io,A.data, false, header=false)
 end
-show(io::IO, ψ::QuVector) = print(io, braket(ψ))
+show(io::IO, ψ::QuVector) = print(io,braket(ψ))
 function show(io::IO, ::MIME"text/plain", ψ::QuVector)
     n = size(ψ,1)
     dim = join(ψ.dims,'⊗')
-    println(io, "$n-d $(typeof(ψ)) with space dimensions $dim:")
-    println(io, braket(ψ))
+    println(io,"$n-d $(typeof(ψ)) with space dimensions $dim:")
+    println(io,braket(ψ))
 end
 
 # Bra-ket printing
@@ -84,7 +83,7 @@ end
 prettybraket(::Ket,coeffs,labels) = join(string.(coeffs,["|"],labels,["⟩"])," + ")
 prettybraket(::Bra,coeffs,labels) = join(string.(coeffs,["⟨"],labels,["|"])," + ")
 
-function braketlabels{N}(n::Integer,bases::SDims{N})
+function braketlabels{N}(n::Integer, bases::SDims{N})
     l = zeros(Int,N)
     for i in 1:N
         l[i] = rem(n, bases[N-i+1])
