@@ -23,17 +23,21 @@ include(joinpath("dynamics","propagator.jl"))
 include(joinpath("dynamics","constructors.jl"))
 include(joinpath("dynamics","interface.jl"))
 include(joinpath("misc","utils.jl"))
-include(joinpath("misc","rowvec.jl"))
 include(joinpath("misc","kron.jl"))
-include(joinpath("misc","sparsevec.jl"))
 include(joinpath("misc","approxherm.jl"))
 include(joinpath("library","operators.jl"))
 include(joinpath("library","states.jl"))
 include(joinpath("library","drivefuns.jl"))
 include(joinpath("library","constants.jl"))
 
-#const CACHE = Dict{UInt64,Matrix{Complex128}}()
 
-# 0.5
-#scale!(A::Union{Diagonal,Symmetric,Hermitian},b::Number) = (scale!(A.data,b);A)
+# A few VERSION-conditional definitions
+if VERSION >= v"0.6.0"
+    Base.vec(x::RowVector) = x.vec
+end
+
+if VERSION < v"0.6.0"
+    scale!(A::LinAlg.HermOrSym,b::Number) = (scale!(A.data,b);A)
+end
+
 end
