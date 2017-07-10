@@ -97,11 +97,12 @@ end
     @test σ*σ' ≈ numberop(4)
     @test a4'*σ' ≈ numberop(4)
     @test adag2*g == adag2*Bra(g)'== e1
-    @test adag2'*e1 == adag2'*Bra(g)' == g
+    @test adag2'*e1 == adag2'*Bra(e1)' == g
     @test g'*a2 == Bra(g)*a2 == e1'
     @test g'*adag2' == Bra(g)*adag2' == e1'
-    @test g'*g == (e1')*e1 == 1
+    @test g'*g == Bra(e1)*e1 == 1
     @test dot(plus,plus) ≈ 1
+    @test plus*plus' ≈ normalize!(σ0 + σy)
 end
 
 end

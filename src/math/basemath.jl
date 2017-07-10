@@ -69,6 +69,7 @@ A_mul_Bc(σ::Operator,ψ::Bra) = (dimsmatch(σ,ψ);Ket(*(σ.data,conj.(ψ.data))
 Ac_mul_Bc(σ::Operator,ψ::Bra) = (dimsmatch(σ,ψ);Ket(Ac_mul_B(σ.data,conj.(ψ.data)),ψ.dims))
 
 # Ket/Ket and Bra
+dotu{T<:Real}(x::AbstractVector{T},y::AbstractVector{T}) = dot(x,y)
 *(ψ::Bra,ϕ::Ket) = (dimsmatch(ψ,ϕ);dotu(ψ.data,ϕ.data))
 dot(ψ::Ket,ϕ::Ket) = (dimsmatch(ψ,ϕ);dot(ψ.data,ϕ.data))
 Ac_mul_B(ψ::Ket,ϕ::Ket) = dot(ψ,ϕ)
