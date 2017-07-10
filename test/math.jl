@@ -62,6 +62,7 @@ plus = normalize!(g+1.0im*basis(2,1))
     @test_throws ArgumentError 3/ρ
     @test_throws ArgumentError 3/σ
     @test_throws ArgumentError plus^3
+    @test_throws ArgumentError plus^3.3
     @test ρ^3 == 0.015625*qeye(4)
     @test σx^2 == σy^2 == σz^2 == σ0
     @test_throws MethodError data(ρ^2.5) == data(ρ)^2.5
@@ -95,10 +96,10 @@ end
     @test a4'*a4 ≈ numberop(4)
     @test σ*σ' ≈ numberop(4)
     @test a4'*σ' ≈ numberop(4)
-    @test adag2*g == e1
-    @test adag2'*e1 == g
+    @test adag2*g == adag2*Bra(g)'== e1
+    @test adag2'*e1 == adag2'*Bra(g)' == g
     @test g'*a2 == Bra(g)*a2 == e1'
-    @test g'*adag2' == e1'
+    @test g'*adag2' == Bra(g)*adag2' == e1'
     @test g'*g == (e1')*e1 == 1
     @test dot(plus,plus) ≈ 1
 end

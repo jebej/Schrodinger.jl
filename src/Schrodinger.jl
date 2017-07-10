@@ -30,14 +30,12 @@ include(joinpath("library","states.jl"))
 include(joinpath("library","drivefuns.jl"))
 include(joinpath("library","constants.jl"))
 
-
 # A few VERSION-conditional definitions
-if VERSION >= v"0.6.0"
-    Base.vec(x::RowVector) = x.vec
-end
-
 if VERSION < v"0.6.0"
-    scale!(A::LinAlg.HermOrSym,b::Number) = (scale!(A.data,b);A)
+    include(joinpath("basepatch","v0.5.jl"))
+end
+if VERSION >= v"0.6.0"
+    include(joinpath("basepatch","v0.6.jl"))
 end
 
 end
