@@ -24,6 +24,7 @@ include(joinpath("dynamics","constructors.jl"))
 include(joinpath("dynamics","interface.jl"))
 include(joinpath("misc","utils.jl"))
 include(joinpath("misc","kron.jl"))
+include(joinpath("misc","sparsevec.jl"))
 include(joinpath("misc","approxherm.jl"))
 include(joinpath("library","operators.jl"))
 include(joinpath("library","states.jl"))
@@ -31,10 +32,10 @@ include(joinpath("library","drivefuns.jl"))
 include(joinpath("library","constants.jl"))
 
 # A few VERSION-conditional definitions
-if VERSION < v"0.6.0"
+@static if VERSION < v"0.6.0"
     include(joinpath("basepatch","v0.5.jl"))
 end
-if VERSION >= v"0.6.0"
+@static if VERSION >= v"0.6.0"
     include(joinpath("basepatch","v0.6.jl"))
 end
 
