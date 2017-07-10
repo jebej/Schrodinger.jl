@@ -1,5 +1,5 @@
 import Base: complex, length, size, LinAlg.checksquare, getindex, setindex!,
-     diag, full, norm, trace, normalize!, normalize, scale!, scale,
+     diag, full, norm, trace, normalize!, normalize, scale!,
      ishermitian, issymmetric, isdiag,
      similar, copy, hash, isequal, ==, isapprox, show
 

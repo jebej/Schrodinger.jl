@@ -16,7 +16,6 @@ import Base: +, -, *, /, ^,
 *(x::Ket,b::Number) = Ket(x.data*b,x.dims)
 *(b::Number,x::Ket) = Ket(x.data*b,x.dims)
 /(x::Ket,b::Number) = Ket(x.data/b,x.dims)
-/(b::Number,x::Ket) = throw(ArgumentError("cannot divide number by Ket"))
 +(x::Bra,b::Number) = Bra(x.data+b,x.dims)
 +(b::Number,x::Bra) = Bra(x.data+b,x.dims)
 -(x::Bra,b::Number) = Bra(x.data-b,x.dims)
@@ -24,7 +23,8 @@ import Base: +, -, *, /, ^,
 *(x::Bra,b::Number) = Bra(x.data*b,x.dims)
 *(b::Number,x::Bra) = Bra(x.data*b,x.dims)
 /(x::Bra,b::Number) = Bra(x.data/b,x.dims)
-/(b::Number,x::Bra) = throw(ArgumentError("cannot divide number by Bra"))
+^{T<:QuVector}(x::T,b::Number) = throw(ArgumentError("cannot exponentiate $(tname(T))"))
+^{T<:QuVector}(x::T,b::Integer) = throw(ArgumentError("cannot exponentiate $(tname(T))"))
 
 # Operator/Number algebra
 +(A::Operator,b::Number) = Operator(A.data+b*I,A.dims)
@@ -34,9 +34,10 @@ import Base: +, -, *, /, ^,
 *(A::Operator,b::Number) = Operator(A.data*b,A.dims)
 *(b::Number,A::Operator) = Operator(A.data*b,A.dims)
 /(A::Operator,b::Number) = Operator(A.data/b,A.dims)
-/(b::Number,A::Operator) = throw(ArgumentError("cannot divide number by Operator"))
 ^(A::Operator,b::Number) = Operator(A.data^b,A.dims)
 ^(A::Operator,b::Integer) = Operator(A.data^b,A.dims) # This method is needed for some reason
+
+/{T<:QuObject}(b::Number,x::T) = throw(ArgumentError("cannot divide number by $(tname(T))"))
 
 # QuObject/QuObject Algebra
 +(x::Ket,y::Ket) = (dimsmatch(x,y);Ket(x.data+y.data,x.dims))
@@ -55,13 +56,17 @@ Ac_mul_B(ρ::Operator,σ::Operator) = (dimsmatch(ρ,σ);Operator(Ac_mul_B(ρ.dat
 Ac_mul_Bc(ρ::Operator,σ::Operator) = (dimsmatch(ρ,σ);Operator(Ac_mul_Bc(ρ.data,σ.data),ρ.dims))
 
 # Operator/Ket
-*(σ::Operator,ψ::Ket) = (dimsmatch(σ,ψ);Ket(*(σ.data,ψ.data),σ.dims))
-Ac_mul_B(σ::Operator,ψ::Ket) = (dimsmatch(σ,ψ);Ket(Ac_mul_B(σ.data,ψ.data),σ.dims))
+*(σ::Operator,ψ::Ket) = (dimsmatch(σ,ψ);Ket(*(σ.data,ψ.data),ψ.dims))
+Ac_mul_B(σ::Operator,ψ::Ket) = (dimsmatch(σ,ψ);Ket(Ac_mul_B(σ.data,ψ.data),ψ.dims))
+Ac_mul_B(ψ::Ket,σ::Operator) = (dimsmatch(σ,ψ);Bra(vec(Ac_mul_B(ψ.data,σ.data)),ψ.dims))
+Ac_mul_Bc(ψ::Ket,σ::Operator) = (dimsmatch(σ,ψ);Bra(vec(Ac_mul_Bc(ψ.data,σ.data)),ψ.dims))
 
 # Bra/Operator
 # remember that bras are actually stored as regular vectors (not row vectors)
-*(ψ::Bra,σ::Operator) = (dimsmatch(σ,ψ);Bra(At_mul_B(σ.data,ψ.data),σ.dims))
-A_mul_Bc(ψ::Bra,σ::Operator) = (dimsmatch(σ,ψ);Bra(*(conj.(σ.data),ψ.data),σ.dims))
+*(ψ::Bra,σ::Operator) = (dimsmatch(σ,ψ);Bra(At_mul_B(σ.data,ψ.data),ψ.dims))
+A_mul_Bc(ψ::Bra,σ::Operator) = (dimsmatch(σ,ψ);Bra(*(conj.(σ.data),ψ.data),ψ.dims))
+A_mul_Bc(σ::Operator,ψ::Bra) = (dimsmatch(σ,ψ);Ket(*(σ.data,conj.(ψ.data)),ψ.dims))
+Ac_mul_Bc(σ::Operator,ψ::Bra) = (dimsmatch(σ,ψ);Ket(Ac_mul_B(σ.data,conj.(ψ.data)),ψ.dims))
 
 # Ket/Ket and Bra
 *(ψ::Bra,ϕ::Ket) = (dimsmatch(ψ,ϕ);dotu(ψ.data,ϕ.data))

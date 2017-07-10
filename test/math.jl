@@ -7,6 +7,9 @@ g = basis(2,0)
 e1 = dense(basis(2,1))
 ρ = maxmixed(4)
 σ = dense(create(4))
+a4 = destroy(4)
+a2 = destroy(2)
+adag2 = create(2)
 plus = normalize!(g+1.0im*basis(2,1))
 
 @testset "QuObj/Number Algebra" begin
@@ -58,6 +61,7 @@ plus = normalize!(g+1.0im*basis(2,1))
     @test (x=σ/0;isnan(x[1,1])&&isinf(x[2,1]))
     @test_throws ArgumentError 3/ρ
     @test_throws ArgumentError 3/σ
+    @test_throws ArgumentError plus^3
     @test ρ^3 == 0.015625*qeye(4)
     @test σx^2 == σy^2 == σz^2 == σ0
     @test_throws MethodError data(ρ^2.5) == data(ρ)^2.5
@@ -87,14 +91,14 @@ end
     @test_throws ArgumentError g*e1
     @test ρ*ρ == ρ^2
     @test σ*σ == σ^2
-    @test σ*destroy(4) ≈ numberop(4)
-    @test destroy(4)'*destroy(4) ≈ numberop(4)
-    @test create(4)*σ' ≈ numberop(4)
-    @test destroy(4)'*σ' ≈ numberop(4)
-    @test σx*g == e1
-    @test create(2)'*e1 == g
-    @test (g')*destroy(2) == e1'
-    @test (g')*create(2)' == e1'
+    @test σ*a4 ≈ numberop(4)
+    @test a4'*a4 ≈ numberop(4)
+    @test σ*σ' ≈ numberop(4)
+    @test a4'*σ' ≈ numberop(4)
+    @test adag2*g == e1
+    @test adag2'*e1 == g
+    @test g'*a2 == Bra(g)*a2 == e1'
+    @test g'*adag2' == e1'
     @test g'*g == (e1')*e1 == 1
     @test dot(plus,plus) ≈ 1
 end
