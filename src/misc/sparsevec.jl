@@ -1,7 +1,6 @@
 using Base.SparseArrays: nonzeroinds, _spdot
 
 function A_mul_Bf{Tv,Ti}(x::SparseVector{Tv,Ti},y::SparseVector{Tv,Ti},f::Function)
-    println("meh")
     nnzx = nnz(x)
     nnzy = nnz(y)
     nnzz = nnzx*nnzy # number of nonzeros in new matrix

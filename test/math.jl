@@ -106,4 +106,13 @@ end
     @test_throws ArgumentError g/e1
 end
 
+@testset "Tensor Product" begin
+    @test g ⊗ g   == Ket(Bra(g)  ⊗ Bra(g)) == Ket(sparse([1,0,0,0]),(2,2))
+    @test g ⊗ e1  == Ket(Bra(g)  ⊗ Bra(e1)) == Ket(sparse([0,1,0,0]),(2,2))
+    @test e1 ⊗ g  == Ket(Bra(e1) ⊗ Bra(g)) == Ket(sparse([0,0,1,0]),(2,2))
+    @test e1 ⊗ e1 == Ket(Bra(e1) ⊗ Bra(e1)) == Ket([0,0,0,1],(2,2))
+    @test data(Operator(g) ⊗ σ) == [data(σ) zeros(4,4); zeros(4,8)]
+    @test data(ρ ⊗ Operator(g)) == (A=Diagonal(fill(0.25,8));A.diag[2:2:8]=0;A)
+end
+
 end
