@@ -121,6 +121,9 @@ end
     @test g' == Bra([1,0])
     @test (g+1im*e1)' == Bra([1,-1im])
     @test conj((g+1im*e1)) == Ket([1,-1im])
+    @test Bra(g)' == Ket([1,0])
+    @test Bra([1,1im])' == Ket([1,-1im])
+    @test conj(Bra([1,1im])) == Bra([1,-1im])
     @test ρ' == transpose(ρ) == ρ
     @test σ' == transpose(σ)
 end
@@ -132,7 +135,7 @@ end
 end
 
 @testset "Misc Functions" begin
-    for f in [real,imag,abs,abs2], A in [g,e1,plus,σ,ρ,Operator(coherent(4,1.2+3im))]
+    for f in [real,imag,abs,abs2], A in [g,e1,plus,Bra(plus),σ,ρ,Operator(coherent(4,1.2+3im))]
         @test data(f(A)) == f.(data(A))
     end
 end
