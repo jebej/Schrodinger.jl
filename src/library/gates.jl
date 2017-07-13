@@ -18,3 +18,12 @@ function rotation(θ::Real,n::NTuple{3,Int}=(1,0,0))
     R[2,2] = Complex(c,nz*s)
     return Operator(R,(2,))
 end
+
+const H = Operator(Float64[1/√2 1/√2; 1/√2 -1/√2],(2,),true)
+const S = Operator(sparse(Complex128[1 0; 0 1im]),(2,),false)
+const T = Operator(sparse(Complex128[1 0; 0 Complex(1/√2,1/√2)]),(2,),false)
+
+const cNOT = Operator(sparse(Float64[1 0 0 0;0 1 0 0;0 0 0 1;0 0 1 0]),(2,2),true)
+const rcNOT = Operator(sparse(Float64[0 1 0 0;1 0 0 0;0 0 1 0;0 0 0 1]),(2,2),true)
+const cZ = Operator(sparse(Float64[1 0 0 0;0 1 0 0;0 0 1 0;0 0 0 -1]),(2,2),true)
+end
