@@ -27,6 +27,18 @@ function sqrtfact(n::Integer)
     end
 end
 
+function unwrap!(p)
+    n,m = size(p,1),size(p,2)
+    n < 2 && return p
+    for j = 1:m, i = 2:n
+        d = p[i,j] - p[i-1,j]
+        if abs(d) > π
+            p[i,j] -= floor((d+π)/2π) * 2π
+        end
+    end
+    return p
+end
+
 expim(A::AbstractMatrix) = expim!(copy(A))
 
 function expim!(A::AbstractMatrix)
