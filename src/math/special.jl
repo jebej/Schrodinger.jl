@@ -41,8 +41,8 @@ end
 
 
 levelprobs{T}(ψ::Ket{T,1}) = abs2.(data(ψ))
-levelprobs{T,N}(ψ::Ket{T,N},s::Int) = diag(ptrace(ψ,ntuple_sans_m(s,Val{N})))
-levelprobs{T,N}(ψ::Ket{T,N},out::Vector{Int}) = diag(ptrace(ψ,out))
+levelprobs{T,N}(ψ::Ket{T,N},s::Int) = real(diag(ptrace(ψ,ntuple_sans_m(s,Val{N}))))
+#levelprobs{T,N}(ψ::Ket{T,N},out::Vector{Int}) = diag(ptrace(ψ,out))
 
 function levelprobs{T,M}(states::Vector{Ket{T,M}},S=1:M)
     N = length(states)
