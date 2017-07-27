@@ -86,9 +86,11 @@ function unwrap!(p)
     return p
 end
 
-expim(A::AbstractMatrix) = expim!(copy(A))
+expim(A::AbstractMatrix) = expim!(Matrix{Complex128}(size(A)),copy(A))
 
-function expim!(A::AbstractMatrix)
+expim!(A::AbstractMatrix) = expim!(Matrix{Complex128}(size(A)),A)
+
+function expim!(expimA::Matrix{Complex128},A::AbstractMatrix)
     # First decompose A into U*Λ*Uᴴ
     F = eigfact!(A)
     Λ, U = F.values, complex(F.vectors)
@@ -103,7 +105,8 @@ function expim!(A::AbstractMatrix)
         end
     end
     # Finally multiply B by Uᴴ to obtain U*exp(iΛ)*Uᴴ = exp(i*A)
-    return B*U'
+    A_mul_Bc!(expimA,B,U)
+    return expimA
 end
 
 # index in a tensored system (warning, this function uses indices that start at 0)
