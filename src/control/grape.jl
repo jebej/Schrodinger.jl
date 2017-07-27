@@ -35,12 +35,12 @@ function hsinner!(U1::AbstractArray,U2::AbstractArray,C::AbstractArray)
     return trace(C)
 end
 
-function fidelity!(u,Ut,Hd,Hc,δt,A,U,X,u_last)
+function fidelity!(Ut,Hd,Hc,u,δt,A,U,X,u_last)
     calc_fprops!(U,X,Hd,Hc,u,δt,A,u_last)
     return 1-abs2(hsinner!(Ut,X[end],A))/size(Ut,1)^2
 end
 
-function fidelityprime!(fp,u,Ut,Hd,Hc,δt,A,U,X,P,u_last)
+function fidelityprime!(fp,Ut,Hd,Hc,u,δt,A,U,X,P,u_last)
     calc_fprops!(U,X,Hd,Hc,u,δt,A,u_last)
     calc_bprops!(P,U,Ut)
     # Calculate derivative approximation
@@ -65,8 +65,8 @@ function gen_opt_fun(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},t::Real,n:
     Hd_d = full(Hd)
     Hc_d = [full(H) for H in Hc]
     # Create optimization function
-    f = (u) -> fidelity!(u,Ut_d,Hd_d,Hc_d,t/n,A,U,X,u_last)
-    g! = (fp,u) -> fidelityprime!(fp,u,Ut_d,Hd_d,Hc_d,t/n,A,U,X,P,u_last)
+    f = (u) -> fidelity!(Ut_d,Hd_d,Hc_d,u,t/n,A,U,X,u_last)
+    g! = (fp,u) -> fidelityprime!(fp,Ut_d,Hd_d,Hc_d,u,t/n,A,U,X,P,u_last)
     return OnceDifferentiable(f,g!,similar(u_last)),X
 end
 
