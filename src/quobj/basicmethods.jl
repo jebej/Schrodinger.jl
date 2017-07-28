@@ -1,7 +1,7 @@
-import Base: complex, length, size, LinAlg.checksquare, getindex, setindex!,
-     diag, full, norm, trace, normalize!, normalize, scale!,
+import Base: length, size, LinAlg.checksquare, eltype, getindex, setindex!,
+     diag, full, complex, norm, trace, normalize!, normalize, scale!,
      ishermitian, issymmetric, isdiag,
-     similar, copy, hash, isequal, ==, isapprox, show
+     similar, copy, hash, isequal, ==, convert, promote_rule, isapprox, show
 
 # Special QuObject methods
 data(A::QuObject) = A.data
@@ -18,6 +18,7 @@ length(A::QuObject) = length(A.data)
 size(A::QuObject,d) = size(A.data,d)
 size(A::QuObject) = size(A.data)
 checksquare(A::QuMatrix) = checksquare(A.data)
+eltype(A::QuObject) = eltype(A.data)
 getindex(A::QuObject,idx...) = getindex(A.data,idx...)
 setindex!(A::QuObject,v,idx...) = setindex!(A.data,v,idx...)
 diag(A::QuMatrix,k::Int=0) = diag(A.data,k)
@@ -45,6 +46,14 @@ isequal{T<:QuObject}(A::T,B::T) = isequal(A.dims,B.dims)&&isequal(A.data,B.data)
 isapprox(A::Ket,B::Ket) =  isequal(A.dims,B.dims)&&isapprox(A.data,B.data)
 isapprox(A::Bra,B::Bra) =  isequal(A.dims,B.dims)&&isapprox(A.data,B.data)
 isapprox(A::Operator,B::Operator) = isequal(A.dims,B.dims)&&isapprox(A.data,B.data)
+
+# Conversion and promotion rules
+convert{T,D}(::Type{Ket{T,D}},x::Ket) = Ket(convert(T,x.data),x.dims)
+convert{T,D}(::Type{Bra{T,D}},x::Bra) = Bra(convert(T,x.data),x.dims)
+convert{T,D}(::Type{Operator{T,D}},A::Operator) = Operator(convert(T,A.data),A.dims,A.herm)
+promote_rule{T,S,D}(::Type{Ket{T,D}},::Type{Ket{S,D}}) = Ket{promote_type(T,S),D}
+promote_rule{T,S,D}(::Type{Bra{T,D}},::Type{Bra{S,D}}) = Bra{promote_type(T,S),D}
+promote_rule{T,S,D}(::Type{Operator{T,D}},::Type{Operator{S,D}}) = Operator{promote_type(T,S),D}
 
 # Show methods
 function show{T<:QuMatrix}(io::IO, A::T)
