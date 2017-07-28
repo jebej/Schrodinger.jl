@@ -10,7 +10,7 @@ export Operator, Ket, Bra,
     Liouvillian, SchrodingerEvo, LindbladEvo,
     Propagator, SchrodingerProp, LindbladProp,
     sesolve, mesolve, lsolve, psolve, psteady,
-    expim, gaussian
+    expim, gaussian, inner
 
 include(joinpath("quobj","types.jl"))
 include(joinpath("quobj","basicmethods.jl"))
