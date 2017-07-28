@@ -14,7 +14,7 @@ function calc_fprops!(U,X,Hd,Hc,u,δt,H,u_last)
     end
     # Calculate cumulative product
     copy!(X[1],U[1])
-    for i=2:n
+    for i = 2:n
         A_mul_B!(X[i],U[i],X[i-1])
     end
     # Save control amplitudes
@@ -24,33 +24,31 @@ end
 
 function calc_bprops!(P,U,Ut)
     copy!(P[end],Ut)
-    for i=length(P)-1:-1:1
+    for i = length(P)-1:-1:1
         Ac_mul_B!(P[i],U[i+1],P[i+1])
     end
     return nothing
 end
 
-function hsinner!(U1::AbstractArray,U2::AbstractArray,C::AbstractArray)
-    Ac_mul_B!(C,U1,U2)
-    return trace(C)
-end
-
-function fidelity!(Ut,Hd,Hc,u,δt,A,U,X,u_last)
-    calc_fprops!(U,X,Hd,Hc,u,δt,A,u_last)
+function fidelity!(Ut,Hd,Hc,u,δt,H,U,X,u_last)
+    # Calculate forward propagators
+    calc_fprops!(U,X,Hd,Hc,u,δt,H,u_last)
+    Uf = X[end] # Full propagator
     # Calculate fidelity error: 1 - |Tr(⟨Ut,Uf⟩)|²/N²
-    return 1 - abs2(hsinner!(Ut,X[end],A))/size(Ut,1)^2
+    return 1 - abs2(inner(Ut,Uf))/size(Ut,1)^2
 end
 
-function fidelityprime!(fp,Ut,Hd,Hc,u,δt,A,B,U,X,P,u_last)
-    calc_fprops!(U,X,Hd,Hc,u,δt,A,u_last)
+function fidelityprime!(fp,Ut,Hd,Hc,u,δt,H,A,U,X,P,u_last)
+    # Calculate forward and backward propagators
+    calc_fprops!(U,X,Hd,Hc,u,δt,H,u_last)
     calc_bprops!(P,U,Ut)
     n = length(U); m = length(Hc)
     # Calculate error derivatives: 2*Re(Tr(⟨Pj,iδt*Hk*Xj⟩) * Tr(⟨Xj,Pj⟩))/N²
     for j = 1:n
-        aj = hsinner!(X[j],P[j],A)
-        for k=1:m
-            A_mul_B!(B,Hc[k],X[j])
-            fp[(j-1)*m+k] = real(hsinner!(P[j],scale!(B,1im*δt),A)*aj)
+        aj = inner(X[j],P[j])
+        for k = 1:m
+            A_mul_B!(A,Hc[k],X[j])
+            fp[(j-1)*m+k] = real(inner(P[j],scale!(A,1im*δt))*aj)
         end
     end
     scale!(fp,2/size(Ut,1)^2)
@@ -60,20 +58,20 @@ end
 function gen_opt_fun(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},t::Real,n::Integer)
     N = prod(dims(Hd))
     m = length(Hc)
+    # Make sure we pass dense operators
+    Ut_d = full(Ut)
+    Hd_d = full(Hd)
+    Hc_d = full.(Hc)
     # Generate cache for various objects
+    H = promote_type(typeof(Hd_d),eltype(Hc_d))(N,N)
     A = Matrix{Complex128}(N,N)
-    B = similar(A)
     U = [similar(A) for i=1:n]
     X = deepcopy(U)
     P = deepcopy(U)
     u_last = Vector{Float64}(m*n)
-    # Make sure we pass dense operators
-    Ut_d = full(Ut)
-    Hd_d = full(Hd)
-    Hc_d = [full(H) for H in Hc]
     # Create optimization function
-    f = (u) -> fidelity!(Ut_d,Hd_d,Hc_d,u,t/n,A,U,X,u_last)
-    g! = (fp,u) -> fidelityprime!(fp,Ut_d,Hd_d,Hc_d,u,t/n,A,B,U,X,P,u_last)
+    f = (u) -> fidelity!(Ut_d,Hd_d,Hc_d,u,t/n,H,U,X,u_last)
+    g! = (fp,u) -> fidelityprime!(fp,Ut_d,Hd_d,Hc_d,u,t/n,H,A,U,X,P,u_last)
     # Return a OnceDifferentiable object with appropriate seed
     return OnceDifferentiable(f,g!,zeros(m*n)),X[end]
 end
@@ -102,8 +100,8 @@ function opt_hadamard(n)
 end
 
 function opt_2Q_QFT(n)
-    Hd = 0.5 * complex(σx⊗σx + σy⊗σy +σz⊗σz)
-    Hc = [0.5*complex(σx⊗σ0), 0.5*σy⊗σ0, 0.5*complex(σ0⊗σx), 0.5*σ0⊗σy]
+    Hd = 0.5 * (σx⊗σx + σy⊗σy + σz⊗σz)
+    Hc = [0.5*σx⊗σ0, 0.5*σy⊗σ0, 0.5*σ0⊗σx, 0.5*σ0⊗σy]
     t = 6.0
     u_init = zeros(n,4)
     #u_init = rand(n,4) .- 0.5
@@ -113,4 +111,12 @@ function opt_2Q_QFT(n)
                    0.5 -0.5im -0.5  0.5im],
                   (2,2))
     grape(Ut,Hd,Hc,u_init,t,n)
+end
+
+function plotgrape(tf,uf)
+    figure()
+    step(linspace(0,tf,size(uf,1)+1),[uf[1:1,:]; uf])
+    legend(["Control $i" for i in 1:size(uf,2)])
+    tight_layout()
+    grid()
 end
