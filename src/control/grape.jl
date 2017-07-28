@@ -37,17 +37,21 @@ end
 
 function fidelity!(Ut,Hd,Hc,u,δt,A,U,X,u_last)
     calc_fprops!(U,X,Hd,Hc,u,δt,A,u_last)
-    # Calculate fidelity
-    return 1-abs2(hsinner!(Ut,X[end],A))/size(Ut,1)^2
+    # Calculate fidelity error: 1 - |Tr(⟨Ut,Uf⟩)|²/N²
+    return 1 - abs2(hsinner!(Ut,X[end],A))/size(Ut,1)^2
 end
 
-function fidelityprime!(fp,Ut,Hd,Hc,u,δt,A,U,X,P,u_last)
+function fidelityprime!(fp,Ut,Hd,Hc,u,δt,A,B,U,X,P,u_last)
     calc_fprops!(U,X,Hd,Hc,u,δt,A,u_last)
     calc_bprops!(P,U,Ut)
     n = length(U); m = length(Hc)
-    # Calculate derivative approximation
-    for j = 1:n, k=1:m
-        fp[(j-1)*m+k] = real(hsinner!(P[j],scale!(Hc[k]*X[j],1im*δt),A)*hsinner!(X[j],P[j],A))
+    # Calculate error derivatives: 2*Re(Tr(⟨Pj,iδt*Hk*Xj⟩) * Tr(⟨Xj,Pj⟩))/N²
+    for j = 1:n
+        aj = hsinner!(X[j],P[j],A)
+        for k=1:m
+            A_mul_B!(B,Hc[k],X[j])
+            fp[(j-1)*m+k] = real(hsinner!(P[j],scale!(B,1im*δt),A)*aj)
+        end
     end
     scale!(fp,2/size(Ut,1)^2)
     return fp
@@ -58,7 +62,8 @@ function gen_opt_fun(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},t::Real,n:
     m = length(Hc)
     # Generate cache for various objects
     A = Matrix{Complex128}(N,N)
-    U = [Matrix{Complex128}(N,N) for i=1:n]
+    B = similar(A)
+    U = [similar(A) for i=1:n]
     X = deepcopy(U)
     P = deepcopy(U)
     u_last = Vector{Float64}(m*n)
@@ -68,7 +73,7 @@ function gen_opt_fun(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},t::Real,n:
     Hc_d = [full(H) for H in Hc]
     # Create optimization function
     f = (u) -> fidelity!(Ut_d,Hd_d,Hc_d,u,t/n,A,U,X,u_last)
-    g! = (fp,u) -> fidelityprime!(fp,Ut_d,Hd_d,Hc_d,u,t/n,A,U,X,P,u_last)
+    g! = (fp,u) -> fidelityprime!(fp,Ut_d,Hd_d,Hc_d,u,t/n,A,B,U,X,P,u_last)
     # Return a OnceDifferentiable object with appropriate seed
     return OnceDifferentiable(f,g!,zeros(m*n)),X[end]
 end
@@ -100,8 +105,8 @@ function opt_2Q_QFT(n)
     Hd = 0.5 * complex(σx⊗σx + σy⊗σy +σz⊗σz)
     Hc = [0.5*complex(σx⊗σ0), 0.5*σy⊗σ0, 0.5*complex(σ0⊗σx), 0.5*σ0⊗σy]
     t = 6.0
-    #u_init = zeros(n,4)
-    u_init = rand(n,4) .- 0.5
+    u_init = zeros(n,4)
+    #u_init = rand(n,4) .- 0.5
     Ut = Operator([0.5  0.5    0.5  0.5
                    0.5  0.5im -0.5 -0.5im
                    0.5 -0.5    0.5 -0.5
