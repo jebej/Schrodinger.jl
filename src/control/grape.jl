@@ -1,20 +1,20 @@
 using Schrodinger, Optim
 
 function calc_fprops!(U,X,Hd,Hc,u,δt,H,u_last)
-    any(isnan.(u)) && (show(u); return) # debugggg
     # If the control amplitudes u did not change, return
     u == u_last && return nothing
     # Otherwise calculate each individual propagator
-    for j = 1:size(u,2)
+    n = length(U); m = length(Hc)
+    for j = 1:n
         copy!(H,Hd)
-        for k = 1:size(u,1)
-            H .+= u[k,j].*Hc[k]
+        for k = 1:m
+            H .+= u[(j-1)*m+k].*Hc[k]
         end
         Schrodinger.expim!(U[j],Hermitian(scale!(H,-δt)))
     end
     # Calculate cumulative product
     copy!(X[1],U[1])
-    for i=2:size(u,2)
+    for i=2:n
         A_mul_B!(X[i],U[i],X[i-1])
     end
     # Save control amplitudes
@@ -37,15 +37,17 @@ end
 
 function fidelity!(Ut,Hd,Hc,u,δt,A,U,X,u_last)
     calc_fprops!(U,X,Hd,Hc,u,δt,A,u_last)
+    # Calculate fidelity
     return 1-abs2(hsinner!(Ut,X[end],A))/size(Ut,1)^2
 end
 
 function fidelityprime!(fp,Ut,Hd,Hc,u,δt,A,U,X,P,u_last)
     calc_fprops!(U,X,Hd,Hc,u,δt,A,u_last)
     calc_bprops!(P,U,Ut)
+    n = length(U); m = length(Hc)
     # Calculate derivative approximation
-    for j = 1:size(fp,2), k=1:size(fp,1)
-        fp[k,j] = real(hsinner!(P[j],scale!(Hc[k]*X[j],1im*δt),A)*hsinner!(X[j],P[j],A))
+    for j = 1:n, k=1:m
+        fp[(j-1)*m+k] = real(hsinner!(P[j],scale!(Hc[k]*X[j],1im*δt),A)*hsinner!(X[j],P[j],A))
     end
     scale!(fp,2/size(Ut,1)^2)
     return fp
@@ -59,7 +61,7 @@ function gen_opt_fun(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},t::Real,n:
     U = [Matrix{Complex128}(N,N) for i=1:n]
     X = deepcopy(U)
     P = deepcopy(U)
-    u_last = Matrix{Float64}(m,n)
+    u_last = Vector{Float64}(m*n)
     # Make sure we pass dense operators
     Ut_d = full(Ut)
     Hd_d = full(Hd)
@@ -67,26 +69,29 @@ function gen_opt_fun(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},t::Real,n:
     # Create optimization function
     f = (u) -> fidelity!(Ut_d,Hd_d,Hc_d,u,t/n,A,U,X,u_last)
     g! = (fp,u) -> fidelityprime!(fp,Ut_d,Hd_d,Hc_d,u,t/n,A,U,X,P,u_last)
-    return OnceDifferentiable(f,g!,similar(u_last)),X
+    # Return a OnceDifferentiable object with appropriate seed
+    return OnceDifferentiable(f,g!,zeros(m*n)),X[end]
 end
 
 
 function grape(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},u_init,t::Real,n::Integer)
     m = length(Hc)
-    (m,n) == size(u_init) || throw(ArgumentError("control amplitude matrix not consistent with number of timesteps or number of control hamiltonians"))
-    # Gen OnceDifferentiable object
-    od,X = gen_opt_fun(Ut,Hd,Hc,t,n)
+    (n,m) == size(u_init) || throw(ArgumentError("control amplitude matrix not consistent with number of timesteps or number of control hamiltonians"))
+    # Generate OnceDifferentiable object, and get reference to final U
+    od,Uf = gen_opt_fun(Ut,Hd,Hc,t,n)
     # Run optimization
-    return optimize(od,u_init,GradientDescent()), X[end]
+    res = optimize(od,vec(u_init.'),ConjugateGradient())
+    # Reshape final control amplitude matrix
+    uf = reshape(Optim.minimizer(res),m,n).'
+    return uf, Uf, res
 end
 
 function opt_hadamard(n)
     Hd = σz
     Hc = [σx]
     t = 10.0
-    #u_init = [-0.81 -0.88 0.19 0.70 -0.60 -0.61 0.88 -0.26 -0.27 -0.07]
-    #u_init = rand(1,n).-0.5
-    u_init = zeros(1,n)
+    #u_init = rand(n,1) .- 0.5
+    u_init = zeros(n,1)
     Ut = Operator([1/√2 1/√2; 1/√2 -1/√2])
     grape(Ut,Hd,Hc,u_init,t,n)
 end
@@ -95,7 +100,8 @@ function opt_2Q_QFT(n)
     Hd = 0.5 * complex(σx⊗σx + σy⊗σy +σz⊗σz)
     Hc = [0.5*complex(σx⊗σ0), 0.5*σy⊗σ0, 0.5*complex(σ0⊗σx), 0.5*σ0⊗σy]
     t = 6.0
-    u_init = zeros(4,n)
+    #u_init = zeros(n,4)
+    u_init = rand(n,4) .- 0.5
     Ut = Operator([0.5  0.5    0.5  0.5
                    0.5  0.5im -0.5 -0.5im
                    0.5 -0.5    0.5 -0.5
