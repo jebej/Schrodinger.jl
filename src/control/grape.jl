@@ -79,7 +79,8 @@ end
 
 function grape(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},u_init,t::Real,n::Integer)
     m = length(Hc)
-    (n,m) == size(u_init) || throw(ArgumentError("control amplitude matrix not consistent with number of timesteps or number of control hamiltonians"))
+    n == size(u_init,1) || throw(ArgumentError("control amplitude matrix not consistent with number of timesteps"))
+    m == size(u_init,2) || throw(ArgumentError("control amplitude matrix not consistent with number of control hamiltonians"))
     # Generate OnceDifferentiable object, and get reference to final U
     od,Uf = gen_opt_fun(Ut,Hd,Hc,t,n)
     # Run optimization
