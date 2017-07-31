@@ -83,3 +83,91 @@ function hermitianize!(A::AbstractMatrix)
         end
     end
 end
+
+function isunitary{T}(A::AbstractMatrix{T})
+    # check efficiently if A'*A = I
+    m, n = size(A)
+    m == n || return false
+    @inbounds for i = 1:m, j = 1:m
+        a = zero(T)
+        for k = 1:m
+            a += conj(A[k,i]) * A[k,j]
+        end
+        if i == j
+            a == 1 || return false
+        else
+            a == 0 || return false
+        end
+    end
+    return true
+end
+
+function isunitary{T,S}(A::SparseMatrixCSC{T,S})
+    # check efficiently if A'*A = I
+    m, n = size(A)
+    m == n || return false
+    colptr = A.colptr
+    rowval = A.rowval
+    nzval = A.nzval
+    @inbounds for i = 1:m, j = 1:m
+        a = zero(T)
+        for p1 = colptr[i]:colptr[i+1]-1, p2 = colptr[j]:colptr[j+1]-1
+            if rowval[p1] < rowval[p2]
+                continue
+            elseif rowval[p1]==rowval[p2]
+                a += conj(nzval[p1]) * nzval[p2]
+                continue
+            end
+        end
+        if i == j
+            a == 1 || return false
+        else
+            a == 0 || return false
+        end
+    end
+    return true
+end
+
+function isapproxunitary{T}(A::AbstractMatrix{T})
+    # check efficiently if A'*A ≈ I
+    m, n = size(A)
+    m == n || return false
+    @inbounds for i = 1:m, j = 1:m
+        a = zero(T)
+        for k = 1:m
+            a += conj(A[k,i]) * A[k,j]
+        end
+        if i == j
+            abs(1-real(a)) > ERR || abs(imag(a)) > ERR && return false
+        else
+            abs(real(a)) > ERR || abs(imag(a)) > ERR && return false
+        end
+    end
+    return true
+end
+
+function isapproxunitary{T,S}(A::SparseMatrixCSC{T,S})
+    # check efficiently if A'*A ≈ I
+    m, n = size(A)
+    m == n || return false
+    colptr = A.colptr
+    rowval = A.rowval
+    nzval = A.nzval
+    @inbounds for i = 1:m, j = 1:m
+        a = zero(T)
+        for p1 = colptr[i]:colptr[i+1]-1, p2 = colptr[j]:colptr[j+1]-1
+            if rowval[p1] < rowval[p2]
+                continue
+            elseif rowval[p1]==rowval[p2]
+                a += conj(nzval[p1]) * nzval[p2]
+                continue
+            end
+        end
+        if i == j
+            abs(1-real(a)) > ERR || abs(imag(a)) > ERR && return false
+        else
+            abs(real(a)) > ERR || abs(imag(a)) > ERR && return false
+        end
+    end
+    return true
+end
