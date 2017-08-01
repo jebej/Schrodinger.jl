@@ -6,6 +6,10 @@ using Base.Test, Schrodinger
 g = basis(2,0)
 e1 = dense(basis(2,1))
 ρ = maxmixed(4)
+α = rand(Complex128)
+ψα = coherent(15,α)
+β = rand(Complex128)
+ψβ = coherent(15,β)
 σ = dense(create(4))
 a4 = destroy(4)
 a2 = destroy(2)
@@ -101,9 +105,19 @@ end
     @test g'*adag2' == Bra(g)*adag2' == e1'
     @test g'*g == Bra(e1)*e1 == 1
     @test dot(plus,plus) ≈ 1
+    @test dot(ψα,ψβ) ≈ exp(-(abs2(α)+abs2(β))/2+α'*β)
     @test plus*plus' == plus*Bra(plus) ≈ normalize!(σ0 + σy)
     @test_throws ArgumentError g*e1
     @test_throws ArgumentError g/e1
+end
+
+@testset "Operator Inner Product" begin
+    @test inner(σx,σx) == 2
+    @test inner(σx,σy) == 0
+    @test inner(σx,σz) == 0
+    @test inner(ρ*projectorop(size(ρ,1),1:2),ρ) == 2/size(ρ,1)^2
+    @test inner(Operator(ψα),Operator(ψβ)) ≈ exp(-abs2(α-β))
+    @test_throws DimensionMismatch inner(Operator(ψα),ρ)
 end
 
 @testset "Tensor Product" begin
@@ -117,7 +131,7 @@ end
     @test_throws ArgumentError Bra(e1) ⊗ σ
 end
 
-@testset "Complex (or not) transposition" begin
+@testset "Transposition" begin
     @test g' == Bra([1,0])
     @test (g+1im*e1)' == Bra([1,-1im])
     @test conj((g+1im*e1)) == Ket([1,-1im])

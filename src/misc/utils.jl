@@ -30,7 +30,7 @@ end
 function inner{T,S}(A::AbstractMatrix{T},B::AbstractMatrix{S})
     # calculate trace(A'*B) efficiently
     m, n = size(A)
-    size(B) == m, n || throw(DimensionMismatch("matrices must have the same dimensions"))
+    size(B) == (m,n) || throw(DimensionMismatch("matrices must have the same dimensions"))
     res = zero(promote_type(T,S))
     @inbounds for j = 1:n, i = 1:m
         res += conj(A[i,j])*B[i,j]
@@ -41,7 +41,7 @@ end
 function inner{T1,T2,S1,S2}(A::SparseMatrixCSC{T1,S1},B::SparseMatrixCSC{T2,S2})
     # calculate trace(A'*B) efficiently
     m, n = size(A)
-    size(B) == m, n || throw(DimensionMismatch("matrices must have the same dimensions"))
+    size(B) == (m,n) || throw(DimensionMismatch("matrices must have the same dimensions"))
     res = zero(promote_type(T1,T2))
     @inbounds for j = 1:n
         for i1 = A.colptr[j]:A.colptr[j+1]-1
