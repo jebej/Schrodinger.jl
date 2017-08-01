@@ -2,7 +2,8 @@ module Schrodinger
 using DiffEqBase, OrdinaryDiffEq, Compat
 
 export Operator, Ket, Bra,
-    data, dims, isnormalized, dimsmatch, dense, braket,
+    data, dims, isnormalized, dimsmatch, dense, braket, isapproxhermitian,
+    isunitary, isapproxunitary,
     ptrace, expect, fidelity, fidelity2, levelprobs, tensor,
     fock, basis, coherent, thermal, maxmixed, maxentangled,
     qzero, qeye, create, destroy, numberop, projectorop,

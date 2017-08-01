@@ -44,4 +44,22 @@ end
     @test data(squeezeop(3,0.5im)) ≈ [0.93814834 0 -0.34623359im; 0 1 0; -0.34623359im 0 0.93814834]
 end
 
+@testset "Matrix Property Checks" begin
+    # Tests matrix property checks
+    H = Schrodinger.hermitianize!(rand(Complex128,5,5))
+    H_s = Schrodinger.hermitianize!(sprand(Complex128,5,5,0.1))
+    x = sparse([1,2,3,4],[3,5,3,1],rand(Complex128,4),5,5)
+    @test isapproxhermitian(H+full(x)*1E-15)
+    @test !isapproxhermitian(H+full(x)*1E-12)
+    @test isapproxhermitian(H_s+x*1E-15)
+    @test !isapproxhermitian(H_s+x*1E-12)
+    U1 = sparse([1,2,4,3],[1,2,3,4],[1,1,1,1])
+    U2 = expim(Hermitian(H))
+    @test isunitary(U1)
+    @test !isunitary(U1+sprand(4,4,0.5)*1E-12)
+    @test isunitary(full(U1))
+    @test isapproxunitary(U2)
+    @test !isapproxunitary(U2+full(x)*1E-12)
+end
+
 end
