@@ -48,7 +48,7 @@ end
     # Tests matrix property checks
     H = Schrodinger.hermitianize!(rand(Complex128,5,5))
     H_s = Schrodinger.hermitianize!(sprand(Complex128,5,5,0.1))
-    x = sparse([1,2,3,4],[3,5,3,1],rand(Complex128,4),5,5)
+    x = sparse([1,2,3,4,5],[3,5,3,1,1],[1+5im,3.4,1im,2.5+2.5im,6.6])
     @test isapproxhermitian(H+full(x)*1E-15)
     @test !isapproxhermitian(H+full(x)*1E-12)
     @test isapproxhermitian(H_s+x*1E-15)
@@ -57,9 +57,13 @@ end
     U2 = expim(Hermitian(H))
     @test isunitary(U1)
     @test !isunitary(U1+sprand(4,4,0.5)*1E-12)
+    @test isapproxunitary(U1)
+    @test isapproxunitary(U1+sprand(4,4,0.5)*1E-15)
+    @test !isapproxunitary(U1+sprand(4,4,0.5)*1E-12)
     @test isunitary(full(U1))
+    @test !isunitary(full(U1+sprand(4,4,0.5)*1E-12))
     @test isapproxunitary(U2)
-    @test !isapproxunitary(U2+full(x)*1E-12)
+    @test !isapproxunitary(U2+full(x))
 end
 
 end

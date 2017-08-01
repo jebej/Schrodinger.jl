@@ -108,9 +108,13 @@ function isapproxunitary{T}(A::AbstractMatrix{T})
             a += conj(A[k,i]) * A[k,j]
         end
         if i == j
-            abs(1-real(a)) > ERR || abs(imag(a)) > ERR && return false
+            if abs(1-real(a)) > ERR || abs(imag(a)) > ERR
+                return false
+            end
         else
-            abs(real(a)) > ERR || abs(imag(a)) > ERR && return false
+            if abs(real(a)) > ERR || abs(imag(a)) > ERR
+                return false
+            end
         end
     end
     return true
@@ -134,9 +138,13 @@ function isapproxunitary{T,S}(A::SparseMatrixCSC{T,S})
             end
         end
         if i == j
-            abs(1-real(a)) > ERR || abs(imag(a)) > ERR && return false
+            if abs(1-real(a)) > ERR || abs(imag(a)) > ERR
+                return false
+            end
         else
-            abs(real(a)) > ERR || abs(imag(a)) > ERR && return false
+            if abs(real(a)) > ERR || abs(imag(a)) > ERR
+                return false
+            end
         end
     end
     return true
