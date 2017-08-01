@@ -1,5 +1,5 @@
 import Base: length, size, LinAlg.checksquare, eltype, getindex, setindex!,
-     diag, full, complex, norm, trace, normalize!, normalize, scale!,
+     diag, full, complex, norm, trace, rank, normalize!, normalize, scale!,
      ishermitian, issymmetric, isdiag,
      similar, copy, hash, isequal, ==, convert, promote_rule, isapprox, show
 
@@ -28,6 +28,7 @@ complex(x::Bra) = Bra(complex(x.data),x.dims)
 complex(A::Operator) = Operator(complex(A.data),A.dims)
 norm(x::QuVector,n::Int=2) = norm(x.data,n)
 trace(A::QuMatrix) = trace(A.data)
+rank(A::QuMatrix) = rank(A.data)
 normalize!(x::QuVector) = (normalize!(x.data,2);x)
 normalize!(A::QuMatrix) = (scale!(A.data,1/trace(A.data));A)
 normalize(x::QuObject) = normalize!(copy(x))
