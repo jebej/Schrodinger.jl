@@ -106,16 +106,16 @@ true
 Let's plot the results!
 
 ```@setup example1plot
-using Schrodinger
+using Schrodinger, PyPlot
 res = sesolve(π*σx, basis(2,0), (0.0,2.0), [-σz], saveat=linspace(0,2,101))
 !isdir("img") && mkdir("img")
+plot(res.times,real.(res.evals)); xlabel("time (s)"); legend(["\$⟨-σ_z⟩\$"]); grid()
+savefig(joinpath("img","example1-plot.svg"))
 ```
-```@example example1plot
+```julia
 using PyPlot
 plot(res.times,real.(res.evals)); xlabel("time (s)"); legend(["\$⟨-σ_z⟩\$"]); grid()
-savefig(joinpath("img","example1-plot.svg")); nothing # hide
 ```
-
 ![spin-1/2 system oscillations](img/example1-plot.svg)
 
 As we predicted, the system oscillates between -1, the expectation value of $$-σ_z$$ when in the ground state, and 1 when in the excited state.
