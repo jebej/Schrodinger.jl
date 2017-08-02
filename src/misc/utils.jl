@@ -1,3 +1,4 @@
+using Base.LinAlg.RealHermSymComplexHerm
 import Base: reverse
 
 reverse(n::Number) = n
@@ -86,27 +87,25 @@ function unwrap!(p)
     return p
 end
 
-expim(A::AbstractMatrix) = expim!(Matrix{Complex128}(size(A)),copy(A))
+expim(H::RealHermSymComplexHerm) = expim!(Matrix{Complex128}(H),copy(H))
+expim!(H::RealHermSymComplexHerm) = expim!(Matrix{Complex128}(H),H)
 
-expim!(A::AbstractMatrix) = expim!(Matrix{Complex128}(size(A)),A)
-
-function expim!(expimA::Matrix{Complex128},A::AbstractMatrix)
-    # First decompose A into U*Λ*Uᴴ
-    F = eigfact!(A)
-    Λ, U = F.values, complex(F.vectors)
+function expim!(R::Matrix{Complex128},H::RealHermSymComplexHerm,Λ=Vector{Float64}(size(H,1)),U=Matrix(H),B=similar(R))
+    # First decompose H into U*Λ*Uᴴ
+    #F = eigfact!(H); copy!(Λ,F.values); copy!(U,F.vectors)
+    hermfact!(Λ,U,H)
     # Calculate the imaginary exponential of each eigenvalue and multiply
     # each column of U to obtain B = U*exp(iΛ)
     n = length(Λ)
-    B = similar(U)
     @inbounds for j = 1:n
         a = cis(Λ[j])
         @simd for i = 1:n
             B[i,j] = a * U[i,j]
         end
     end
-    # Finally multiply B by Uᴴ to obtain U*exp(iΛ)*Uᴴ = exp(i*A)
-    A_mul_Bc!(expimA,B,U)
-    return expimA
+    # Finally multiply B by Uᴴ to obtain U*exp(iΛ)*Uᴴ = exp(i*H)
+    A_mul_Bc!(R,B,U)
+    return R
 end
 
 # index in a tensored system (warning, this function uses indices that start at 0)
