@@ -12,7 +12,7 @@ function calc_fprops!(U,X,Hd,Hc,u,δt,H,u_last)
         end
         Schrodinger.expim!(U[j],Hermitian(scale!(H,-δt)))
     end
-    # Calculate cumulative product
+    # Calculate forward propagators (cumulative product of U)
     copy!(X[1],U[1])
     for i = 2:n
         A_mul_B!(X[i],U[i],X[i-1])
@@ -23,6 +23,7 @@ function calc_fprops!(U,X,Hd,Hc,u,δt,H,u_last)
 end
 
 function calc_bprops!(P,U,Ut)
+    # Calculate backward propagators
     copy!(P[end],Ut)
     for i = length(P)-1:-1:1
         Ac_mul_B!(P[i],U[i+1],P[i+1])
@@ -30,11 +31,42 @@ function calc_bprops!(P,U,Ut)
     return nothing
 end
 
+#using Schrodinger, BenchmarkTools
+#H = rand(Float64,64,64); H = Hermitian(H+H'); Hk = rand(Float64,64,64); Hk = #Hermitian(Hk+Hk');
+#R=expm(1im*H); D=Vector{Float64}(size(H,1)); V=Matrix(H); B=similar(R);
+#Schrodinger.expim!(R,copy(H),D,V,B);
+#Λmat!(B,D,1.0)
+#fun1(Hk,V,B) ≈ fun2(Hk,V,B)
+
+function calc_dprops!(J,H,D,V,A)
+    # Calculate propagator derivatives exactly
+    return nothing
+end
+
+function Λmat!(Λ,D,δt)
+    # 31-32us
+    cisδtλ = cis.(-δt.*D)
+    for m = 1:length(D), l = 1:length(D)
+        Λ[l,m] = l==m ? -1im*δt*cisδtλ[l] : (cisδtλ[l]-cisδtλ[m])/(D[l]-D[m])
+    end
+    return nothing
+end
+
+function fun1(Hk,V,Λ)
+    R = Matrix{Complex128}(Hk)
+    for m = 1:length(D), l = 1:length(D)
+        R[l,m] = dot(V[:,l],Hk*V[:,m])*Λ[l,m]
+    end
+    return R
+end
+
+fun2(Hk,V,Λ) = (V'*Hk*V).*Λ
+
 function fidelity!(Ut,Hd,Hc,u,δt,H,U,X,u_last)
     # Calculate forward propagators
     calc_fprops!(U,X,Hd,Hc,u,δt,H,u_last)
     Uf = X[end] # Full propagator
-    # Calculate fidelity error: 1 - |Tr(⟨Ut,Uf⟩)|²/N²
+    # Calculate fidelity error: fₑ = 1 - Φ where Φ = |Tr(⟨Ut,Uf⟩)|²/N²
     return 1 - abs2(inner(Ut,Uf))/size(Ut,1)^2
 end
 
@@ -43,7 +75,12 @@ function fidelityprime!(fp,Ut,Hd,Hc,u,δt,H,A,U,X,P,u_last)
     calc_fprops!(U,X,Hd,Hc,u,δt,H,u_last)
     calc_bprops!(P,U,Ut)
     n = length(U); m = length(Hc)
-    # Calculate error derivatives: 2*Re(Tr(⟨Pj,iδt*Hk*Xj⟩) * Tr(⟨Xj,Pj⟩))/N²
+    # Calculate derivative of fidelity function:
+    # ∂Φ/∂uₖⱼ = ⟨Pⱼ,∂Uⱼ/∂uₖⱼ*Xⱼ₋₁⟩⟨Xⱼ,Pⱼ⟩ + c.c.
+    # fₑ derivative exact: 2*Re(Tr(⟨Pⱼ,Jₖⱼ*Xⱼ⟩) * Tr(⟨Xⱼ,Pⱼ⟩))/N²
+    # where Jₖⱼ = ∂Uⱼ/∂uₖⱼ
+    # TODO
+    # fₑ derivative approximation: 2*Re(Tr(⟨Pⱼ,iδt*Hₖ*Xⱼ⟩) * Tr(⟨Xⱼ,Pⱼ⟩))/N²
     for j = 1:n
         aj = inner(X[j],P[j])
         for k = 1:m
@@ -68,8 +105,12 @@ function gen_opt_fun(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},t::Real,n:
     U = [similar(A) for i=1:n]
     X = deepcopy(U)
     P = deepcopy(U)
+    # For the exact derivative
+    V = [similar(H) for i=1:n]
+    D = [Vector{eltype(H)}(N) for i=1:n]
+    # Storage for last control ampitudes
     u_last = Vector{Float64}(m*n)
-    # Create optimization function
+    # Create optimization function object
     f = (u) -> fidelity!(Ut_d,Hd_d,Hc_d,u,t/n,H,U,X,u_last)
     g! = (fp,u) -> fidelityprime!(fp,Ut_d,Hd_d,Hc_d,u,t/n,H,A,U,X,P,u_last)
     # Return a OnceDifferentiable object with appropriate seed
