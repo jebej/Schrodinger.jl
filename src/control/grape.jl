@@ -32,13 +32,6 @@ function calc_bprops!(P,U,Ut)
     return nothing
 end
 
-#using Schrodinger, BenchmarkTools
-#H = rand(Float64,64,64); H = Hermitian(H+H'); Hk = rand(Float64,64,64); Hk = #Hermitian(Hk+Hk');
-#R=expm(1im*H); D=Vector{Float64}(size(H,1)); V=Matrix(H); B=similar(R);
-#Schrodinger.expim!(R,copy(H),D,V,B);
-#Λmat!(B,D,1.0)
-#fun1(Hk,V,B) ≈ fun2(Hk,V,B)
-
 function Jmat!(Jkj,Hk,cisDj,Dj,Vj,δt,A)
     # Jₖⱼ = Vⱼ*((Vⱼ'*Hₖ*Vⱼ).*Λⱼ)*Vⱼ'
     # Λⱼ[l,m] = λl≈λm ? -1im*δt*cis(λl) : -δt*(cis(λl)-cis(λm))/(λl-λm)
