@@ -39,36 +39,34 @@ end
 #Λmat!(B,D,1.0)
 #fun1(Hk,V,B) ≈ fun2(Hk,V,B)
 
-function calc_dprops!(J,H,D,V,A)
-    # Calculate propagator derivatives exactly
+function Jmat!(Jkj,Hk,cisDj,Dj,Vj,δt,A)
+    # Jₖⱼ = Vⱼ*((Vⱼ'*Hₖ*Vⱼ).*Λⱼ)*Vⱼ'
+    # Λⱼ[l,m] = λl≈λm ? -1im*δt*cis(λl) : -δt*(cis(λl)-cis(λm))/(λl-λm)
+    Ac_mul_B!(A,Vj,Hk)
+    A_mul_B!(Jkj,A,Vj)
+    _Jmathermprod!(Jkj,cisDj,Dj,δt)
+    A_mul_B!(A,Vj,Jkj)
+    A_mul_Bc!(Jkj,A,Vj)
     return nothing
 end
 
-function Λmat!(Λ,D,δt)
-    # 31-32us
-    cisδtλ = cis.(-δt.*D)
+function _Jmathermprod!(J,cisD,D,δt)
     for m = 1:length(D), l = 1:length(D)
-        Λ[l,m] = l==m ? -1im*δt*cisδtλ[l] : (cisδtλ[l]-cisδtλ[m])/(D[l]-D[m])
+        λl, λm = D[l], D[m]
+        cisλl, cisλm = cisD[l], cisD[m]
+        J[l,m] *= λl≈λm ? -1im*δt*cisλl : -δt*(cisλl-cisλm)/(λl-λm)
     end
     return nothing
 end
-
-function fun1(Hk,V,Λ)
-    R = Matrix{Complex128}(Hk)
-    for m = 1:length(D), l = 1:length(D)
-        R[l,m] = dot(V[:,l],Hk*V[:,m])*Λ[l,m]
-    end
-    return R
-end
-
-fun2(Hk,V,Λ) = (V'*Hk*V).*Λ
 
 function fidelity!(Ut,Hd,Hc,u,δt,H,U,X,D,V,u_last)
     # Calculate forward propagators
     calc_fprops!(U,X,D,V,Hd,Hc,u,δt,H,u_last)
     Uf = X[end] # Full propagator
-    # Calculate fidelity error: fₑ = 1 - Φ where Φ = |Tr(⟨Ut,Uf⟩)|²/N²
-    return 1 - abs2(inner(Ut,Uf))/size(Ut,1)^2
+    # Calculate fidelity error:
+    # fₑ = 1 - Φ where Φ = |Tr(⟨Ut,Uf⟩)|²/N²
+    Φ = abs2(inner(Ut,Uf))/size(Ut,1)^2
+    return 1 - Φ
 end
 
 function fidelityprime!(fp,Ut,Hd,Hc,u,δt,H,A,U,X,D,V,P,u_last)
@@ -76,12 +74,34 @@ function fidelityprime!(fp,Ut,Hd,Hc,u,δt,H,A,U,X,D,V,P,u_last)
     calc_fprops!(U,X,D,V,Hd,Hc,u,δt,H,u_last)
     calc_bprops!(P,U,Ut)
     n = length(U); m = length(Hc)
-    # Calculate derivative of fidelity function:
-    # ∂Φ/∂uₖⱼ = ⟨Pⱼ,∂Uⱼ/∂uₖⱼ*Xⱼ₋₁⟩⟨Xⱼ,Pⱼ⟩ + c.c.
-    # fₑ derivative exact: 2*Re(Tr(⟨Pⱼ,Jₖⱼ*Xⱼ⟩) * Tr(⟨Xⱼ,Pⱼ⟩))/N²
-    # where Jₖⱼ = ∂Uⱼ/∂uₖⱼ
-    # TODO
-    # fₑ derivative approximation: 2*Re(Tr(⟨Pⱼ,iδt*Hₖ*Xⱼ⟩) * Tr(⟨Xⱼ,Pⱼ⟩))/N²
+    # Calculate exact derivative of fidelity error function:
+    # ∂Φ/∂uₖⱼ  = ⟨Pⱼ,∂Uⱼ/∂uₖⱼ*Xⱼ₋₁⟩⟨Xⱼ,Pⱼ⟩/N² + c.c.
+    # ∂fₑ/∂uₖⱼ = -∂Φ/∂uₖⱼ
+    #          = -2*Re(⟨Pⱼ,Jₖⱼ*Xⱼ₋₁⟩⟨Xⱼ,Pⱼ⟩)/N² where Jₖⱼ = ∂Uⱼ/∂uₖⱼ
+    Jkj = similar(A)
+    cisDj = Vector{Complex128}(D[1])
+    for j = 1:n
+        aj = inner(X[j],P[j])
+        cisDj .= cis.(D[j])
+        for k = 1:m
+            Jmat!(Jkj,Hc[k],cisDj,D[j],V[j],δt,A)
+            j==1 ? copy!(A,Jkj) : A_mul_B!(A,Jkj,X[j-1])
+            fp[(j-1)*m+k] = -real(inner(P[j],A)*aj)
+        end
+    end
+    scale!(fp,2/size(Ut,1)^2)
+    return fp
+end
+
+function fidelityprimeapprox!(fp,Ut,Hd,Hc,u,δt,H,A,U,X,D,V,P,u_last)
+    # Calculate forward and backward propagators
+    calc_fprops!(U,X,D,V,Hd,Hc,u,δt,H,u_last)
+    calc_bprops!(P,U,Ut)
+    n = length(U); m = length(Hc)
+    # Calculate approximate derivative of fidelity error function:
+    # ∂Φ/∂uₖⱼ  = ⟨Pⱼ,∂Uⱼ/∂uₖⱼ*Xⱼ₋₁⟩⟨Xⱼ,Pⱼ⟩/N² + c.c.
+    # ∂fₑ/∂uₖⱼ = -∂Φ/∂uₖⱼ
+    #          ≈ 2*Re(⟨Pⱼ,iδt*Hₖ*Xⱼ⟩⟨Xⱼ,Pⱼ⟩)/N²
     for j = 1:n
         aj = inner(X[j],P[j])
         for k = 1:m
@@ -108,12 +128,13 @@ function gen_opt_fun(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},t::Real,n:
     P = deepcopy(U)
     # For the exact derivative
     V = [similar(H) for i=1:n]
-    D = [Vector{eltype(H)}(N) for i=1:n]
+    D = [Vector{Float64}(N) for i=1:n]
     # Storage for last control ampitudes
     u_last = Vector{Float64}(m*n)
     # Create optimization function object
     f = (u) -> fidelity!(Ut_d,Hd_d,Hc_d,u,t/n,H,U,X,D,V,u_last)
     g! = (fp,u) -> fidelityprime!(fp,Ut_d,Hd_d,Hc_d,u,t/n,H,A,U,X,D,V,P,u_last)
+    #g! = (fp,u) -> fidelityprimeapprox!(fp,Ut_d,Hd_d,Hc_d,u,t/n,H,A,U,X,D,V,P,u_last)
     # Return a OnceDifferentiable object with appropriate seed
     return OnceDifferentiable(f,g!,zeros(m*n)),X[end]
 end
@@ -127,6 +148,7 @@ function grape(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},u_init,t::Real,n
     od,Uf = gen_opt_fun(Ut,Hd,Hc,t,n)
     # Run optimization
     res = optimize(od,vec(u_init.'),ConjugateGradient())
+    #res = optimize(od,vec(u_init.'))
     # Reshape final control amplitude matrix
     uf = reshape(Optim.minimizer(res),m,n).'
     return uf, Uf, res
