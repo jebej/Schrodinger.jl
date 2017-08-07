@@ -1,6 +1,6 @@
 using Schrodinger, Optim
 
-function calc_fprops!(U,X,Hd,Hc,u,δt,H,u_last)
+function calc_fprops!(U,X,D,V,Hd,Hc,u,δt,H,u_last)
     # If the control amplitudes u did not change, return
     u == u_last && return nothing
     # Otherwise calculate each individual propagator
@@ -10,7 +10,8 @@ function calc_fprops!(U,X,Hd,Hc,u,δt,H,u_last)
         for k = 1:m
             H .+= u[(j-1)*m+k].*Hc[k]
         end
-        Schrodinger.expim!(U[j],Hermitian(scale!(H,-δt)))
+        # Calculate U and store eigenvectors and eigenvalues
+        Schrodinger.expim!(U[j],Hermitian(scale!(H,-δt)),D[j],V[j],X[1])
     end
     # Calculate forward propagators (cumulative product of U)
     copy!(X[1],U[1])
@@ -62,17 +63,17 @@ end
 
 fun2(Hk,V,Λ) = (V'*Hk*V).*Λ
 
-function fidelity!(Ut,Hd,Hc,u,δt,H,U,X,u_last)
+function fidelity!(Ut,Hd,Hc,u,δt,H,U,X,D,V,u_last)
     # Calculate forward propagators
-    calc_fprops!(U,X,Hd,Hc,u,δt,H,u_last)
+    calc_fprops!(U,X,D,V,Hd,Hc,u,δt,H,u_last)
     Uf = X[end] # Full propagator
     # Calculate fidelity error: fₑ = 1 - Φ where Φ = |Tr(⟨Ut,Uf⟩)|²/N²
     return 1 - abs2(inner(Ut,Uf))/size(Ut,1)^2
 end
 
-function fidelityprime!(fp,Ut,Hd,Hc,u,δt,H,A,U,X,P,u_last)
+function fidelityprime!(fp,Ut,Hd,Hc,u,δt,H,A,U,X,D,V,P,u_last)
     # Calculate forward and backward propagators
-    calc_fprops!(U,X,Hd,Hc,u,δt,H,u_last)
+    calc_fprops!(U,X,D,V,Hd,Hc,u,δt,H,u_last)
     calc_bprops!(P,U,Ut)
     n = length(U); m = length(Hc)
     # Calculate derivative of fidelity function:
@@ -111,8 +112,8 @@ function gen_opt_fun(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},t::Real,n:
     # Storage for last control ampitudes
     u_last = Vector{Float64}(m*n)
     # Create optimization function object
-    f = (u) -> fidelity!(Ut_d,Hd_d,Hc_d,u,t/n,H,U,X,u_last)
-    g! = (fp,u) -> fidelityprime!(fp,Ut_d,Hd_d,Hc_d,u,t/n,H,A,U,X,P,u_last)
+    f = (u) -> fidelity!(Ut_d,Hd_d,Hc_d,u,t/n,H,U,X,D,V,u_last)
+    g! = (fp,u) -> fidelityprime!(fp,Ut_d,Hd_d,Hc_d,u,t/n,H,A,U,X,D,V,P,u_last)
     # Return a OnceDifferentiable object with appropriate seed
     return OnceDifferentiable(f,g!,zeros(m*n)),X[end]
 end
