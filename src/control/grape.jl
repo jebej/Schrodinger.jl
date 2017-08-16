@@ -1,6 +1,6 @@
 using Schrodinger, Optim
 
-function calc_fprops!(U,X,D,V,Hd,Hc,u,δt,H,u_last)
+function calc_fprops!(U,X,D,V,u,δt,Hd,Hc,H,u_last)
     # If the control amplitudes u did not change, return
     u == u_last && return nothing
     # Otherwise calculate each individual propagator
@@ -52,19 +52,19 @@ function _Jmathermprod!(J,cisD,D,δt)
     return nothing
 end
 
-function fidelity!(Ut,Hd,Hc,u,δt,H,U,X,D,V,u_last)
+function fidelity!(u,δt,Ut,Hd,Hc,H,U,X,D,V,u_last)
     # Calculate forward propagators
-    calc_fprops!(U,X,D,V,Hd,Hc,u,δt,H,u_last)
+    calc_fprops!(U,X,D,V,u,δt,Hd,Hc,H,u_last)
     Uf = X[end] # Full propagator
     # Calculate fidelity error:
-    # fₑ = 1 - Φ where Φ = |Tr(⟨Ut,Uf⟩)|²/N²
+    # fₑ = 1 - Φ where Φ = |⟨Ut,Uf⟩|²/N²
     Φ = abs2(inner(Ut,Uf))/size(Ut,1)^2
     return 1 - Φ
 end
 
-function fidelityprime!(fp,Ut,Hd,Hc,u,δt,H,A,U,X,D,V,P,u_last)
+function fidelityprime!(fp,u,δt,Ut,Hd,Hc,H,A,U,X,D,V,P,u_last)
     # Calculate forward and backward propagators
-    calc_fprops!(U,X,D,V,Hd,Hc,u,δt,H,u_last)
+    calc_fprops!(U,X,D,V,u,δt,Hd,Hc,H,u_last)
     calc_bprops!(P,U,Ut)
     n = length(U); m = length(Hc)
     # Calculate exact derivative of fidelity error function:
@@ -86,7 +86,7 @@ function fidelityprime!(fp,Ut,Hd,Hc,u,δt,H,A,U,X,D,V,P,u_last)
     return fp
 end
 
-function fidelityprimeapprox!(fp,Ut,Hd,Hc,u,δt,H,A,U,X,D,V,P,u_last)
+function fidelityprimeapprox!(fp,u,δt,Ut,Hd,Hc,H,A,U,X,D,V,P,u_last)
     # Calculate forward and backward propagators
     calc_fprops!(U,X,D,V,Hd,Hc,u,δt,H,u_last)
     calc_bprops!(P,U,Ut)
@@ -125,9 +125,9 @@ function gen_opt_fun(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},t::Real,n:
     # Storage for last control ampitudes
     u_last = Vector{Float64}(m*n)
     # Create optimization function object
-    f = (u) -> fidelity!(Ut_d,Hd_d,Hc_d,u,t/n,H,U,X,D,V,u_last)
-    g! = (fp,u) -> fidelityprime!(fp,Ut_d,Hd_d,Hc_d,u,t/n,H,A,U,X,D,V,P,u_last)
-    #g! = (fp,u) -> fidelityprimeapprox!(fp,Ut_d,Hd_d,Hc_d,u,t/n,H,A,U,X,D,V,P,u_last)
+    f = (u) -> fidelity!(u,t/n,Ut_d,Hd_d,Hc_d,H,U,X,D,V,u_last)
+    g! = (fp,u) -> fidelityprime!(fp,u,t/n,Ut_d,Hd_d,Hc_d,H,A,U,X,D,V,P,u_last)
+    #g! = (fp,u) -> fidelityprimeapprox!(fp,u,t/n,Ut_d,Hd_d,Hc_d,H,A,U,X,D,V,P,u_last)
     # Return a OnceDifferentiable object with appropriate seed
     return OnceDifferentiable(f,g!,zeros(m*n)),X[end]
 end
@@ -138,7 +138,7 @@ function grape(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},u_init,t::Real,n
     n == size(u_init,1) || throw(ArgumentError("control amplitude matrix not consistent with number of timesteps"))
     m == size(u_init,2) || throw(ArgumentError("control amplitude matrix not consistent with number of control hamiltonians"))
     # Generate OnceDifferentiable object, and get reference to final U
-    od,Uf = gen_opt_fun(Ut,Hd,Hc,t,n)
+    od, Uf = gen_opt_fun(Ut,Hd,Hc,t,n)
     # Run optimization
     res = optimize(od,vec(u_init.'),ConjugateGradient())
     #res = optimize(od,vec(u_init.'))
