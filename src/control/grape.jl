@@ -32,10 +32,10 @@ function calc_bprops!(P,U,Ut)
     return nothing
 end
 
-function Jmat!(Jkj,Hk,cisDj,Dj,Vj,δt,A)
+function Jmat!(Jkj,Hck,cisDj,Dj,Vj,δt,A)
     # Jₖⱼ = Vⱼ*((Vⱼ'*Hₖ*Vⱼ).*Λⱼ)*Vⱼ'
     # Λⱼ[l,m] = λl≈λm ? -1im*δt*cis(λl) : -δt*(cis(λl)-cis(λm))/(λl-λm)
-    Ac_mul_B!(A,Vj,Hk)
+    Ac_mul_B!(A,Vj,Hck)
     A_mul_B!(Jkj,A,Vj)
     _Jmathermprod!(Jkj,cisDj,Dj,δt)
     A_mul_B!(A,Vj,Jkj)
@@ -43,11 +43,15 @@ function Jmat!(Jkj,Hk,cisDj,Dj,Vj,δt,A)
     return nothing
 end
 
-function _Jmathermprod!(J,cisD,D,δt)
-    for m = 1:length(D), l = 1:length(D)
-        λl, λm = D[l], D[m]
-        cisλl, cisλm = cisD[l], cisD[m]
-        J[l,m] *= λl≈λm ? -1im*δt*cisλl : -δt*(cisλl-cisλm)/(λl-λm)
+function _Jmathermprod!(J,cisDj,Dj,δt)
+    for m = 1:length(Dj), l = 1:length(Dj)
+        λl, λm = Dj[l], Dj[m]
+        cisλl, cisλm = cisDj[l], cisDj[m]
+        if abs(λl-λm) < 1E-10
+            J[l,m] *= -1im*δt*cisλl
+        else
+            J[l,m] *= -δt*(cisλl-cisλm)/(λl-λm)
+        end
     end
     return nothing
 end
@@ -70,16 +74,16 @@ function fidelityprime!(fp,u,δt,Ut,Hd,Hc,H,A,U,X,D,V,P,u_last)
     # Calculate exact derivative of fidelity error function:
     # ∂Φ/∂uₖⱼ  = ⟨Pⱼ,∂Uⱼ/∂uₖⱼ*Xⱼ₋₁⟩⟨Xⱼ,Pⱼ⟩/N² + c.c.
     # ∂fₑ/∂uₖⱼ = -∂Φ/∂uₖⱼ
-    #          = -2*Re(⟨Pⱼ,Jₖⱼ*Xⱼ₋₁⟩⟨Xⱼ,Pⱼ⟩)/N² where Jₖⱼ = ∂Uⱼ/∂uₖⱼ
+    #          = -2*Re(⟨Pⱼ,Jₖⱼ*Xⱼ₋₁⟩⟨Uf,Ut⟩)/N² where Jₖⱼ = ∂Uⱼ/∂uₖⱼ
     Jkj = similar(A)
     cisDj = Vector{Complex128}(D[1])
+    a = inner(X[end],Ut)
     for j = 1:n
-        aj = inner(X[j],P[j])
         cisDj .= cis.(D[j])
         for k = 1:m
             Jmat!(Jkj,Hc[k],cisDj,D[j],V[j],δt,A)
             j==1 ? copy!(A,Jkj) : A_mul_B!(A,Jkj,X[j-1])
-            fp[(j-1)*m+k] = -real(inner(P[j],A)*aj)
+            fp[(j-1)*m+k] = -real(inner(P[j],A)*a)
         end
     end
     scale!(fp,2/size(Ut,1)^2)
@@ -88,15 +92,15 @@ end
 
 function fidelityprimeapprox!(fp,u,δt,Ut,Hd,Hc,H,A,U,X,D,V,P,u_last)
     # Calculate forward and backward propagators
-    calc_fprops!(U,X,D,V,Hd,Hc,u,δt,H,u_last)
+    calc_fprops!(U,X,D,V,u,δt,Hd,Hc,H,u_last)
     calc_bprops!(P,U,Ut)
     n = length(U); m = length(Hc)
     # Calculate approximate derivative of fidelity error function:
     # ∂Φ/∂uₖⱼ  = ⟨Pⱼ,∂Uⱼ/∂uₖⱼ*Xⱼ₋₁⟩⟨Xⱼ,Pⱼ⟩/N² + c.c.
     # ∂fₑ/∂uₖⱼ = -∂Φ/∂uₖⱼ
-    #          ≈ 2*Re(⟨Pⱼ,iδt*Hₖ*Xⱼ⟩⟨Xⱼ,Pⱼ⟩)/N²
+    #          ≈ 2*Re(⟨Pⱼ,iδt*Hₖ*Xⱼ⟩⟨Uf,Ut⟩)/N²
+    a = inner(X[end],Ut)
     for j = 1:n
-        aj = inner(X[j],P[j])
         for k = 1:m
             A_mul_B!(A,Hc[k],X[j])
             fp[(j-1)*m+k] = real(inner(P[j],scale!(A,1im*δt))*aj)
@@ -139,6 +143,8 @@ function grape(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},u_init,t::Real,n
     m == size(u_init,2) || throw(ArgumentError("control amplitude matrix not consistent with number of control hamiltonians"))
     # Generate OnceDifferentiable object, and get reference to final U
     od, Uf = gen_opt_fun(Ut,Hd,Hc,t,n)
+    # Optimization options
+    #opt = Optim.Options(g_tol = 1E-9)
     # Run optimization
     res = optimize(od,vec(u_init.'),ConjugateGradient())
     #res = optimize(od,vec(u_init.'))
