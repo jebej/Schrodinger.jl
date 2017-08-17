@@ -123,11 +123,11 @@ function gen_opt_fun(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},t::Real,n:
     U = [similar(A) for i=1:n]
     X = deepcopy(U)
     P = deepcopy(U)
-    # For the exact derivative
+    # For the exact derivative we need to store eigenvectors and eigenvalues
     V = [similar(H) for i=1:n]
-    D = [Vector{Float64}(N) for i=1:n]
-    # Storage for last control ampitudes
-    u_last = Vector{Float64}(m*n)
+    D = [Vector{Float64}(N) for i=1:n] # eigenvalues are always real
+    # Storage for last control ampitudes, NaN for first run
+    u_last = fill(NaN64,m*n)
     # Create optimization function object
     f = (u) -> fidelity!(u,t/n,Ut_d,Hd_d,Hc_d,H,U,X,D,V,u_last)
     g! = (fp,u) -> fidelityprime!(fp,u,t/n,Ut_d,Hd_d,Hc_d,H,A,U,X,D,V,P,u_last)
