@@ -47,66 +47,57 @@ function _Jmathermprod!(J,cisDj,Dj,δt)
     for m = 1:length(Dj), l = 1:length(Dj)
         λl, λm = Dj[l], Dj[m]
         cisλl, cisλm = cisDj[l], cisDj[m]
-        if abs(λl-λm) < 1E-10
-            J[l,m] *= -1im*δt*cisλl
-        else
-            J[l,m] *= -δt*(cisλl-cisλm)/(λl-λm)
-        end
+        J[l,m] *= abs(λl-λm)<1E-10 ? -1im*δt*cisλl : -δt*(cisλl-cisλm)/(λl-λm)
     end
     return nothing
 end
 
-function fidelity!(u,δt,Ut,Hd,Hc,H,U,X,D,V,u_last)
+function infidelity!(u,δt,Ut,Hd,Hc,H,U,X,D,V,u_last)
     # Calculate forward propagators
     calc_fprops!(U,X,D,V,u,δt,Hd,Hc,H,u_last)
-    Uf = X[end] # Full propagator
+    Uf = X[end]; N² = size(Ut,1)^2
     # Calculate fidelity error:
     # fₑ = 1 - Φ where Φ = |⟨Ut,Uf⟩|²/N²
-    Φ = abs2(inner(Ut,Uf))/size(Ut,1)^2
-    return 1 - Φ
+    return 1 - abs2(inner(Ut,Uf))/N²
 end
 
-function fidelityprime!(fp,u,δt,Ut,Hd,Hc,H,A,U,X,D,V,P,u_last)
+function infidelityprime!(fp,u,δt,Ut,Hd,Hc,H,A,U,X,D,V,P,u_last)
     # Calculate forward and backward propagators
     calc_fprops!(U,X,D,V,u,δt,Hd,Hc,H,u_last)
     calc_bprops!(P,U,Ut)
-    n = length(U); m = length(Hc)
+    n = length(U); m = length(Hc); N² = size(Ut,1)^2
     # Calculate exact derivative of fidelity error function:
     # ∂Φ/∂uₖⱼ  = ⟨Pⱼ,∂Uⱼ/∂uₖⱼ*Xⱼ₋₁⟩⟨Xⱼ,Pⱼ⟩/N² + c.c.
     # ∂fₑ/∂uₖⱼ = -∂Φ/∂uₖⱼ
     #          = -2*Re(⟨Pⱼ,Jₖⱼ*Xⱼ₋₁⟩⟨Uf,Ut⟩)/N² where Jₖⱼ = ∂Uⱼ/∂uₖⱼ
     Jkj = similar(A)
-    cisDj = Vector{Complex128}(D[1])
+    cisDj = Vector{Complex128}(length(D[1]))
     a = inner(X[end],Ut)
     for j = 1:n
         cisDj .= cis.(D[j])
         for k = 1:m
             Jmat!(Jkj,Hc[k],cisDj,D[j],V[j],δt,A)
             j==1 ? copy!(A,Jkj) : A_mul_B!(A,Jkj,X[j-1])
-            fp[(j-1)*m+k] = -real(inner(P[j],A)*a)
+            fp[(j-1)*m+k] = -2*real(inner(P[j],A)*a)/N²
         end
     end
-    scale!(fp,2/size(Ut,1)^2)
     return fp
 end
 
-function fidelityprimeapprox!(fp,u,δt,Ut,Hd,Hc,H,A,U,X,D,V,P,u_last)
+function infidelityprimeapprox!(fp,u,δt,Ut,Hd,Hc,H,A,U,X,D,V,P,u_last)
     # Calculate forward and backward propagators
     calc_fprops!(U,X,D,V,u,δt,Hd,Hc,H,u_last)
     calc_bprops!(P,U,Ut)
-    n = length(U); m = length(Hc)
+    n = length(U); m = length(Hc); N² = size(Ut,1)^2
     # Calculate approximate derivative of fidelity error function:
     # ∂Φ/∂uₖⱼ  = ⟨Pⱼ,∂Uⱼ/∂uₖⱼ*Xⱼ₋₁⟩⟨Xⱼ,Pⱼ⟩/N² + c.c.
     # ∂fₑ/∂uₖⱼ = -∂Φ/∂uₖⱼ
     #          ≈ 2*Re(⟨Pⱼ,iδt*Hₖ*Xⱼ⟩⟨Uf,Ut⟩)/N²
     a = inner(X[end],Ut)
-    for j = 1:n
-        for k = 1:m
-            A_mul_B!(A,Hc[k],X[j])
-            fp[(j-1)*m+k] = real(inner(P[j],scale!(A,1im*δt))*aj)
-        end
+    for j = 1:n, k = 1:m
+        A_mul_B!(A,Hc[k],X[j])
+        fp[(j-1)*m+k] = -2δt*imag(inner(P[j],A)*a)/N²
     end
-    scale!(fp,2/size(Ut,1)^2)
     return fp
 end
 
@@ -129,9 +120,9 @@ function gen_opt_fun(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},t::Real,n:
     # Storage for last control ampitudes, NaN for first run
     u_last = fill(NaN64,m*n)
     # Create optimization function object
-    f = (u) -> fidelity!(u,t/n,Ut_d,Hd_d,Hc_d,H,U,X,D,V,u_last)
-    g! = (fp,u) -> fidelityprime!(fp,u,t/n,Ut_d,Hd_d,Hc_d,H,A,U,X,D,V,P,u_last)
-    #g! = (fp,u) -> fidelityprimeapprox!(fp,u,t/n,Ut_d,Hd_d,Hc_d,H,A,U,X,D,V,P,u_last)
+    f = (u) -> infidelity!(u,t/n,Ut_d,Hd_d,Hc_d,H,U,X,D,V,u_last)
+    g! = (fp,u) -> infidelityprime!(fp,u,t/n,Ut_d,Hd_d,Hc_d,H,A,U,X,D,V,P,u_last)
+    #g! = (fp,u) -> infidelityprimeapprox!(fp,u,t/n,Ut_d,Hd_d,Hc_d,H,A,U,X,D,V,P,u_last)
     # Return a OnceDifferentiable object with appropriate seed
     return OnceDifferentiable(f,g!,zeros(m*n)),X[end]
 end
