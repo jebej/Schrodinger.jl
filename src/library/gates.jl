@@ -6,12 +6,11 @@ Generate a qubit rotation operator about an axis defined by the vector \$\\vec{n
 \\hat{R}_{\\vec{n}}(θ) = \\exp\\left(−iθ\\vec{n}⋅\\vec{σ}/2\\right) = \\cos\\frac{θ}{2}𝟙 - i\\sin\\frac{θ}{2}(n_xσ_x + n_yσ_y + n_zσ_z).
 ```
 """
-function rotation(θ::Real,n::NTuple{3,Int}=(1,0,0))
+function rotation(θ::Real,n::NTuple{3,Real}=(1,0,0))
     R = Matrix{Complex128}(2,2)
-    nx,ny,nz = n
-    a = 1/√(nx^2+ny^2+nz^2)
-    nx,ny,nz = a*nx,a*ny,a*nz
-    c = cos(0.5θ); s = sin(0.5θ)
+    a = 1/√(n[1]^2+n[2]^2+n[3]^2)
+    nx,ny,nz = a*n[1],a*n[2],a*n[3]
+    c = cos(θ/2); s = sin(θ/2)
     R[1,1] = Complex(c,-nz*s)
     R[2,1] = Complex(ny*s,-nx*s)
     R[1,2] = Complex(-ny*s,-nx*s)
