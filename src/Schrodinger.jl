@@ -13,7 +13,7 @@ export Operator, Ket, Bra,
     purity, fidelity, fidelity2, entanglement_fidelity, gate_fidelity,
     fock, basis, coherent, thermal, maxentangled, maxmixed, ket, @qb_str,
     qzero, qeye, create, destroy, numberop, projectorop,
-    displacementop, squeezeop,
+    displacementop, squeezeop, Gate,
     rand_unitary,
     Liouvillian, SchrodingerEvo, LindbladEvo,
     Propagator, SchrodingerProp, LindbladProp,
@@ -72,5 +72,6 @@ include("library/states.jl")
 include("library/random.jl")
 include("library/drivefuns.jl")
 include("library/constants.jl")
+include("library/gates.jl")
 
 end

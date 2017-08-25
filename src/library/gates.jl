@@ -1,3 +1,6 @@
+module Gate
+using ..Schrodinger
+
 """
     rotation(θ,n=(1,0,0))
 
