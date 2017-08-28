@@ -8,6 +8,7 @@ export Operator, Ket, Bra,
     fock, basis, coherent, thermal, maxmixed, maxentangled,
     qzero, qeye, create, destroy, numberop, projectorop,
     displacementop, squeezeop,
+    rand_unitary,
     Liouvillian, SchrodingerEvo, LindbladEvo,
     Propagator, SchrodingerProp, LindbladProp,
     sesolve, mesolve, lsolve, psolve, psteady,
@@ -29,6 +30,7 @@ include(joinpath("misc","sparsevec.jl"))
 include(joinpath("misc","checks.jl"))
 include(joinpath("library","operators.jl"))
 include(joinpath("library","states.jl"))
+include(joinpath("library","random.jl"))
 include(joinpath("library","drivefuns.jl"))
 include(joinpath("library","constants.jl"))
 

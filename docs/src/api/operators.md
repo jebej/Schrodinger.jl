@@ -1,5 +1,5 @@
 ```@meta
-DocTestSetup  = quote
+DocTestSetup = quote
     using Schrodinger
 end
 ```
@@ -7,7 +7,7 @@ end
 
 ```@autodocs
 Modules = [Schrodinger]
-Pages   = ["operators.jl"]
+Pages   = ["operators.jl","random.jl"]
 Order   = [:function]
 Private = false
 ```

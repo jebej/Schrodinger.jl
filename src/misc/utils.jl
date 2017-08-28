@@ -27,6 +27,18 @@ function sqrtfact(n::Integer)
     end
 end
 
+function rand_unitary{T<:LinAlg.BlasComplex}(::Type{T},n::Integer)
+    # Generate a Haar distributed random unitary matrix
+    # ref https://arxiv.org/pdf/math-ph/0609050.pdf
+    A  = randn(T,n,n)
+    qr = qrfact!(A)
+    U  = full(qr[:Q])
+    @inbounds for i = 1:n
+        U[:,i] .*= sign(qr[:R][i,i]) # U = Q*Diagonal(diag(R)./abs.(diag(R)))
+    end
+    return U
+end
+
 function inner{T,S}(A::AbstractMatrix{T},B::AbstractMatrix{S})
     # calculate trace(A'*B) efficiently
     m, n = size(A)

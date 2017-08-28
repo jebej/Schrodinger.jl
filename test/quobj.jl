@@ -42,6 +42,7 @@ end
     @test (A=numberop(6); diag(A)==[n for n = 0:5]&&isdiag(A))
     @test data(displacementop(3,0.5im)) ≈ [0.88261978 0.43980233im -0.16600070; 0.43980233im 0.64785934 0.62197442im; -0.16600070 0.62197442im 0.76523956]
     @test data(squeezeop(3,0.5im)) ≈ [0.93814834 0 -0.34623359im; 0 1 0; -0.34623359im 0 0.93814834]
+    @test ( U=rand_unitary(10,(5,2)); U*U' ≈ qeye(10,(5,2)) )
 end
 
 @testset "Matrix Property Checks" begin
