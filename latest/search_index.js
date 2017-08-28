@@ -341,7 +341,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Operator Library",
     "title": "Operator Library",
     "category": "page",
-    "text": "DocTestSetup  = quote\n    using Schrodinger\nend"
+    "text": "DocTestSetup = quote\n    using Schrodinger\nend"
 },
 
 {
@@ -409,11 +409,19 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "api/operators.html#Schrodinger.rand_unitary",
+    "page": "Operator Library",
+    "title": "Schrodinger.rand_unitary",
+    "category": "Function",
+    "text": "rand_unitary(N, dims=(N,))\n\nGenerate a Haar distributed random unitary operator for a Hilbert space of size N. It is possible to specify the subspace dimensions with the dims argument. Returns a dense matrix.\n\nExample\n\njulia> U = rand_unitary(4,(2,2));\n\njulia> U'*U ≈ qeye(4,(2,2))\ntrue\n\n\n\n"
+},
+
+{
     "location": "api/operators.html#Operator-Library-1",
     "page": "Operator Library",
     "title": "Operator Library",
     "category": "section",
-    "text": "Modules = [Schrodinger]\nPages   = [\"operators.jl\"]\nOrder   = [:function]\nPrivate = false"
+    "text": "Modules = [Schrodinger]\nPages   = [\"operators.jl\",\"random.jl\"]\nOrder   = [:function]\nPrivate = false"
 },
 
 {
