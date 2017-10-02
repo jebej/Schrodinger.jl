@@ -1,8 +1,11 @@
 using Schrodinger, Optim
+abstract type ObjectiveFunction end
+include("normpsu.jl")
+include("coherentsubspaces.jl")
 
 function calc_fprops!(U,X,D,V,u,δt,Hd,Hc,H,u_last)
     # If the control amplitudes u did not change, return
-    u == u_last && return nothing
+    #u == u_last && return nothing
     # Otherwise calculate each individual propagator
     n = length(U); m = length(Hc)
     for j = 1:n
@@ -10,7 +13,7 @@ function calc_fprops!(U,X,D,V,u,δt,Hd,Hc,H,u_last)
         for k = 1:m
             H .+= u[(j-1)*m+k].*Hc[k]
         end
-        # Calculate U and store eigenvectors and eigenvalues
+        # Calculate U and store eigenvectors and eigenvalues of -δt*H
         Schrodinger.expim!(U[j],Hermitian(scale!(H,-δt)),D[j],V[j],X[1])
     end
     # Calculate forward propagators (cumulative product of U)
@@ -52,96 +55,28 @@ function _Jmathermprod!(J,cisDj,Dj,δt)
     return nothing
 end
 
-function infidelity!(u,δt,Ut,Hd,Hc,H,U,X,D,V,u_last)
-    # Calculate forward propagators
-    calc_fprops!(U,X,D,V,u,δt,Hd,Hc,H,u_last)
-    Uf = X[end]; N² = size(Ut,1)^2
-    # Calculate fidelity error:
-    # fₑ = 1 - Φ where Φ = |⟨Ut,Uf⟩|²/N²
-    return 1 - abs2(inner(Ut,Uf))/N²
-end
-
-function infidelityprime!(fp,u,δt,Ut,Hd,Hc,H,A,U,X,D,V,P,u_last)
-    # Calculate forward and backward propagators
-    calc_fprops!(U,X,D,V,u,δt,Hd,Hc,H,u_last)
-    calc_bprops!(P,U,Ut)
-    n = length(U); m = length(Hc); N² = size(Ut,1)^2
-    # Calculate exact derivative of fidelity error function:
-    # ∂Φ/∂uₖⱼ  = ⟨Pⱼ,∂Uⱼ/∂uₖⱼ*Xⱼ₋₁⟩⟨Xⱼ,Pⱼ⟩/N² + c.c.
-    # ∂fₑ/∂uₖⱼ = -∂Φ/∂uₖⱼ
-    #          = -2*Re(⟨Pⱼ,Jₖⱼ*Xⱼ₋₁⟩⟨Uf,Ut⟩)/N² where Jₖⱼ = ∂Uⱼ/∂uₖⱼ
-    Jkj = similar(A)
-    cisDj = Vector{Complex128}(length(D[1]))
-    a = inner(X[end],Ut)
-    for j = 1:n
-        cisDj .= cis.(D[j])
-        for k = 1:m
-            Jmat!(Jkj,Hc[k],cisDj,D[j],V[j],δt,A)
-            j==1 ? copy!(A,Jkj) : A_mul_B!(A,Jkj,X[j-1])
-            fp[(j-1)*m+k] = -2*real(inner(P[j],A)*a)/N²
-        end
-    end
-    return fp
-end
-
-function infidelityprimeapprox!(fp,u,δt,Ut,Hd,Hc,H,A,U,X,D,V,P,u_last)
-    # Calculate forward and backward propagators
-    calc_fprops!(U,X,D,V,u,δt,Hd,Hc,H,u_last)
-    calc_bprops!(P,U,Ut)
-    n = length(U); m = length(Hc); N² = size(Ut,1)^2
-    # Calculate approximate derivative of fidelity error function:
-    # ∂Φ/∂uₖⱼ  = ⟨Pⱼ,∂Uⱼ/∂uₖⱼ*Xⱼ₋₁⟩⟨Xⱼ,Pⱼ⟩/N² + c.c.
-    # ∂fₑ/∂uₖⱼ = -∂Φ/∂uₖⱼ
-    #          ≈ 2*Re(⟨Pⱼ,iδt*Hₖ*Xⱼ⟩⟨Uf,Ut⟩)/N²
-    a = inner(X[end],Ut)
-    for j = 1:n, k = 1:m
-        A_mul_B!(A,Hc[k],X[j])
-        fp[(j-1)*m+k] = -2δt*imag(inner(P[j],A)*a)/N²
-    end
-    return fp
-end
-
-function gen_opt_fun(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},t::Real,n::Integer)
-    N = prod(dims(Hd))
-    m = length(Hc)
-    # Make sure we pass dense operators
-    Ut_d = full(Ut)
-    Hd_d = full(Hd)
-    Hc_d = full.(Hc)
-    # Generate cache for various objects
-    H = promote_type(typeof(Hd_d),eltype(Hc_d))(N,N)
-    A = Matrix{Complex128}(N,N)
-    U = [similar(A) for i=1:n]
-    X = deepcopy(U)
-    P = deepcopy(U)
-    # For the exact derivative we need to store eigenvectors and eigenvalues
-    V = [similar(H) for i=1:n]
-    D = [Vector{Float64}(N) for i=1:n] # eigenvalues are always real
-    # Storage for last control ampitudes, NaN for first run
-    u_last = fill(NaN64,m*n)
-    # Create optimization function object
-    f = (u) -> infidelity!(u,t/n,Ut_d,Hd_d,Hc_d,H,U,X,D,V,u_last)
-    g! = (fp,u) -> infidelityprime!(fp,u,t/n,Ut_d,Hd_d,Hc_d,H,A,U,X,D,V,P,u_last)
-    #g! = (fp,u) -> infidelityprimeapprox!(fp,u,t/n,Ut_d,Hd_d,Hc_d,H,A,U,X,D,V,P,u_last)
-    # Return a OnceDifferentiable object with appropriate seed
-    return OnceDifferentiable(f,g!,zeros(m*n)),X[end]
-end
-
-
-function grape(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},u_init,t::Real,n::Integer)
-    m = length(Hc)
-    n == size(u_init,1) || throw(ArgumentError("control amplitude matrix not consistent with number of timesteps"))
-    m == size(u_init,2) || throw(ArgumentError("control amplitude matrix not consistent with number of control hamiltonians"))
-    # Generate OnceDifferentiable object, and get reference to final U
-    od, Uf = gen_opt_fun(Ut,Hd,Hc,t,n)
+function grape(O::ObjectiveFunction,u_init)
+    # Build OnceDifferentiable object from ObjectiveFunction object
+    od = OnceDifferentiable(O,(fp,u)->O(Val{:gradient}(),fp,u),zeros(O.u_last))
     # Optimization options
     #opt = Optim.Options(g_tol = 1E-9)
     # Run optimization
     res = optimize(od,vec(u_init.'),ConjugateGradient())
-    #res = optimize(od,vec(u_init.'))
     # Reshape final control amplitude matrix
-    uf = reshape(Optim.minimizer(res),m,n).'
-    return uf, Uf, res
+    uf = reshape(Optim.minimizer(res),size(u_init,2),size(u_init,1)).'
+    return uf, O.X[end], res
+end
+
+function opt_pihalfx(n)
+    Hd = qzero(2)
+    Hc = [π*σx, π*σy]
+    t = 1
+    #u_init = rand(n,1) .- 0.5
+    u_init = zeros(n,2)
+    Ut = expm(-1im*π*σx/4)
+    # Create objective function type
+    O = NormPSU(Ut,Hd,Hc,t,n)
+    grape(O,u_init)
 end
 
 function opt_hadamard(n)
@@ -151,7 +86,21 @@ function opt_hadamard(n)
     #u_init = rand(n,1) .- 0.5
     u_init = zeros(n,1)
     Ut = Operator([1/√2 1/√2; 1/√2 -1/√2])
-    grape(Ut,Hd,Hc,u_init,t,n)
+    # Create objective function type
+    O = NormPSU(Ut,Hd,Hc,t,n)
+    grape(O,u_init)
+end
+
+function opt_3lvlNOT(n)
+    Δ = 2π*(-400) # anharmonicity
+    Hd = Δ*Operator(basis(3,2)) # drift Hamiltonian
+    Hc = [create(3)/2+destroy(3)/2, im*create(3)/2-im*destroy(3)/2]
+    t = 3
+    u_init = [-Δ*Schrodinger.gaussianpulse.(linspace(-t/2,t/2,n),[[t/2,t,0,0,pi]]) linspace(-Δ/2,Δ/2,n)]
+    Ut = Operator([0 1 0; 1 0 0; 0 0 1]) # 3lvl NOT gate
+    # Create objective function type
+    O = CoherentSubspaces(Ut,1:2,Hd,Hc,t,n) # care only about computational subspace
+    grape(O,u_init)
 end
 
 function opt_2Q_QFT(n)
@@ -165,7 +114,9 @@ function opt_2Q_QFT(n)
                    0.5 -0.5    0.5 -0.5
                    0.5 -0.5im -0.5  0.5im],
                   (2,2))
-    grape(Ut,Hd,Hc,u_init,t,n)
+    # Create objective function type
+    O = NormPSU(Ut,Hd,Hc,t,n)
+    grape(O,u_init)
 end
 
 function plotgrape(tf,uf)
