@@ -45,29 +45,27 @@ end
 function (O::NormPSU)(u)
     # Calculate forward propagators
     calc_fprops!(O.U,O.X,O.D,O.V,u,O.δt,O.Hd,O.Hc,O.H,O.u_last)
-    Uf = O.X[end]; N² = size(O.Ut,1)^2
-    # Calculate PSU (projective special unitary) norm:
-    # Φ = |⟨Ut,Uf⟩|²/N²
-    # Return infidelity fₑ = 1 - Φ
-    return 1-(abs2(inner(O.Ut,Uf)))/N² # use sqrt of abs2 for most fastest
+    Uf = O.X[end]; N = size(O.Ut,1)
+    # Calculate PSU (projective special unitary) norm infidelity:
+    # fₑ = 1 - |⟨Ut,Uf⟩|/N
+    return 1 - abs(inner(O.Ut,Uf))/N
 end
 
 function (O::NormPSU)(::Val{:gradient},fp,u)
     # Calculate forward and backward propagators
     calc_fprops!(O.U,O.X,O.D,O.V,u,O.δt,O.Hd,O.Hc,O.H,O.u_last)
     calc_bprops!(O.P,O.U,O.Ut)
-    n = length(O.U); m = length(O.Hc); N² = size(O.Ut,1)^2
+    n = length(O.U); m = length(O.Hc); N = size(O.Ut,1)
     # Calculate exact derivative of fidelity error function:
-    # ∂Φ/∂uₖⱼ  = ⟨Pⱼ,∂Uⱼ/∂uₖⱼ*Xⱼ₋₁⟩⟨Xⱼ,Pⱼ⟩/N² + c.c.
-    # ∂fₑ/∂uₖⱼ = -∂Φ/∂uₖⱼ
-    #          = -2*Re(⟨Pⱼ,Jₖⱼ*Xⱼ₋₁⟩⟨Uf,Ut⟩)/N² where Jₖⱼ = ∂Uⱼ/∂uₖⱼ
-    a = inner(O.X[end],O.Ut)
+    # ∂fₑ/∂uₖⱼ = -1/2*⟨Pⱼ,∂Uⱼ/∂uₖⱼ*Xⱼ₋₁⟩*cis(∠⟨Xⱼ,Pⱼ⟩)/N + c.c.
+    #          = -Re(⟨Pⱼ,Jₖⱼ*Xⱼ₋₁⟩*cis(∠⟨Uf,Ut⟩))/N where Jₖⱼ = ∂Uⱼ/∂uₖⱼ
+    a = normalize(inner(O.X[end],O.Ut))
     for j = 1:n
         O.cisDj .= cis.(O.D[j])
         for k = 1:m
             Jmat!(O.Jkj,O.Hc[k],O.cisDj,O.D[j],O.V[j],O.δt,O.A)
             j==1 ? copy!(O.A,O.Jkj) : A_mul_B!(O.A,O.Jkj,O.X[j-1])
-            fp[(j-1)*m+k] = -2*real(inner(O.P[j],O.A)*a)/N²
+            fp[(j-1)*m+k] = -real(inner(O.P[j],O.A)*a)/N
         end
     end
     return fp

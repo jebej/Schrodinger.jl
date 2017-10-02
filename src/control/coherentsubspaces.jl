@@ -50,51 +50,57 @@ end
 function (O::CoherentSubspaces)(u)
     # Calculate forward propagators
     calc_fprops!(O.U,O.X,O.D,O.V,u,O.δt,O.Hd,O.Hc,O.H,O.u_last)
-    Uf = O.X[end]; N² = size(O.Ut,1)^2
-    # Calculate PSU (projective special unitary) norm:
-    # Φ = |⟨Ut,Uf⟩|²/N²
-    # Return infidelity fₑ = 1 - Φ
-    return 1-(inner2(O.Ut,Uf,O.s))/N²
+    Uf = O.X[end]; N = size(O.Ut,1)
+    # Calculate coherent subspaces norm infidelity:
+    # fₑ = 1 - |⟨Ut,Uf⟩|cs/N
+    return 1 - inner_cs(O.Ut,Uf,O.s)/N
 end
 
 function (O::CoherentSubspaces)(::Val{:gradient},fp,u)
     # Calculate forward and backward propagators
     calc_fprops!(O.U,O.X,O.D,O.V,u,O.δt,O.Hd,O.Hc,O.H,O.u_last)
     calc_bprops!(O.P,O.U,O.Ut)
-    n = length(O.U); m = length(O.Hc); N² = size(O.Ut,1)^2
-    # Calculate exact derivative of fidelity error function:
-    # ∂Φ/∂uₖⱼ  = ⟨Pⱼ,∂Uⱼ/∂uₖⱼ*Xⱼ₋₁⟩⟨Xⱼ,Pⱼ⟩/N² + c.c.
-    # ∂fₑ/∂uₖⱼ = -∂Φ/∂uₖⱼ
-    #          = -2*Re(⟨Pⱼ,Jₖⱼ*Xⱼ₋₁⟩⟨Uf,Ut⟩)/N² where Jₖⱼ = ∂Uⱼ/∂uₖⱼ
-    x,y = _inner2(O.X[end],O.Ut,O.s)
+    n = length(O.U); m = length(O.Hc); N = size(O.Ut,1)
+    # Calculate exact derivative of coherent subspaces norm infidelity
+    x,y = _inner_cs_1(O.X[end],O.Ut,O.s)
     for j = 1:n
         O.cisDj .= cis.(O.D[j])
         for k = 1:m
             Jmat!(O.Jkj,O.Hc[k],O.cisDj,O.D[j],O.V[j],O.δt,O.A)
             j==1 ? copy!(O.A,O.Jkj) : A_mul_B!(O.A,O.Jkj,O.X[j-1])
-            fp[(j-1)*m+k] = -inner2grad(O.P[j],O.A,x,y,O.s)/N²
+            fp[(j-1)*m+k] = -inner_cs_grad(O.P[j],O.A,x,y,O.s)/N
         end
     end
     return fp
 end
 
 
-function inner2{T,S}(A::AbstractMatrix{T},B::AbstractMatrix{S},s::IntSet)
-    # calculate |trace(A'*B)|^2 (ish) efficiently, but only caring about relative phase between the subspaces contained in s.
-    x,y = _inner2(A,B,s)
-    res = abs2(x)
-    @inbounds for i = 1:length(y)
-        res += abs2(y[i])
-        res += 2*abs(y[i])*abs(x)
+function inner_cs{T,S}(A::AbstractMatrix{T},B::AbstractMatrix{S},s::IntSet)
+    # calculate |trace(A'*B)|cs (coherent subspaces)
+    # this inner product cares only about relative phase between the subspaces contained in s
+    x,y = _inner_cs_1(A,B,s)
+    return sqrt(_inner_cs_2(x,y))
+end
+
+function inner_cs_grad{T,S}(Pj::AbstractMatrix{T},JXj::AbstractMatrix{S},x,y,s::IntSet)
+    # calculate the partial derivative of |trace(A'*B)|cs (coherent subspaces)
+    w,z = _inner_cs_1(Pj,JXj,s)
+    res = real(w*x)
+    @inbounds for i = 1:length(z)
+        res += real(z[i]*y[i])
+        res += real(w*normalize(x))*abs(y[i]) + real(z[i]*normalize(y[i]))*abs(x)
         for j = 1:i-1
-            res += 2*abs(y[i])*abs(y[j])
+            res += real(z[i]*normalize(y[i]))*abs(y[j]) + real(z[j]*normalize(y[j]))*abs(y[i])
         end
     end
-    return res
+    return res/sqrt(_inner_cs_2(x,y))
 end
 
 
-function _inner2{T,S}(A::AbstractMatrix{T},B::AbstractMatrix{S},s::IntSet)
+Base.normalize(z::Complex) = cis(angle(z))
+Base.normalize(z::Real) = one(z)
+
+function _inner_cs_1{T,S}(A::AbstractMatrix{T},B::AbstractMatrix{S},s::IntSet)
     m, n = size(A)
     size(B) == (m,n) || throw(DimensionMismatch("matrices must have the same dimensions"))
     x = zero(promote_type(T,S))
@@ -115,19 +121,14 @@ function _inner2{T,S}(A::AbstractMatrix{T},B::AbstractMatrix{S},s::IntSet)
     return x,y
 end
 
-function inner2grad{T,S}(Pj::AbstractMatrix{T},JXj::AbstractMatrix{S},x,y,s::IntSet)
-    # calculate the partial derivative of |trace(A'*B)|^2, but only caring about relative phase between the subspaces contained in s.
-    w,z = _inner2(Pj,JXj,s)
-    res = 2*real(w*x)
-    @inbounds for i = 1:length(z)
-        res += 2*real(z[i]*y[i])
-        res += 2*(real(w*normalize(x))*abs(y[i]) + real(z[i]*normalize(y[i]))*abs(x))
+function _inner_cs_2(x,y)
+    res = abs2(x)
+    @inbounds for i = 1:length(y)
+        res += abs2(y[i])
+        res += 2*abs(y[i])*abs(x)
         for j = 1:i-1
-            res += 2*(real(z[i]*normalize(y[i]))*abs(y[j]) + real(z[j]*normalize(y[j]))*abs(y[i]))
+            res += 2*abs(y[i])*abs(y[j])
         end
     end
     return res
 end
-
-Base.normalize(z::Complex) = cis(angle(z))
-Base.normalize(z::Real) = one(z)
