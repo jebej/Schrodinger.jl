@@ -1,5 +1,8 @@
 using Base.LinAlg.RealHermSymComplexHerm
-import Base: reverse
+import Base: IntSet, reverse
+
+convert(::Type{IntSet},r::IntCol) = IntSet(r)
+IntSet(elems::Vararg{Int}) = IntSet(elems)
 
 reverse(n::Number) = n
 
@@ -40,40 +43,8 @@ function rand_unitary{T<:LinAlg.BlasComplex}(::Type{T},n::Integer)
     return U
 end
 
-function inner{T,S}(A::AbstractMatrix{T},B::AbstractMatrix{S})
-    # calculate trace(A'*B) efficiently
-    m, n = size(A)
-    size(B) == (m,n) || throw(DimensionMismatch("matrices must have the same dimensions"))
-    res = zero(promote_type(T,S))
-    @inbounds for j = 1:n, i = 1:m
-        res += conj(A[i,j])*B[i,j]
-    end
-    return res
-end
-
-function inner{T1,T2,S1,S2}(A::SparseMatrixCSC{T1,S1},B::SparseMatrixCSC{T2,S2})
-    # calculate trace(A'*B) efficiently
-    m, n = size(A)
-    size(B) == (m,n) || throw(DimensionMismatch("matrices must have the same dimensions"))
-    res = zero(promote_type(T1,T2))
-    @inbounds for j = 1:n
-        for i1 = A.colptr[j]:A.colptr[j+1]-1
-            ra = A.rowval[i1]
-            for i2 = B.colptr[j]:B.colptr[j+1]-1
-                rb = B.rowval[i2]
-                if ra < rb
-                    # since the rowval of B is larger than that of A, no need to keep checking for equality, go to the nex rowval of A
-                    continue
-                elseif ra == rb
-                    res += conj(A.nzval[i1])*B.nzval[i2]
-                    # done with this row
-                    continue
-                end
-            end
-        end
-    end
-    return res
-end
+Base.normalize(z::Complex) = cis(angle(z))
+Base.normalize(z::Real) = one(z)
 
 function unwrap!(p)
     n,m = size(p,1),size(p,2)

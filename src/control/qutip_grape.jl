@@ -7,9 +7,9 @@ using PyCall
 function grape_qutip(Ut,Hd,Hc,N,t,n)
     # start point for the gate evolution
     U0 = qt.identity(N)
-    res = cpo.optimize_pulse_unitary(Hd,Hc,U0,Ut,n,t,init_pulse_type="ZERO")
+    res = cpo.optimize_pulse_unitary(Hd,Hc,U0,Ut,n,t,init_pulse_type="ZERO",fid_err_targ=1E-16,min_grad=1E-16,max_iter=1000)
     uf = res[:final_amps]
-    Uf = res[:evo_full_final]
+    Uf = res[:evo_full_final][:full]()
     return uf, Uf, res
 end
 
