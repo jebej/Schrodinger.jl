@@ -1,5 +1,5 @@
 module Schrodinger
-using DiffEqBase, OrdinaryDiffEq, Compat
+using DiffEqBase, OrdinaryDiffEq, Optim, Compat
 
 export Operator, Ket, Bra,
     data, dims, isnormalized, dimsmatch, dense, braket, isapproxhermitian,
@@ -12,6 +12,7 @@ export Operator, Ket, Bra,
     Liouvillian, SchrodingerEvo, LindbladEvo,
     Propagator, SchrodingerProp, LindbladProp,
     sesolve, mesolve, lsolve, psolve, psteady,
+    grape, NormPSU, CoherentSubspaces,
     expim, gaussian, inner
 
 include(joinpath("quobj","types.jl"))
@@ -24,7 +25,11 @@ include(joinpath("dynamics","liouvillian.jl"))
 include(joinpath("dynamics","propagator.jl"))
 include(joinpath("dynamics","constructors.jl"))
 include(joinpath("dynamics","interface.jl"))
+include(joinpath("control","grape.jl"))
+include(joinpath("control","normpsu.jl"))
+include(joinpath("control","coherentsubspaces.jl"))
 include(joinpath("misc","utils.jl"))
+include(joinpath("misc","inner.jl"))
 include(joinpath("misc","kron.jl"))
 include(joinpath("misc","sparsevec.jl"))
 include(joinpath("misc","checks.jl"))

@@ -1,4 +1,5 @@
-immutable NormPSU{T} <: ObjectiveFunction
+immutable NormPSU{T,D} <: ObjectiveFunction
+    dims::SDims{D}
     δt::Float64 # timestep (fixed)
     Ut::Matrix{Complex128} # target unitary
     Hd::Matrix{T} # drift Hamiltonian
@@ -16,6 +17,8 @@ immutable NormPSU{T} <: ObjectiveFunction
     Jkj::Matrix{Complex128} # temporary
     cisDj::Vector{Complex128} # temporary
 end
+
+NormPSU(dims,δt,Ut,Hd,Hc,u_last,U,X,P,D,V,H,A,Jkj,cisDj) = NormPSU{eltype(Hd),length(dims)}(dims,δt,Ut,Hd,Hc,u_last,U,X,P,D,V,H,A,Jkj,cisDj)
 
 function NormPSU(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},t::Real,n::Integer)
     # TODO: Prob should do some error checking
@@ -39,10 +42,10 @@ function NormPSU(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},t::Real,n::Int
     # More temporary storage
     Jkj = Matrix{Complex128}(N,N)
     cisDj = Vector{Complex128}(N)
-    return NormPSU{eltype(H)}(t/n,Ut_d,Hd_d,Hc_d,u_last,U,X,P,D,V,H,A,Jkj,cisDj)
+    return NormPSU(dims(Hd),t/n,Ut_d,Hd_d,Hc_d,u_last,U,X,P,D,V,H,A,Jkj,cisDj)
 end
 
-function (O::NormPSU)(u)
+function objective(O::NormPSU,u)
     # Calculate forward propagators
     calc_fprops!(O.U,O.X,O.D,O.V,u,O.δt,O.Hd,O.Hc,O.H,O.u_last)
     Uf = O.X[end]; N = size(O.Ut,1)
@@ -51,7 +54,7 @@ function (O::NormPSU)(u)
     return 1 - abs(inner(O.Ut,Uf))/N
 end
 
-function (O::NormPSU)(::Val{:gradient},fp,u)
+function gradient!(O::NormPSU,fp,u)
     # Calculate forward and backward propagators
     calc_fprops!(O.U,O.X,O.D,O.V,u,O.δt,O.Hd,O.Hc,O.H,O.u_last)
     calc_bprops!(O.P,O.U,O.Ut)

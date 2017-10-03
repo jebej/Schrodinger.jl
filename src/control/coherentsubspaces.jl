@@ -1,4 +1,5 @@
-immutable CoherentSubspaces{T} <: ObjectiveFunction
+immutable CoherentSubspaces{T,D} <: ObjectiveFunction
+    dims::SDims{D}
     δt::Float64 # timestep (fixed)
     Ut::Matrix{Complex128} # target unitary
     s::IntSet # coherent subspaces
@@ -18,9 +19,7 @@ immutable CoherentSubspaces{T} <: ObjectiveFunction
     cisDj::Vector{Complex128} # temporary
 end
 
-const IntCol = Union{AbstractVector{Int},IntSet,Set{Int},NTuple{N,Int} where N}
-Base.convert(::Type{IntSet},r::IntCol) = IntSet(r)
-Base.IntSet(elems::Vararg{Int}) = IntSet(elems)
+CoherentSubspaces(dims,δt,Ut,s,Hd,Hc,u_last,U,X,P,D,V,H,A,Jkj,cisDj) = CoherentSubspaces{eltype(Hd),length(dims)}(dims,δt,Ut,s,Hd,Hc,u_last,U,X,P,D,V,H,A,Jkj,cisDj)
 
 function CoherentSubspaces(Ut::Operator,s::IntCol,Hd::Operator,Hc::Vector{<:Operator},t::Real,n::Integer)
     # TODO: Prob should do some error checking
@@ -44,10 +43,10 @@ function CoherentSubspaces(Ut::Operator,s::IntCol,Hd::Operator,Hc::Vector{<:Oper
     # More temporary storage
     Jkj = Matrix{Complex128}(N,N)
     cisDj = Vector{Complex128}(N)
-    return CoherentSubspaces{eltype(H)}(t/n,Ut_d,s,Hd_d,Hc_d,u_last,U,X,P,D,V,H,A,Jkj,cisDj)
+    return CoherentSubspaces(dims(Hd),t/n,Ut_d,s,Hd_d,Hc_d,u_last,U,X,P,D,V,H,A,Jkj,cisDj)
 end
 
-function (O::CoherentSubspaces)(u)
+function objective(O::CoherentSubspaces,u)
     # Calculate forward propagators
     calc_fprops!(O.U,O.X,O.D,O.V,u,O.δt,O.Hd,O.Hc,O.H,O.u_last)
     Uf = O.X[end]; N = size(O.Ut,1)
@@ -56,7 +55,7 @@ function (O::CoherentSubspaces)(u)
     return 1 - inner_cs(O.Ut,Uf,O.s)/N
 end
 
-function (O::CoherentSubspaces)(::Val{:gradient},fp,u)
+function gradient!(O::CoherentSubspaces,fp,u)
     # Calculate forward and backward propagators
     calc_fprops!(O.U,O.X,O.D,O.V,u,O.δt,O.Hd,O.Hc,O.H,O.u_last)
     calc_bprops!(O.P,O.U,O.Ut)
@@ -72,63 +71,4 @@ function (O::CoherentSubspaces)(::Val{:gradient},fp,u)
         end
     end
     return fp
-end
-
-
-function inner_cs{T,S}(A::AbstractMatrix{T},B::AbstractMatrix{S},s::IntSet)
-    # calculate |trace(A'*B)|cs (coherent subspaces)
-    # this inner product cares only about relative phase between the subspaces contained in s
-    x,y = _inner_cs_1(A,B,s)
-    return sqrt(_inner_cs_2(x,y))
-end
-
-function inner_cs_grad{T,S}(Pj::AbstractMatrix{T},JXj::AbstractMatrix{S},x,y,s::IntSet)
-    # calculate the partial derivative of |trace(A'*B)|cs (coherent subspaces)
-    w,z = _inner_cs_1(Pj,JXj,s)
-    res = real(w*x)
-    @inbounds for i = 1:length(z)
-        res += real(z[i]*y[i])
-        res += real(w*normalize(x))*abs(y[i]) + real(z[i]*normalize(y[i]))*abs(x)
-        for j = 1:i-1
-            res += real(z[i]*normalize(y[i]))*abs(y[j]) + real(z[j]*normalize(y[j]))*abs(y[i])
-        end
-    end
-    return res/sqrt(_inner_cs_2(x,y))
-end
-
-
-Base.normalize(z::Complex) = cis(angle(z))
-Base.normalize(z::Real) = one(z)
-
-function _inner_cs_1{T,S}(A::AbstractMatrix{T},B::AbstractMatrix{S},s::IntSet)
-    m, n = size(A)
-    size(B) == (m,n) || throw(DimensionMismatch("matrices must have the same dimensions"))
-    x = zero(promote_type(T,S))
-    y = Vector{typeof(x)}(n-length(s))
-    t = 1
-    @inbounds for j = 1:n
-        a = zero(x)
-        for i = 1:m
-            a += conj(A[i,j])*B[i,j]
-        end
-        if j in s
-            x += a
-        else
-            y[t] = a
-            t += 1
-        end
-    end
-    return x,y
-end
-
-function _inner_cs_2(x,y)
-    res = abs2(x)
-    @inbounds for i = 1:length(y)
-        res += abs2(y[i])
-        res += 2*abs(y[i])*abs(x)
-        for j = 1:i-1
-            res += 2*abs(y[i])*abs(y[j])
-        end
-    end
-    return res
 end
