@@ -1,5 +1,5 @@
 using Schrodinger, PyPlot
-
+using Schrodinger: gaussianpulse
 function opt_pihalfx(n)
     Hd = qzero(2)
     Hc = [π*σx, π*σy]
@@ -24,12 +24,28 @@ function opt_hadamard(n)
     grape(O,u_init)
 end
 
-function opt_3lvlNOT(n)
-    Δ = 2π*(-400) # anharmonicity
+function opt_RF_3lvlNOT(n)
+    Δ = 2π*(-0.4) # anharmonicity (GHz)
     Hd = Δ*Operator(basis(3,2)) # drift Hamiltonian
     Hc = [create(3)/2+destroy(3)/2, im*create(3)/2-im*destroy(3)/2]
-    t = 3
-    u_init = [-Δ*Schrodinger.gaussianpulse.(linspace(-t/2,t/2,n),[[t/2,t,0,0,pi]]) linspace(-Δ/2,Δ/2,n)]
+    t = 3 # (ns)
+    tvec = linspace(-t/2,t/2,n)
+    u_init = [-Δ*gaussianpulse.(tvec,[[t/2,t,0,0,pi]]) linspace(-Δ/2,Δ/2,n)]
+    Ut = Operator([0 1 0; 1 0 0; 0 0 1]) # 3lvl NOT gate
+    # Create objective function type
+    O = CoherentSubspaces(Ut,1:2,Hd,Hc,t,n) # care only about computational subspace
+    grape(O,u_init)
+end
+
+function opt_3lvlNOT(n)
+    ω = 2π*7.0 # 0-1 transition freq (GHz)
+    Δ = 2π*(-0.4) # anharmonicity
+    Hd = ω*Operator(basis(3,1))+(2ω+Δ)*Operator(basis(3,2)) # drift Hamiltonian
+    Hc = [create(3)+destroy(3)]
+    t = 3 # (ns)
+    tvec = linspace(-t/2,t/2,n)
+    u_init = gaussianpulse.(tvec,[[t/2,t,ω,0,pi]])
+    #u_init = 2.*cos.(ω.*tvec)
     Ut = Operator([0 1 0; 1 0 0; 0 0 1]) # 3lvl NOT gate
     # Create objective function type
     O = CoherentSubspaces(Ut,1:2,Hd,Hc,t,n) # care only about computational subspace
