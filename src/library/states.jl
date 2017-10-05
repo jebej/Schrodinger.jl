@@ -50,6 +50,7 @@ function coherent(N::Integer, α::Number, analytic::Bool=false)
     end
 end
 
+
 """
     thermal(N, n)
 
@@ -81,21 +82,6 @@ function thermal(N::Integer, n::Real)
     return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,),true)
 end
 
-"""
-    maxentangled(N,n)
-
-Generate a maximally entangled state between `n` `N`-d systems:
-
-```math
-|\\phi⟩=\\sum_{j=0}^{N-1}\\frac{1}{\\sqrt{N}}|j⟩^{⊗n}.
-```
-"""
-function maxentangled(N::Integer,n::Integer)
-    c = div(N^n-1,N-1)
-    nzind = [1+m*c for m=0:N-1]
-    nzval = fill(1/sqrt(N),(N,))
-    return Ket(SparseVector(N^n,nzind,nzval),ntuple(_->N,Val{n}))
-end
 
 """
     maxmixed(N)
@@ -120,3 +106,79 @@ function maxmixed(N::Integer)
     nzval  = Vector{Float64}(N); fill!(nzval, 1/N)
     return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,),true)
 end
+
+
+"""
+    maxentangled(n,N=2)
+
+Generate a maximally entangled state between `n` `N`-d systems:
+
+```math
+|\\phi⟩=\\sum_{j=0}^{N-1}\\frac{1}{\\sqrt{N}}|j⟩^{⊗n}.
+```
+
+Tracing out all but one of the entangled systems results in a maximally mixed state.
+
+# Example
+```jldoctest
+julia> ψ = maxentangled(3,4)
+64-d Schrodinger.Ket{SparseVector{Float64,Int64},3} with space dimensions 4⊗4⊗4:
+0.50∠0°|0,0,0⟩ + 0.50∠0°|1,1,1⟩ + 0.50∠0°|2,2,2⟩ + 0.50∠0°|3,3,3⟩
+
+julia> ptrace(ψ,(1,3))
+4×4 Schrodinger.Operator{Array{Float64,2},1} with space dimensions 4:
+ 0.25  0.0   0.0   0.0
+ 0.0   0.25  0.0   0.0
+ 0.0   0.0   0.25  0.0
+ 0.0   0.0   0.0   0.25
+```
+"""
+function maxentangled(n::Int,N::Int=2)
+    c = div(N^n-1,N-1)
+    nzind = [1+m*c for m=0:N-1]
+    nzval = fill(1/sqrt(N),N)
+    return Ket(SparseVector(N^n,nzind,nzval),ntuple(_->N,Val{n}))
+end
+
+
+"""
+    ket(state,dims=2)
+
+Generate a state ket from a tuple of basis levels and a tuple of corresponding space dimensions. Note that each space dimension must be larger than the level by *at least* 1. If only an integer is passed to `dims`, all basis levels will have the same dimension.
+
+Returns a sparse vector.
+
+# Example
+```jldoctest
+julia> ψ = ket((3,0,1),(5,2,3))
+30-d Schrodinger.Ket{SparseVector{Float64,Int64},3} with space dimensions 5⊗2⊗3:
+1.00∠0°|3,0,1⟩
+```
+
+See also: [`qb`](@ref), for qubit states.
+"""
+ket{N}(state::SDims{N},dims::Int=2) = ket(state,ntuple(_->dims,Val{N}()))
+function ket{N}(state::SDims{N},dims::SDims{N})
+    @inbounds for i = 1:N
+        dims[i]>state[i] || throw(ArgumentError("basis level $(state[i]) is too large for a $(dims[i])-d space"))
+    end
+    n = tindex(state,dims) # 0-based indexing in tindex
+    return Ket(SparseVector(prod(dims),[n],[1.0]),dims)
+end
+
+
+"""
+    qb(q1,q2,q3...)
+
+Generate a qubit state from the given argument list. This function is similar to [`ket`](@ref), except that the state levels are passed with separate arguments instead of a tuple.
+
+Returns a sparse vector.
+
+# Example
+```jldoctest
+julia> Ψ⁻ = normalize!(qb(0,1) - qb(1,0))
+4-d Schrodinger.Ket{SparseVector{Float64,Int64},2} with space dimensions 2⊗2:
+0.71∠0°|0,1⟩ + 0.71∠180°|1,0⟩
+```
+"""
+qb(state::Int...) = ket(state,2)

@@ -106,17 +106,18 @@ function expim!(A::AbstractMatrix)
     return B*U'
 end
 
-# index in a tensored system
+# index in a tensored system (warning, this function uses indices that start at 0)
 function tindex{N}(inds,sysdims::NTuple{N,Int})
-    i = inds[N]
+    i = 1 + inds[N]
     d = 1
-    @inbounds for n = reverse(1:N-1)
+    @inbounds for n = N-1:-1:1
         d *= sysdims[n+1]
-        i += d * (inds[n]-1)
+        i += d * inds[n]
     end
     return i
 end
 
+# (warning, this function uses indices that start at 1)
 function tindexr{N}(rinds,rsysdims::NTuple{N,Int})
     i = rinds[1]
     d = 1

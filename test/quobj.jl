@@ -9,11 +9,13 @@ using Base.Test, Schrodinger
     @test dims(Ket([0,1,0])) == (3,)
     @test_throws ArgumentError Ket([0,1],(3,))
     @test_throws ArgumentError basis(2,2)
-    @test Ket(sparse([0,1/√(2),1im/√(2),0]),(2,2)) == 1/√(2)*(basis(2,0)⊗basis(2,1) + 1im*basis(2,1)⊗basis(2,0))
+    @test Ket(sparse([0,1/√2,1im/√2,0]),(2,2)) == 1/√2*(basis(2,0)⊗basis(2,1) + 1im*basis(2,1)⊗basis(2,0))
     @test Ket([0,1,0,0,0,0],(3,2)) == (basis(3,0)⊗basis(2,1))
     α = 1.31+0.11im
     @test coherent(30,α)[6] ≈ exp(-0.5*abs2(α))*α^5/sqrt(factorial(5))
     @test coherent(30,α,false) ≈ coherent(30,α,true)
+    @test qb(0,1) == basis(2,0)⊗basis(2,1)
+    @test data(ket((2,1,5,2),(5,3,10,4))).nzind[1] == 1+2+4*5+(4*10)*1+(4*10*3)*2
 end
 
 @testset "Bra Generation" begin
@@ -21,7 +23,7 @@ end
     @test data(Bra([0,0])) == [0.0,0.0]
     @test dims(Bra([0,1,0])) == (3,)
     @test_throws ArgumentError Bra([0,1],(3,))
-    @test Bra(sparse([0,1/√(2),-1im/√(2),0]),(2,2)) == 1/√(2)*(basis(2,0)⊗basis(2,1) + 1im*basis(2,1)⊗basis(2,0))'
+    @test Bra(sparse([0,1/√2,1im/√2,0]),(2,2)) == 1/√2*(basis(2,0)⊗basis(2,1) - 1im*basis(2,1)⊗basis(2,0))'
     α = 1.31+0.11im
     @test Bra(coherent(30,α))[6] ≈ exp(-0.5*abs2(α))*conj(α)^5/sqrt(factorial(5))
 end
@@ -32,17 +34,17 @@ end
     @test dims(Operator([0 0 0;0 1 0;0 0 0])) == (3,)
     @test_throws ArgumentError Operator([0 0;0 0],(3,))
     @test_throws DimensionMismatch Operator([0 1 0;0 0 0])
-    @test (A=maxmixed(4); diag(A)== 0.25*ones(4)&&isdiag(A))
-    @test (A=thermal(10,0.45); diag(A)[1:2]≈[6.89660888E-1,2.14032689E-1]&&isdiag(A))
+    @test (A=maxmixed(4); diag(A) == 0.25*ones(4)&&isdiag(A))
+    @test (A=thermal(10,0.45); diag(A)[1:2] ≈ [6.89660888E-1,2.14032689E-1] && isdiag(A))
     @test data(qzero(6,(2,3))) == zeros(6,6)
     @test data(qeye(6,(2,3))) == eye(6)
     @test data(qeye(6,(2,3))) == eye(6)
     @test diag(create(6),-1) == [sqrt(n) for n = 1:5]
     @test destroy(6) == create(6)'
-    @test (A=numberop(6); diag(A)==[n for n = 0:5]&&isdiag(A))
+    @test (A=numberop(6); diag(A) == [n for n = 0:5] && isdiag(A))
     @test data(displacementop(3,0.5im)) ≈ [0.88261978 0.43980233im -0.16600070; 0.43980233im 0.64785934 0.62197442im; -0.16600070 0.62197442im 0.76523956]
     @test data(squeezeop(3,0.5im)) ≈ [0.93814834 0 -0.34623359im; 0 1 0; -0.34623359im 0 0.93814834]
-    @test ( U=rand_unitary(10,(5,2)); U*U' ≈ qeye(10,(5,2)) )
+    @test (U=rand_unitary(10,(5,2)); U*U' ≈ qeye(10,(5,2)))
 end
 
 @testset "Matrix Property Checks" begin
