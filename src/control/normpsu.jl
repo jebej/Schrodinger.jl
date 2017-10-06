@@ -46,23 +46,23 @@ function NormPSU(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},t::Real,n::Int
 end
 
 function objective(O::NormPSU,u)
+    N = size(O.Ut,1); Uf = O.X[end]
     # Calculate forward propagators
-    calc_fprops!(O.U,O.X,O.D,O.V,u,O.δt,O.Hd,O.Hc,O.H,O.u_last)
-    Uf = O.X[end]; N = size(O.Ut,1)
+    calc_fprops!(O,u)
     # Calculate PSU (projective special unitary) norm infidelity:
     # fₑ = 1 - |⟨Ut,Uf⟩|/N
     return 1 - abs(inner(O.Ut,Uf))/N
 end
 
 function gradient!(O::NormPSU,fp,u)
+    n = length(O.U); m = length(O.Hc); N = size(O.Ut,1); Uf = O.X[end]
     # Calculate forward and backward propagators
-    calc_fprops!(O.U,O.X,O.D,O.V,u,O.δt,O.Hd,O.Hc,O.H,O.u_last)
-    calc_bprops!(O.P,O.U,O.Ut)
-    n = length(O.U); m = length(O.Hc); N = size(O.Ut,1)
+    calc_fprops!(O,u)
+    calc_bprops!(O)
     # Calculate exact derivative of fidelity error function:
     # ∂fₑ/∂uₖⱼ = -1/2*⟨Pⱼ,∂Uⱼ/∂uₖⱼ*Xⱼ₋₁⟩*cis(∠⟨Xⱼ,Pⱼ⟩)/N + c.c.
     #          = -Re(⟨Pⱼ,Jₖⱼ*Xⱼ₋₁⟩*cis(∠⟨Uf,Ut⟩))/N where Jₖⱼ = ∂Uⱼ/∂uₖⱼ
-    a = normalize(inner(O.X[end],O.Ut))
+    a = normalize(inner(Uf,O.Ut))
     for j = 1:n
         O.cisDj .= cis.(O.D[j])
         for k = 1:m

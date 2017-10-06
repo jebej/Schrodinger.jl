@@ -47,21 +47,21 @@ function CoherentSubspaces(Ut::Operator,s::IntCol,Hd::Operator,Hc::Vector{<:Oper
 end
 
 function objective(O::CoherentSubspaces,u)
+    N = size(O.Ut,1); Uf = O.X[end]
     # Calculate forward propagators
-    calc_fprops!(O.U,O.X,O.D,O.V,u,O.δt,O.Hd,O.Hc,O.H,O.u_last)
-    Uf = O.X[end]; N = size(O.Ut,1)
+    calc_fprops!(O,u)
     # Calculate coherent subspaces norm infidelity:
     # fₑ = 1 - |⟨Ut,Uf⟩|cs/N
     return 1 - inner_cs(O.Ut,Uf,O.s)/N
 end
 
 function gradient!(O::CoherentSubspaces,fp,u)
+    n = length(O.U); m = length(O.Hc); N = size(O.Ut,1); Uf = O.X[end]
     # Calculate forward and backward propagators
-    calc_fprops!(O.U,O.X,O.D,O.V,u,O.δt,O.Hd,O.Hc,O.H,O.u_last)
-    calc_bprops!(O.P,O.U,O.Ut)
-    n = length(O.U); m = length(O.Hc); N = size(O.Ut,1)
+    calc_fprops!(O,u)
+    calc_bprops!(O)
     # Calculate exact derivative of coherent subspaces norm infidelity
-    x,y = _inner_cs_1(O.X[end],O.Ut,O.s)
+    x,y = _inner_cs_1(Uf,O.Ut,O.s)
     for j = 1:n
         O.cisDj .= cis.(O.D[j])
         for k = 1:m
