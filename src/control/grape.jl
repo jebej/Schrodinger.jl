@@ -3,9 +3,25 @@ using Optim: Options
 abstract type ObjectiveFunction end
 const IntCol = Union{AbstractVector{Int},IntSet,Set{Int},NTuple{N,Int} where N}
 
+function grape(O::ObjectiveFunction,u_init::Array,opt::Options=Options())
+    # Build OnceDifferentiable object from ObjectiveFunction object
+    f(u) = objective(O,u)
+    g!(fp,u) = gradient!(O,fp,u)
+    fg!(fp,u) = (g!(fp,u); f(u))
+    seed = ones(O.u_last)
+    od = OnceDifferentiable(f,g!,fg!,1.0,similar(seed),seed,copy(seed),[1],[1])
+    # Run optimization
+    res = optimize(od,vec(u_init.'),ConjugateGradient(),opt)
+    # Reshape final control amplitude matrix
+    uf = reshape(Optim.minimizer(res),size(u_init,2),size(u_init,1)).'
+    return uf, Operator(O.X[end],O.dims), res
+end
+
+calc_fprops!(O,u) = calc_fprops!(O.U,O.X,O.D,O.V,u,O.δt,O.Hd,O.Hc,O.H,O.u_last)
+
 function calc_fprops!(U,X,D,V,u,δt,Hd,Hc,H,u_last)
     # If the control amplitudes u did not change, return
-    #u == u_last && return nothing
+    u == u_last && return nothing
     # Otherwise calculate each individual propagator
     n = length(U); m = length(Hc)
     for j = 1:n
@@ -25,6 +41,8 @@ function calc_fprops!(U,X,D,V,u,δt,Hd,Hc,H,u_last)
     copy!(u_last,u)
     return nothing
 end
+
+calc_bprops!(O) = calc_bprops!(O.P,O.U,O.Ut)
 
 function calc_bprops!(P,U,Ut)
     # Calculate backward propagators
@@ -53,18 +71,4 @@ function _Jmathermprod!(J,cisDj,Dj,δt)
         J[l,m] *= abs(λl-λm)<1E-10 ? -1im*δt*cisλl : -δt*(cisλl-cisλm)/(λl-λm)
     end
     return nothing
-end
-
-function grape(O::ObjectiveFunction,u_init::Array,opt::Options=Options())
-    # Build OnceDifferentiable object from ObjectiveFunction object
-    f(u) = objective(O,u)
-    g!(fp,u) = gradient!(O,fp,u)
-    fg!(fp,u) = (g!(fp,u); f(u))
-    seed = ones(O.u_last)
-    od = OnceDifferentiable(f,g!,fg!,1.0,similar(seed),seed,copy(seed),[1],[1])
-    # Run optimization
-    res = optimize(od,vec(u_init.'),ConjugateGradient(),opt)
-    # Reshape final control amplitude matrix
-    uf = reshape(Optim.minimizer(res),size(u_init,2),size(u_init,1)).'
-    return uf, Operator(O.X[end],O.dims), res
 end

@@ -1,5 +1,6 @@
 using Schrodinger, PyPlot
 using Schrodinger: gaussianpulse
+
 function opt_pihalfx(n)
     Hd = qzero(2)
     Hc = [π*σx, π*σy]
