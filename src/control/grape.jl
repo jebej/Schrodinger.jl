@@ -1,9 +1,13 @@
-using Optim: Options
+using Optim: Optimizer, Options
 
 abstract type ObjectiveFunction end
 const IntCol = Union{AbstractVector{Int},IntSet,Set{Int},NTuple{N,Int} where N}
 
-function grape(O::ObjectiveFunction,u_init::Array,opt::Options=Options())
+grape(O::ObjectiveFunction,u_init::Array,opt::Options) =
+    grape(O,u_init,ConjugateGradient(),opt)
+
+function grape(O::ObjectiveFunction,u_init::Array,
+               method::Optimizer=ConjugateGradient(),opt::Options=Options())
     # Build OnceDifferentiable object from ObjectiveFunction object
     f(u) = objective(O,u)
     g!(fp,u) = gradient!(O,fp,u)
@@ -11,7 +15,7 @@ function grape(O::ObjectiveFunction,u_init::Array,opt::Options=Options())
     seed = ones(O.u_last)
     od = OnceDifferentiable(f,g!,fg!,1.0,similar(seed),seed,copy(seed),[1],[1])
     # Run optimization
-    res = optimize(od,vec(u_init.'),ConjugateGradient(),opt)
+    res = optimize(od,vec(u_init.'),method,opt)
     # Reshape final control amplitude matrix
     uf = reshape(Optim.minimizer(res),size(u_init,2),size(u_init,1)).'
     return uf, Operator(O.X[end],O.dims), res
