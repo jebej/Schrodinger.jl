@@ -109,6 +109,19 @@ end
 fidelity2(ψ::Ket,ρ::Operator) = fidelity2(ρ,ψ)
 fidelity2(ψ::Ket,ϕ::Ket) = abs2(dot(ψ,ϕ))
 
+function fidelity2{N,T<:Ket}(A::NTuple{N,T},ϕ::Ket)
+    # If sum(A) = ψ is a valid Ket, then this function will calculate the state fidelity between ψ and ϕ, ignoring all relative phases between the different parts of ψ (as well as the global phase, of course)
+    # F² = ∑ᵢ(|⟨ψᵢ,ϕ⟩|² + ∑ⱼ₌₁ⁱ⁻¹2*|⟨ψᵢ,ϕ⟩|*|⟨ψⱼ,ϕ⟩|)
+    f2 = fidelity2.(A,ϕ) # (|⟨ψ₁,ϕ⟩|², |⟨ψ₂,ϕ⟩|², ...)
+    res = 0.0
+    for i = 1:length(f2)
+        res += f2[i]
+        for j = 1:i-1
+            res += 2*sqrt(f2[i])*sqrt(f2[j])
+        end
+    end
+    return res
+end
 
 function oper(vecA::AbstractVector,N=isqrt(length(vecA)))
     return reshape(vecA,(N,N))
