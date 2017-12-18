@@ -8,6 +8,15 @@ reverse(n::Number) = n
 
 tname(T::Type) = T.name.name
 
+function randomsmooth(n::Integer)
+    x = linspace(0,1,n).'
+    N = rand(4:7) # number of sines to use
+    f = 2.0 .+ 10.*rand(N) # frequencies
+    A = normalize!(1./f.*(rand(N).-0.5),2) # amplitudes
+    ϕ = 2π.*rand(N) # phase
+    return vec(sum(A.*sin.(f.*x.+ϕ),1))
+end
+
 gaussian(x::Real,σ::Real) = exp(-0.5*(x/σ)^2)
 gaussianprime(x::Real,σ::Real) = -exp(-0.5*(x/σ)^2)*x/σ^2
 
