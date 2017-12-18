@@ -19,7 +19,7 @@ immutable CoherentSubspaces{T,D} <: ObjectiveFunction
     cisDj::Vector{Complex128} # temporary
 end
 
-CoherentSubspaces(dims,δt,Ut,s,Hd,Hc,u_last,U,X,P,D,V,H,A,Jkj,cisDj) = CoherentSubspaces{eltype(Hd),length(dims)}(dims,δt,Ut,s,Hd,Hc,u_last,U,X,P,D,V,H,A,Jkj,cisDj)
+CoherentSubspaces(dims,δt,Ut,s,Hd,Hc,u_last,U,X,P,D,V,H,A,Jkj,cisDj) = CoherentSubspaces{eltype(H),length(dims)}(dims,δt,Ut,s,Hd,Hc,u_last,U,X,P,D,V,H,A,Jkj,cisDj)
 
 function CoherentSubspaces(Ut::Operator,s::IntCol,Hd::Operator,Hc::Vector{<:Operator},t::Real,n::Integer)
     # TODO: Prob should do some error checking
