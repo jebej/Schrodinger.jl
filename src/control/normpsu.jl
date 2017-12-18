@@ -18,7 +18,7 @@ immutable NormPSU{T,D} <: ObjectiveFunction
     cisDj::Vector{Complex128} # temporary
 end
 
-NormPSU(dims,δt,Ut,Hd,Hc,u_last,U,X,P,D,V,H,A,Jkj,cisDj) = NormPSU{eltype(Hd),length(dims)}(dims,δt,Ut,Hd,Hc,u_last,U,X,P,D,V,H,A,Jkj,cisDj)
+NormPSU(dims,δt,Ut,Hd,Hc,u_last,U,X,P,D,V,H,A,Jkj,cisDj) = NormPSU{eltype(H),length(dims)}(dims,δt,Ut,Hd,Hc,u_last,U,X,P,D,V,H,A,Jkj,cisDj)
 
 function NormPSU(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},t::Real,n::Integer)
     # TODO: Prob should do some error checking

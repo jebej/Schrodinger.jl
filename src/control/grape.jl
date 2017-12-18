@@ -1,24 +1,50 @@
 using Optim: Optimizer, Options
 
 abstract type ObjectiveFunction end
+abstract type PenaltyFunction end
 const IntCol = Union{AbstractVector{Int},IntSet,Set{Int},NTuple{N,Int} where N}
 
-grape(O::ObjectiveFunction,u_init::Array,opt::Options) =
-    grape(O,u_init,ConjugateGradient(),opt)
+immutable GrapeResult{T<:Operator,S,P<:Optim.MultivariateOptimizationResults}
+    Ut::T
+    Ui::T
+    ui::Matrix{Float64}
+    fi::Float64
+    Uf::T
+    uf::Matrix{Float64}
+    ff::Float64
+    t::S
+    optim_res::P
+end
 
-function grape(O::ObjectiveFunction,u_init::Array,
-               method::Optimizer=ConjugateGradient(),opt::Options=Options())
-    # Build OnceDifferentiable object from ObjectiveFunction object
+grape(O::ObjectiveFunction,ui::Array,opt::Options) =
+grape(O,ui,ConjugateGradient(),opt)
+
+grape(O::ObjectiveFunction,P::PenaltyFunction,ui::Array,opt::Options) =
+grape(O,P,ui,ConjugateGradient(),opt)
+
+function grape(O::ObjectiveFunction,ui::Array,
+    method::Optimizer=ConjugateGradient(),opt::Options=Options())
     f(u) = objective(O,u)
     g!(fp,u) = gradient!(O,fp,u)
+    return grape(f,g!,ui,method,opt)
+end
+
+function grape(O::ObjectiveFunction,P::PenaltyFunction,ui::Array,
+    method::Optimizer=ConjugateGradient(),opt::Options=Options())
+    f(u) = objective(O,u) + objective(P,u)
+    g!(fp,u) = (gradient!(O,fp,u); gradient!(P,fp,u))
+    return grape(f,g!,ui,method,opt)
+end
+
+function grape(f::Function,g!::Function,ui::Array,
+    method::Optimizer=ConjugateGradient(),opt::Options=Options())
+    # Build OnceDifferentiable object from objective and gradient functions
     fg!(fp,u) = (g!(fp,u); f(u))
-    seed = ones(O.u_last)
+    seed = ones(f.O.u_last)
     od = OnceDifferentiable(f,g!,fg!,1.0,similar(seed),seed,copy(seed),[1],[1])
     # Run optimization
-    res = optimize(od,vec(u_init.'),method,opt)
-    # Reshape final control amplitude matrix
-    uf = reshape(Optim.minimizer(res),size(u_init,2),size(u_init,1)).'
-    return uf, Operator(O.X[end],O.dims), res
+    res = optimize(od,vec(ui.'),method,opt)
+    return make_result(f.O, res, ui[:,:])
 end
 
 calc_fprops!(O,u) = calc_fprops!(O.U,O.X,O.D,O.V,u,O.δt,O.Hd,O.Hc,O.H,O.u_last)
@@ -75,4 +101,38 @@ function _Jmathermprod!(J,cisDj,Dj,δt)
         J[l,m] *= abs(λl-λm)<1E-10 ? -1im*δt*cisλl : -δt*(cisλl-cisλm)/(λl-λm)
     end
     return nothing
+end
+
+function make_result(O,res,ui)
+    # Reshape final control amplitude matrix
+    uf = permutedims(reshape(Optim.minimizer(res),size(ui,2),size(ui,1)),(2,1))
+    # Calculate final fidelity (should be super cheap)
+    ff = 1 - objective(O, Optim.minimizer(res))
+    # Grab final operator
+    Uf = Operator(O.X[end],O.dims)
+    # Calculate initial fidelity
+    fi = 1 - objective(O, vec(ui.'))
+    # Grab initial operator
+    Ui = Operator(O.X[end],O.dims)
+    # Target
+    Ut = Operator(O.Ut,O.dims)
+    return GrapeResult(Ut,Ui,ui,fi,Uf,uf,ff,O.δt*size(ui,1),res)
+end
+
+function plotgrape(res::GrapeResult)
+    if "PyPlot" ∉ names(Main)
+        error("Make sure PyPlot is loaded!")
+    else
+        plt = Main.PyPlot
+    end
+    ui = res.ui
+    uf = res.uf
+    t = linspace(0,res.t,size(uf,1)+1)
+    plt.figure()
+    plt.step(t,[uf[1:1,:]; uf])
+    plt.gca()[:set_prop_cycle](nothing)
+    plt.step(t,[ui[1:1,:]; ui],linestyle="dashed")
+    plt.legend(["Control $i" for i in 1:size(uf,2)])
+    plt.tight_layout(true)
+    plt.grid(true)
 end

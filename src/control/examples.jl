@@ -1,5 +1,5 @@
-using Schrodinger, PyPlot
-using Schrodinger: gaussianpulse
+using Schrodinger#, PyPlot
+using Schrodinger: gaussianpulse, plotgrape
 
 function opt_pihalfx(n)
     Hd = qzero(2)
@@ -67,14 +67,6 @@ function opt_2Q_QFT(n)
     # Create objective function type
     O = NormPSU(Ut,Hd,Hc,t,n)
     grape(O,u_init)
-end
-
-function plotgrape(tf,uf)
-    figure()
-    step(linspace(0,tf,size(uf,1)+1),[uf[1:1,:]; uf])
-    legend(["Control $i" for i in 1:size(uf,2)])
-    tight_layout()
-    grid()
 end
 
 benchgrape(O,u,n=100) = for i=1:n; grape(O,u); end
