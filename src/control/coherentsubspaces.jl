@@ -67,7 +67,7 @@ function gradient!(O::CoherentSubspaces,fp,u)
         for k = 1:m
             Jmat!(O.Jkj,O.Hc[k],O.cisDj,O.D[j],O.V[j],O.δt,O.A)
             j==1 ? copy!(O.A,O.Jkj) : A_mul_B!(O.A,O.Jkj,O.X[j-1])
-            fp[(j-1)*m+k] = -inner_cs_grad(O.P[j],O.A,x,y,O.s)/N
+            fp[(k-1)*n+j] = -inner_cs_grad(O.P[j],O.A,x,y,O.s)/N
         end
     end
     return fp

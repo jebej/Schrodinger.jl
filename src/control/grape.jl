@@ -43,7 +43,7 @@ function grape(f::Function,g!::Function,ui::Array,
     seed = ones(f.O.u_last)
     od = OnceDifferentiable(f,g!,fg!,1.0,similar(seed),seed,copy(seed),[1],[1])
     # Run optimization
-    res = optimize(od,vec(ui.'),method,opt)
+    res = optimize(od,vec(ui),method,opt)
     return make_result(f.O, res, ui[:,:])
 end
 
@@ -57,7 +57,7 @@ function calc_fprops!(U,X,D,V,u,δt,Hd,Hc,H,u_last)
     for j = 1:n
         copy!(H,Hd)
         for k = 1:m
-            H .+= u[(j-1)*m+k].*Hc[k]
+            H .+= u[(k-1)*n+j].*Hc[k]
         end
         # Calculate U and store eigenvectors and eigenvalues of -δt*H
         expim!(U[j],Hermitian(scale!(H,-δt)),D[j],V[j],X[1])
@@ -105,13 +105,13 @@ end
 
 function make_result(O,res,ui)
     # Reshape final control amplitude matrix
-    uf = permutedims(reshape(Optim.minimizer(res),size(ui,2),size(ui,1)),(2,1))
+    uf = reshape(Optim.minimizer(res),size(ui))
     # Calculate final fidelity (should be super cheap)
     ff = 1 - objective(O, Optim.minimizer(res))
     # Grab final operator
     Uf = Operator(O.X[end],O.dims)
     # Calculate initial fidelity
-    fi = 1 - objective(O, vec(ui.'))
+    fi = 1 - objective(O, vec(ui))
     # Grab initial operator
     Ui = Operator(O.X[end],O.dims)
     # Target
@@ -120,7 +120,7 @@ function make_result(O,res,ui)
 end
 
 function plotgrape(res::GrapeResult)
-    if "PyPlot" ∉ names(Main)
+    if :PyPlot ∉ names(Main)
         error("Make sure PyPlot is loaded!")
     else
         plt = Main.PyPlot
