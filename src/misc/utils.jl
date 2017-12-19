@@ -8,6 +8,14 @@ reverse(n::Number) = n
 
 tname(T::Type) = T.name.name
 
+function randomsmooth(n::Integer,m::Integer)
+    R = Matrix{Float64}(n,m)
+    for i = 1:m
+        R[:,i] = randomsmooth(n)
+    end
+    return R
+end
+
 function randomsmooth(n::Integer)
     x = linspace(0,1,n).'
     N = rand(4:7) # number of sines to use
