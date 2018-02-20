@@ -16,35 +16,42 @@ immutable GrapeResult{T<:Operator,S,P<:Optim.MultivariateOptimizationResults}
     optim_res::P
 end
 
-grape(O::ObjectiveFunction,ui::Array,opt::Options) =
-grape(O,ui,ConjugateGradient(),opt)
+grape(O::ObjectiveFunction,ui::Array,opt::Options) = grape(O,ui,ConjugateGradient(),opt)
 
-grape(O::ObjectiveFunction,P::PenaltyFunction,ui::Array,opt::Options) =
-grape(O,P,ui,ConjugateGradient(),opt)
+grape(O::ObjectiveFunction,P::PenaltyFunction,ui::Array,opt::Options) = grape(O,P,ui,ConjugateGradient(),opt)
 
-function grape(O::ObjectiveFunction,ui::Array,
-    method::Optimizer=ConjugateGradient(),opt::Options=Options())
+function grape(O::ObjectiveFunction,ui::Array,method::Optimizer=ConjugateGradient(),opt::Options=Options())
     f(u) = objective(O,u)
     g!(fp,u) = gradient!(O,fp,u)
     return grape(f,g!,ui,method,opt)
 end
 
-function grape(O::ObjectiveFunction,P::PenaltyFunction,ui::Array,
-    method::Optimizer=ConjugateGradient(),opt::Options=Options())
+function grape(O::ObjectiveFunction,P::PenaltyFunction,ui::Array,method::Optimizer=ConjugateGradient(),opt::Options=Options())
     f(u) = objective(O,u) + objective(P,u)
     g!(fp,u) = (gradient!(O,fp,u); gradient!(P,fp,u))
     return grape(f,g!,ui,method,opt)
 end
 
-function grape(f::Function,g!::Function,ui::Array,
-    method::Optimizer=ConjugateGradient(),opt::Options=Options())
+function grape(f::Function,g!::Function,ui::Array,method::Optimizer=ConjugateGradient(),opt::Options=Options())
     # Build OnceDifferentiable object from objective and gradient functions
     fg!(fp,u) = (g!(fp,u); f(u))
     seed = ones(f.O.u_last)
     od = OnceDifferentiable(f,g!,fg!,1.0,similar(seed),seed,copy(seed),[1],[1])
+    # Calculate initial fidelity and initial propagator
+    fi = 1 - objective(f.O,vec(ui))
+    Ui = current_propagator(f.O)
     # Run optimization
-    res = optimize(od,vec(ui),method,opt)
-    return make_result(f.O, res, ui[:,:])
+    optim_res = optimize(od,vec(ui),method,opt)
+    # Grab optimized control amplitudes
+    uf = reshape(Optim.minimizer(optim_res),size(ui,1),size(ui,2))
+    # Calculate final fidelity (cheap since propagators are already calculated)
+    ff = 1 - objective(f.O,uf)
+    # Grab final evolution propagator
+    Uf = current_propagator(f.O)
+    # Target evolution operator
+    Ut = target_propagator(f.O)
+    # Return result
+    return GrapeResult(Ut,Ui,ui[:,:],fi,Uf,uf,ff,f.O.δt*size(ui,1),optim_res)
 end
 
 calc_fprops!(O,u) = calc_fprops!(O.U,O.X,O.D,O.V,u,O.δt,O.Hd,O.Hc,O.H,O.u_last)
@@ -103,20 +110,14 @@ function _Jmathermprod!(J,cisDj,Dj,δt)
     return nothing
 end
 
-function make_result(O,res,ui)
-    # Reshape final control amplitude matrix
-    uf = reshape(Optim.minimizer(res),size(ui))
-    # Calculate final fidelity (should be super cheap)
-    ff = 1 - objective(O, Optim.minimizer(res))
-    # Grab final operator
-    Uf = Operator(O.X[end],O.dims)
-    # Calculate initial fidelity
-    fi = 1 - objective(O, vec(ui))
-    # Grab initial operator
-    Ui = Operator(O.X[end],O.dims)
-    # Target
-    Ut = Operator(O.Ut,O.dims)
-    return GrapeResult(Ut,Ui,ui,fi,Uf,uf,ff,O.δt*size(ui,1),res)
+function current_propagator(O)
+    # Return the last propagator calculated
+    return Operator(copy(O.X[end]),O.dims)
+end
+
+function target_propagator(O)
+    # Return the target propagator
+    return Operator(copy(O.Ut),O.dims)
 end
 
 function plotgrape(res::GrapeResult)
@@ -135,4 +136,15 @@ function plotgrape(res::GrapeResult)
     plt.legend(["Control $i" for i in 1:size(uf,2)])
     plt.tight_layout(true)
     plt.grid(true)
+end
+
+function step_sample(fun,params,tspan,steps)
+    t₁, t₂ = tspan
+    Δt = (t₂-t₁)/steps
+    u = Vector{typeof(fun(t₁,params))}(steps)
+    for i = 1:steps
+        tᵢ = t₁ + (i-1)*Δt
+        u[i] = (fun(tᵢ,params) + fun(tᵢ+0.5Δt,params) + fun(tᵢ+Δt,params))/3
+    end
+    return u
 end
