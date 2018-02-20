@@ -35,3 +35,6 @@ end
 
 # method that takes in t for DifferentialEquation's steady state solver
 (U::Propagator{D}){D}(t::Real, ψ::Ket) = U(ψ)
+
+# Convert a Propagator to an Operator
+Operator(U::Propagator) = Operator(U.U,U.dims)
