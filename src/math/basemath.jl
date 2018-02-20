@@ -2,7 +2,7 @@
 import Base: +, -, *, /, ^,
     A_mul_Bc, Ac_mul_B, Ac_mul_Bc, A_mul_Bt, kron, dot,
     ctranspose, transpose, conj, BLAS.dotu,
-    sqrtm, expm, logm, real, imag, abs, abs2
+    sqrtm, expm, logm, real, imag, abs, abs2, round
 
 # Additive identity and inverse
 +{T<:QuObject}(A::T) = A
@@ -113,3 +113,4 @@ real(x::Operator) = Operator(real.(x.data),x.dims)
 imag(x::Operator) = Operator(imag.(x.data),x.dims)
 abs(x::Operator) = Operator(abs.(x.data),x.dims)
 abs2(x::Operator) = Operator(abs2.(x.data),x.dims)
+round(x::Operator,args...) = Operator(round.(x.data,args...),x.dims)
