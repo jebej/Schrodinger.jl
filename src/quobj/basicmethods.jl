@@ -1,6 +1,6 @@
 import Base: length, size, LinAlg.checksquare, eltype, getindex, setindex!,
      diag, full, complex, norm, trace, rank, normalize!, normalize, scale!,
-     ishermitian, issymmetric, isdiag,
+     ishermitian, issymmetric, isdiag, triu, tril,
      similar, copy, hash, isequal, ==, convert, promote_rule, isapprox, show
 
 # Special QuObject methods
@@ -22,6 +22,8 @@ eltype(A::QuObject) = eltype(A.data)
 getindex(A::QuObject,idx...) = getindex(A.data,idx...)
 setindex!(A::QuObject,v,idx...) = setindex!(A.data,v,idx...)
 diag(A::QuMatrix,k::Int=0) = diag(A.data,k)
+triu(A::QuMatrix) = Operator(triu(A.data),A.dims)
+tril(A::QuMatrix) = Operator(tril(A.data),A.dims)
 full(A::QuObject) = full(A.data)
 complex(x::Ket) = Ket(complex(x.data),x.dims)
 complex(x::Bra) = Bra(complex(x.data),x.dims)
