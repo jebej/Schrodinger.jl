@@ -1,5 +1,5 @@
 julia 0.6
 DiffEqBase
-OrdinaryDiffEq
+OrdinaryDiffEq 2.37.0 3.0.0
 Optim
 Compat
