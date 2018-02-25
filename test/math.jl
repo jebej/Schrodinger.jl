@@ -150,7 +150,7 @@ end
 
 @testset "Misc Functions" begin
     for f in [real,imag,abs,abs2], A in [g,e1,plus,Bra(plus),σ,ρ,Operator(coherent(4,1.2+3im))]
-        @test data(f(A)) == f.(data(A))
+        @test f(A) == f.(data(A))
     end
 end
 
