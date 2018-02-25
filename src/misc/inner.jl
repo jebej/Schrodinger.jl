@@ -20,7 +20,7 @@ function inner{T1,T2,S1,S2}(A::SparseMatrixCSC{T1,S1},B::SparseMatrixCSC{T2,S2})
             for i2 = B.colptr[j]:B.colptr[j+1]-1
                 rb = B.rowval[i2]
                 if ra < rb
-                    # since the rowval of B is larger than that of A, no need to keep checking for equality, go to the nex rowval of A
+                    # since the rowval of B is larger than that of A, no need to keep checking for equality, go to the next rowval of A
                     continue
                 elseif ra == rb
                     res += A.nzval[i1]' * B.nzval[i2]
