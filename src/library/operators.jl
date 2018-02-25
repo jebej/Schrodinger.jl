@@ -187,28 +187,38 @@ projectorop(N::Integer,S::Integer) = projectorop(N,S:S)
 """
     sylvesterop(N,k,l)
 
-Generate the \$(i,j)^{\textrm{th}}\$ Sylvester generalized Pauli matrix in N-d.
+Generate the \$(k,j)^{\textrm{th}}\$ Sylvester generalized Pauli matrix in N-d.
 https://en.wikipedia.org/wiki/Generalizations_of_Pauli_matrices
 """
-function sylvesterop(N::Integer,k::Integer,l::Integer)
-    ωˡ = Complex(cospi(2l/N),sinpi(2l/N))
-    rowval = mod1.(collect(1:N).+k,N)
+function sylvesterop(N::Integer,k::Integer,j::Integer)
+    ωʲ = Complex(cospi(2j/N),sinpi(2j/N))
+    rowval = [mod1(i+k,N) for i = 1:N]
     colptr = Vector{Int}(N+1); colptr[1:N] = 1:N; colptr[end] = N+1
-    nzval  = [ωˡ^m for m in 0:N-1]
+    nzval  = [ωʲ^m for m = 0:N-1]
     return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,),false)
 end
 
+"""
+    Sigma1(N)
+
+Generate the N-d shift matrix Σ₁.
+"""
 function Sigma1(N)
-    rowval = circshift(collect(1:N),-1)
+    rowval = circshift(1:N,-1)
     colptr = Vector{Int}(N+1); colptr[1:N] = 1:N; colptr[end] = N+1
     nzval  = ones(N)
     return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,),false)
 end
 
+"""
+    Sigma3(N)
+
+Generate the N-d clock matrix Σ₃.
+"""
 function Sigma3(N)
     ω = Complex(cospi(2/N),sinpi(2/N))
     rowval = collect(1:N)
     colptr = Vector{Int}(N+1); colptr[1:N] = 1:N; colptr[end] = N+1
-    nzval  = [ω^m for m=0:N-1]
+    nzval  = [ω^m for m = 0:N-1]
     return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,),false)
 end
