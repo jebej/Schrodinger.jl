@@ -106,6 +106,7 @@ true
 Let's plot the results!
 
 ```@setup gettingstartedplot
+!isdir("img") && mkdir("img")
 using Schrodinger, PyPlot
 res = sesolve(π*σx, basis(2,0), (0.0,2.0), [-σz], saveat=2/200)
 figure(figsize=(8,4.5), dpi=100);

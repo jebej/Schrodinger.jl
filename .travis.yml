@@ -8,8 +8,10 @@ julia:
 notifications:
   email: false
 install:
+  - pyenv install 3.6.4
+  - pyenv local 3.6.4
   - python --version
-  - pip2 install --user matplotlib
+  - pip install --user matplotlib
 # uncomment the following lines to override the default test script
 #script:
 #  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
