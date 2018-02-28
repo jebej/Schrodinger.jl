@@ -1,4 +1,6 @@
-using Documenter, Schrodinger
+using Documenter, Schrodinger, PyPlot
+
+!isdir("img") && mkdir("img")
 
 makedocs(
     sitename = "Schrodinger.jl",
@@ -15,6 +17,9 @@ makedocs(
             "man/quantumobjects.md",
             "man/working.md",
             "man/dynamics.md",
+        ],
+        "Examples" => Any[
+            "examples/DRAG.md",
         ],
         "API" => Any[
             "api/quobj.md",

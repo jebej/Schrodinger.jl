@@ -52,16 +52,16 @@ A coherent state is a superposition of number states, which is evident when disp
 ```jldoctest coherexample
 julia> full(Φ)
 10-element Array{Complex{Float64},1}:
- 0.196912+1.38778e-16im
-          0.295368+0.196912im
-          0.174045+0.417707im
-        -0.0904438+0.462268im
-         -0.298846+0.301357im
-         -0.335859+0.0686346im
-         -0.231869-0.094343im
-        -0.0987909-0.145533im
-      -0.000832521-0.0994845im
-         0.0472052-0.0721079im
+     0.196912+1.38778e-16im
+     0.295368+0.196912im
+     0.174045+0.417707im
+   -0.0904438+0.462268im
+    -0.298846+0.301357im
+    -0.335859+0.0686346im
+    -0.231869-0.094343im
+   -0.0987909-0.145533im
+ -0.000832521-0.0994845im
+    0.0472052-0.0721079im
 ```
 
 A *mixed* state is a probabilistic mixture of *pure* states, and it is important to understand the difference between the two. For example, we can create a superposition between two state of a three-level atom by adding kets together:

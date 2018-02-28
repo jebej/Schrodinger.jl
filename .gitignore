@@ -1,9 +1,10 @@
 *.jl.cov
 *.jl.*.cov
 *.jl.mem
-deps/deps.jl
-docs/build
-docs/site
-docs/localmake.jl
-docs/makedocs.lnk
-examples
+/deps/deps.jl
+/docs/build
+/docs/site
+/docs/localmake.jl
+/docs/makedocs.lnk
+/docs/test.md
+/examples
