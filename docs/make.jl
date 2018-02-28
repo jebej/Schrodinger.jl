@@ -1,7 +1,5 @@
 using Documenter, Schrodinger, PyPlot
 
-!isdir("img") && mkdir("img")
-
 makedocs(
     sitename = "Schrodinger.jl",
     authors = "Jérémy Béjanin.",

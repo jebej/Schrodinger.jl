@@ -4,6 +4,11 @@ DocTestSetup  = quote
 end
 ```
 
+```@setup DRAG
+!isdir("img") && mkdir("img")
+```
+
+
 # DRAG
 
 This example shows how to implement a NOT gate on a qubit using a Gaussian pulse. We then extend this method to a three-level slightly anharmonic energy spectrum with nearest level coupling. As we will see, the gate error increases due to leakage into the third level. To remedy this, we implement Derivative Removal by Adiabatic Gate (DRAG) which offers better gate fidelity than an ordinary Gaussian pulse (see the [References](@ref)).
