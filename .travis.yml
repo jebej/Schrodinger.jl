@@ -15,7 +15,7 @@ after_success:
 # push coverage results to Coveralls and Codecov
 - julia -e 'cd(Pkg.dir("Schrodinger")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder()); Codecov.submit(Codecov.process_folder())'
 # deploy documentation
-- julia -e 'Pkg.add("Documenter"); ENV["PYTHON"]=""; Pkg.add("PyPlot");'
-- alias julia='LD_PRELOAD=${HOME}/.julia/v0.6/Conda/deps/usr/lib/libz.so julia`
+- python -mpip install matplotlib
+- julia -e 'Pkg.add("Documenter"); Pkg.add("PyPlot");'
 - julia -e 'using PyPlot; plot([1,2,3],[1,2,3]);'
 - julia -e 'cd(Pkg.dir("Schrodinger")); include(joinpath("docs", "make.jl"))'
