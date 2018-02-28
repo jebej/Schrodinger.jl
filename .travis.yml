@@ -8,8 +8,8 @@ julia:
 notifications:
   email: false
 install:
-  - pyenv install --list
-  - pyenv local 3.6.4
+  - pyenv install -s 3.6.3
+  - pyenv local 3.6.3
   - python --version
   - pip install --user matplotlib
 # uncomment the following lines to override the default test script
