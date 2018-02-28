@@ -7,6 +7,8 @@ julia:
   - 0.6
 notifications:
   email: false
+install:
+  - if [ $TRAVIS_OS_NAME = osx ]; then brew install pkg-config; fi
 # uncomment the following lines to override the default test script
 #script:
 #  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
@@ -15,8 +17,7 @@ after_success:
 # push coverage results to Coveralls and Codecov
 - julia -e 'cd(Pkg.dir("Schrodinger")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder()); Codecov.submit(Codecov.process_folder())'
 # deploy documentation
-- python -mpip install -U pip
-- python -mpip install -U matplotlib
+- pip install matplotlib
 - julia -e 'Pkg.add("Documenter"); Pkg.add("PyPlot");'
 - julia -e 'using PyPlot; plot([1,2,3],[1,2,3]);'
 - julia -e 'cd(Pkg.dir("Schrodinger")); include(joinpath("docs", "make.jl"))'
