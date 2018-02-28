@@ -8,11 +8,8 @@ julia:
 notifications:
   email: false
 install:
-  - pyenv versions
-  - pyenv local 3.6
   - python --version
-  - "if [ $TRAVIS_OS_NAME = osx ]; then brew install pkg-config; fi"
-  - pip3 install --user matplotlib
+  - pip2 install --user matplotlib
 # uncomment the following lines to override the default test script
 #script:
 #  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
