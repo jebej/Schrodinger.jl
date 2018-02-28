@@ -4,7 +4,7 @@ DocTestSetup  = quote
 end
 ```
 
-```@setup
+```@setup DRAG
 !isdir("img") && mkdir("img")
 ```
 
