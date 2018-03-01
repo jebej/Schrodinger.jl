@@ -7,13 +7,15 @@ Compute the expectation value of an operator \$σ\$ given a state ket \$|ψ⟩\$
 E(σ,|ψ⟩) &= ⟨ψ|σ|ψ⟩, \\\\
 E(σ,ρ) &= \\textrm{tr}(σρ).
 \\end{align*}
+
+A specialized method exists for vector of `Ket` or `Operator` inputs.
 ```
 """
 expect(σ::Operator,ψ::Ket) = (dimsmatch(σ,ψ); dot(data(ψ),data(σ)*data(ψ)))
 expect(ψ::Ket,σ::Operator) = expect(σ,ψ)
 expect(σ::Operator,ρ::Operator) = (dimsmatch(σ,ρ); trace(data(σ)*data(ρ)))
 
-# Faster expectation value mathods when evaluating many (see calc_expvals)
+# Faster expectation value methods when passing in many inputs
 function expect!{T,D}(res,σ::Operator,states::Vector{Ket{T,D}})
     dimsmatch(σ,states[1])
     tmp = Vector{Complex128}(prod(dims(σ)))
@@ -39,15 +41,27 @@ function expect!{T,D}(res,σ::Operator,states::Vector{Operator{T,D}})
     return res
 end
 
+"""
+    levelprobs(ψ), levelprobs(ψ,s)
 
-levelprobs{T}(ψ::Ket{T,1}) = abs2.(data(ψ))
-levelprobs{T,N}(ψ::Ket{T,N},s::Int) = real(diag(ptrace(ψ,ntuple_sans_m(s,Val{N}))))
-#levelprobs{T,N}(ψ::Ket{T,N},out::Vector{Int}) = diag(ptrace(ψ,out))
+Compute the level occupation probabilities. For a `Ket`, this simply corresponds to the absolute square of the amplitude of each level. For an `Operator`, the function returns the diagonal.
 
-function levelprobs{T,M}(states::Vector{Ket{T,M}},S=1:M)
+A system index, or vector of indices, can be passed as a second argument. In that case, the full system will first be partial traced to keep only the desired index. Level occupation probabilities are then calculated from the resulting reduced density matrix. If a vector of indices is passed, occupation probabilities are calculated for a fully reduced density matrix for each index.
+
+A specialized method exists for vector of `Ket` or `Operator` inputs.
+"""
+levelprobs{T,N}(ψ::Ket{T,N}) = abs2(ψ)
+levelprobs{T,N}(ψ::Ket{T,N},s::Integer) = real(diag(ptrace(ψ,ntuple_sans_m(s,Val{N}))))
+levelprobs{T,N}(ρ::Operator{T,N}) = real(diag(ρ))
+levelprobs{T,N}(ρ::Operator{T,N},s::Integer) = real(diag(ptrace(ρ,ntuple_sans_m(s,Val{N}))))
+levelprobs(ψ::QuObject,S::AbstractVector) = map(s->levelprobs(ψ,s),S)
+
+# Faster levelprobs methods when passing in many inputs
+function levelprobs{T,M}(states::Vector{Ket{T,M}},S::Union{Integer,AbstractVector})
     N = length(states)
     D = dims(states[1])
     probs = map(S) do s
+        s > M && throw(ArgumentError("System index $s is larger than the number of systems, $M."))
         P = Matrix{Float64}(D[s],N)
         for n = 1:N
             P[:,n] = levelprobs(states[n],s)
@@ -57,9 +71,9 @@ function levelprobs{T,M}(states::Vector{Ket{T,M}},S=1:M)
     return probs
 end
 
-function levelprobs{T}(states::Vector{Ket{T,1}})
+function levelprobs{T,M}(states::Vector{Ket{T,M}})
     N = length(states)
-    P = Matrix{Float64}(dims(states[1])[1],N)
+    P = Matrix{Float64}(prod(dims(states[1])),N)
     for n = 1:N
         P[:,n] = levelprobs(states[n])
     end

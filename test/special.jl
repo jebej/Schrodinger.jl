@@ -44,4 +44,14 @@ end
     @test fidelity2(Operator(basis(N,2)),Operator(coherent(N,1))) ≈ abs2(coherent(N,1)[3])
 end
 
+@testset "Level Probabilities" begin
+    # Test calculation of level probabilities
+    @test levelprobs(g) == [1,0]
+    @test levelprobs(e1) == [0,1]
+    @test levelprobs(normalize!(e1+g)) ≈ [0.5,0.5]
+    @test levelprobs(e1⊗g) == [0,0,1,0]
+    @test levelprobs(normalize!(e1⊗g+g⊗e1)) ≈ [0,0.5,0.5,0]
+    @test levelprobs(normalize!(e1⊗g+g⊗g),1:2) ≈ [[0.5,0.5],[1,0]]
+end
+
 end
