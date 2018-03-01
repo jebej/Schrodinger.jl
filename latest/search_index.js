@@ -501,7 +501,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Function Library",
     "title": "Schrodinger.expect",
     "category": "Method",
-    "text": "expect(σ,ψ), expect(σ,ρ)\n\nCompute the expectation value of an operator  given a state ket  or a density matrix . The expectation value is defined as\n\nbeginalign*\nE() =  \nE() = textrmtr()\nendalign*\n\n\n\n"
+    "text": "expect(σ,ψ), expect(σ,ρ)\n\nCompute the expectation value of an operator  given a state ket  or a density matrix . The expectation value is defined as\n\nbeginalign*\nE() =  \nE() = textrmtr()\nendalign*\n\nA specialized method exists for vector of Ket or Operator inputs\n\n\n\n"
 },
 
 {
@@ -518,6 +518,14 @@ var documenterSearchIndex = {"docs": [
     "title": "Schrodinger.fidelity2",
     "category": "Method",
     "text": "fidelity2(ρ,ψ)\n\nCompute the Uhlmann state fidelity between density matrices  and , a density matrix  and a ket , or two kets  and . The Uhlmann state fidelity is simply defined as the square of the \"regular\" state fidelity.\n\n\n\n"
+},
+
+{
+    "location": "api/functions.html#Schrodinger.levelprobs-Union{Tuple{N}, Tuple{Schrodinger.Ket{T,N}}, Tuple{T}} where N where T",
+    "page": "Function Library",
+    "title": "Schrodinger.levelprobs",
+    "category": "Method",
+    "text": "levelprobs(ψ), levelprobs(ψ,s)\n\nCompute the level occupation probabilities. For a Ket, this simply corresponds to the absolute square of the amplitude of each level. For an Operator, the function returns the diagonal.\n\nA system index, or vector of indices, can be passed as a second argument. In that case, the full system will first be partial traced to keep only the desired index. Level occupation probabilities are then calculated from the resulting reduced density matrix. If a vector of indices is passed, occupation probabilities are calculated for a fully reduced density matrix for each index.\n\nA specialized method exists for vector of Ket or Operator inputs.\n\n\n\n"
 },
 
 {
