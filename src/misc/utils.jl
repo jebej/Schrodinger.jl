@@ -60,7 +60,7 @@ function rand_unitary{T<:LinAlg.BlasComplex}(::Type{T},n::Integer)
     return U
 end
 
-Base.normalize(z::Complex) = cis(angle(z))
+Base.normalize(z::Complex) = z == 0 ? one(z) : z/abs(z)
 Base.normalize(z::Real) = one(z)
 
 function unwrap!(p)
