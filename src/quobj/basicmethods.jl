@@ -84,7 +84,7 @@ end
 # Bra-ket printing
 function braket(ψ::QuVector, N::Int = 5)
     # N is the max number of kets/bras to show
-    idx = find(x->abs2(x)>0.01,ψ.data)
+    idx = find(x->abs2(x)>2.5E-5,ψ.data) # keep amplitudes larger than 0.005
     isempty(idx) && return "0"
     perm = sortperm(ψ.data[idx], by=abs2, rev=true)
     idx = length(perm)>N ? idx[perm[1:N]] : idx[perm]
