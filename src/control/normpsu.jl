@@ -36,6 +36,7 @@ function NormPSU(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},t::Real,n::Int
     U = [Matrix{Complex128}(N,N) for i=1:n]
     X = [Matrix{Complex128}(N,N) for i=1:n]
     P = [Matrix{Complex128}(N,N) for i=1:n]
+    copy!(P[end],Ut_d)
     # For the exact derivative we need to store eigenvectors and eigenvalues
     D = [Vector{Float64}(N) for i=1:n] # eigenvalues are always real
     V = [similar(H) for i=1:n]

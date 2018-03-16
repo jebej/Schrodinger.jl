@@ -33,14 +33,14 @@ function inner{T1,T2,S1,S2}(A::SparseMatrixCSC{T1,S1},B::SparseMatrixCSC{T2,S2})
     return res
 end
 
-function inner_cs{T,S}(A::AbstractMatrix{T},B::AbstractMatrix{S},s::IntSet)
+function inner_cs{S}(A,B::AbstractMatrix{S},s::IntSet)
     # calculate |trace(A'*B)|cs (coherent subspaces)
     # this inner product cares only about relative phase between the subspaces contained in s
     x,y = _inner_cs_1(A,B,s)
     return _inner_cs_2(x,y)
 end
 
-function inner_cs_grad{T,S}(Pj::AbstractMatrix{T},JXj::AbstractMatrix{S},x,y,s::IntSet)
+function inner_cs_grad{S}(Pj,JXj::AbstractMatrix{S},x,y,s::IntSet)
     # calculate the partial derivative of |trace(A'*B)|cs (coherent subspaces)
     w,z = _inner_cs_1(Pj,JXj,s)
     res = real(w*x)
@@ -75,7 +75,7 @@ function _inner_cs_1{T,S}(A::AbstractMatrix{T},B::AbstractMatrix{S},s::IntSet)
     return x,y
 end
 
-function _inner_cs_2(x::Number,y::Vector{<:Number})
+function _inner_cs_2(x::Number,y::Union{Vector{<:Number},NTuple{M,<:Number} where M})
     res = abs2(x)
     @inbounds for i = 1:length(y)
         res += abs2(y[i])
@@ -85,4 +85,20 @@ function _inner_cs_2(x::Number,y::Vector{<:Number})
         end
     end
     return sqrt(res)
+end
+
+f_cs_2(x::Number,y::Union{Vector{<:Number},NTuple{M,<:Number} where M}) = sum(abs,y)+abs(x)
+
+function _inner_cs_1{S,M}(A::NTuple{M,<:AbstractMatrix},B::AbstractMatrix{S},s::IntSet)
+    # calculate |trace(A'*B)|cs (coherent subspaces)
+    # this inner product cares only about relative phase between the subspaces contained in s
+    x = inner.(A,(B,))
+    return first(x), Base.tail(x)
+end
+
+function _inner_cs_1{S,M}(A::AbstractMatrix{S},B::NTuple{M,<:AbstractMatrix},s::IntSet)
+    # calculate |trace(A'*B)|cs (coherent subspaces)
+    # this inner product cares only about relative phase between the subspaces contained in s
+    x = inner.((A,),B)
+    return first(x), Base.tail(x)
 end

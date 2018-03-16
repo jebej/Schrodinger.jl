@@ -1,18 +1,18 @@
-using Optim: Optimizer, Options
+using Optim: Optimizer, Options, MultivariateOptimizationResults
 
 abstract type ObjectiveFunction end
 abstract type PenaltyFunction end
 const IntCol = Union{AbstractVector{Int},IntSet,Set{Int},NTuple{N,Int} where N}
 
-immutable GrapeResult{T<:Operator,S,P<:Optim.MultivariateOptimizationResults}
-    Ut::T
-    Ui::T
+immutable GrapeResult{D,T<:AbstractMatrix,P<:MultivariateOptimizationResults}
+    Ut::Operator{T,D}
+    Ui::Operator{Matrix{Complex128},D}
     ui::Matrix{Float64}
     fi::Float64
-    Uf::T
+    Uf::Operator{Matrix{Complex128},D}
     uf::Matrix{Float64}
     ff::Float64
-    t::S
+    t::Float64
     optim_res::P
 end
 
@@ -81,11 +81,18 @@ end
 
 calc_bprops!(O) = calc_bprops!(O.P,O.U,O.Ut)
 
-function calc_bprops!(P,U,Ut)
+function calc_bprops!(P::Vector{<:AbstractMatrix},U,Ut)
     # Calculate backward propagators
-    copy!(P[end],Ut)
     for i = length(P)-1:-1:1
         Ac_mul_B!(P[i],U[i+1],P[i+1])
+    end
+    return nothing
+end
+
+function calc_bprops!(P::Vector{<:NTuple{M,AbstractMatrix}},U,Ut) where M
+    # Calculate backward propagators
+    for i = length(P)-1:-1:1, m = 1:M
+        Ac_mul_B!(P[i][m],U[i+1],P[i+1][m])
     end
     return nothing
 end
@@ -117,7 +124,7 @@ end
 
 function target_propagator(O)
     # Return the target propagator
-    return Operator(copy(O.Ut),O.dims)
+    return Operator(O.Ut isa NTuple ? sum(O.Ut) : copy(O.Ut),O.dims)
 end
 
 function plotgrape(res::GrapeResult)
