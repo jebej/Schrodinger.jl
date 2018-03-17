@@ -42,11 +42,6 @@ include(joinpath("library","drivefuns.jl"))
 include(joinpath("library","constants.jl"))
 
 # A few VERSION-conditional definitions
-@static if VERSION < v"0.6.0"
-    include(joinpath("basepatch","v0.5.jl"))
-end
-@static if VERSION >= v"0.6.0"
-    include(joinpath("basepatch","v0.6.jl"))
-end
+include(joinpath("basepatch","v0.6.jl"))
 
 end
