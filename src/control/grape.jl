@@ -1,4 +1,4 @@
-using Optim: Optimizer, Options, MultivariateOptimizationResults
+using Optim: AbstractOptimizer, Options, MultivariateOptimizationResults
 
 abstract type ObjectiveFunction end
 abstract type PenaltyFunction end
@@ -20,25 +20,23 @@ grape(O::ObjectiveFunction,ui::Array,opt::Options) = grape(O,ui,ConjugateGradien
 
 grape(O::ObjectiveFunction,P::PenaltyFunction,ui::Array,opt::Options) = grape(O,P,ui,ConjugateGradient(),opt)
 
-function grape(O::ObjectiveFunction,ui::Array,method::Optimizer=ConjugateGradient(),opt::Options=Options())
+function grape(O::ObjectiveFunction,ui::Array,method::AbstractOptimizer=ConjugateGradient(),opt::Options=Options())
     f(u) = objective(O,u)
     g!(fp,u) = gradient!(O,fp,u)
     return grape(f,g!,ui,method,opt)
 end
 
-function grape(O::ObjectiveFunction,P::PenaltyFunction,ui::Array,method::Optimizer=ConjugateGradient(),opt::Options=Options())
+function grape(O::ObjectiveFunction,P::PenaltyFunction,ui::Array,method::AbstractOptimizer=ConjugateGradient(),opt::Options=Options())
     f(u) = objective(O,u) + objective(P,u)
     g!(fp,u) = (gradient!(O,fp,u); gradient!(P,fp,u))
     return grape(f,g!,ui,method,opt)
 end
 
-function grape(f::Function,g!::Function,ui::Array,method::Optimizer=ConjugateGradient(),opt::Options=Options())
+function grape(f::Function,g!::Function,ui::Array,method::AbstractOptimizer=ConjugateGradient(),opt::Options=Options())
     # Build OnceDifferentiable object from objective and gradient functions
-    fg!(fp,u) = (g!(fp,u); f(u))
-    seed = ones(f.O.u_last)
-    od = OnceDifferentiable(f,g!,fg!,1.0,similar(seed),seed,copy(seed),[1],[1])
+    od = OnceDifferentiable(f,g!,vec(ui))
     # Calculate initial fidelity and initial propagator
-    fi = 1 - objective(f.O,vec(ui))
+    fi = 1 - objective(f.O,ui)
     Ui = current_propagator(f.O)
     # Run optimization
     optim_res = optimize(od,vec(ui),method,opt)
