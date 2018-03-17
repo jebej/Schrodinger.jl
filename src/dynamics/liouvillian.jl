@@ -10,7 +10,7 @@ end
 dimsmatch(L::Liouvillian,A::QuObject) = L.dims==dims(A) || throw(DimensionMismatch("subspace dimensions must match"))
 
 # Liouvillian
-function (L::Liouvillian)(t,ψ,dψ)
+function (L::Liouvillian)(dψ,ψ,p,t)
     A_mul_B!(1.0, L.L₀, ψ, 0.0, dψ)
     applyfun!(dψ, L.Lₙ, L.fₙ, L.pₙ, t, ψ)
 end
@@ -21,7 +21,7 @@ end
 @inline applyfun!(dψ,Lₙ::Tuple{},fₙ,pₙ,t,ψ) = nothing
 
 # Jacobian
-function (L::Liouvillian)(::Type{Val{:jac}},t,ψ,J)
+function (L::Liouvillian)(::Type{Val{:jac}},J,ψ,p,t)
     copy!(J, L.L₀)
     applyjac!(J, L.Lₙ, L.fₙ, L.pₙ, t)
 end
@@ -30,6 +30,3 @@ end
     applyjac!(J, tail(Lₙ), tail(fₙ), tail(pₙ), t)
 end
 @inline applyjac!(J,Lₙ::Tuple{},fₙ,pₙ,t) = nothing
-
-# Hessian
-(p::Liouvillian)(::Type{Val{:hes}},t,ψ,H) = fill!(H, zero(eltype(H)))
