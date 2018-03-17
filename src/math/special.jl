@@ -20,7 +20,7 @@ function expect!{T,D}(res,σ::Operator,states::Vector{Ket{T,D}})
     dimsmatch(σ,states[1])
     tmp = Vector{Complex128}(prod(dims(σ)))
     for (i,ψ) in enumerate(states)
-        spmdv_mul!(tmp,data(σ),data(ψ))
+        A_mul_B!(tmp,data(σ),data(ψ))
         res[i] = dot(data(ψ),tmp)
     end
     return res
@@ -33,7 +33,7 @@ function expect!{T,D}(res,σ::Operator,states::Vector{Operator{T,D}})
     N = length(tmp); sqrtNp1 = isqrt(N)+1
     fill!(res, zero(eltype(tmp)))
     for (i,ρ) in enumerate(states)
-        spmdv_mul!(tmp,superσ,vec(data(ρ)))
+        A_mul_B!(tmp,superσ,vec(data(ρ)))
         for n = 1:sqrtNp1:N
             res[i] += tmp[n]
         end

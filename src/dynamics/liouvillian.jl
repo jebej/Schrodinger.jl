@@ -3,53 +3,33 @@ immutable Liouvillian{N,F,D} <: AbstractParameterizedFunction{true}
     Lₙ::NTuple{N,SparseMatrixCSC{Complex128,Int}}
     fₙ::F
     pₙ::NTuple{N,Vector{Float64}}
-    tmp::Vector{Complex128}
     dims::SDims{D}
-    function (::Type{Liouvillian{N,D}}){N,D}(dims,L₀,Lₙ=(),fₙ=(),pₙ=())
-        tmp = Vector{Complex128}(size(L₀,1))
-        return new{N,typeof(fₙ),D}(L₀,Lₙ,fₙ,pₙ,tmp,dims)
-    end
+    Liouvillian{N,D}(dims,L₀,Lₙ=(),fₙ=(),pₙ=()) where {N,D} = new{N,typeof(fₙ),D}(L₀,Lₙ,fₙ,pₙ,dims)
 end
 
 dimsmatch(L::Liouvillian,A::QuObject) = L.dims==dims(A) || throw(DimensionMismatch("subspace dimensions must match"))
 
-function (L::Liouvillian{N,F,D}){N,F,D}(t,ψ,dψ) # Not sure why this function allocates 16 bytes...
-    spmdv_mul!(dψ, L.L₀, ψ)
-    for i = 1:N
-        @inbounds applyfun!(dψ, L.Lₙ[i], L.fₙ[i], L.pₙ[i], t, ψ, L.tmp)
-    end
+# Liouvillian
+function (L::Liouvillian)(t,ψ,dψ)
+    A_mul_B!(1.0, L.L₀, ψ, 0.0, dψ)
+    applyfun!(dψ, L.Lₙ, L.fₙ, L.pₙ, t, ψ)
 end
+@inline function applyfun!(dψ,Lₙ,fₙ,pₙ,t,ψ)
+    A_mul_B!(first(fₙ)(t,first(pₙ)), first(Lₙ), ψ, 1.0, dψ)
+    applyfun!(dψ, tail(Lₙ), tail(fₙ), tail(pₙ), t, ψ)
+end
+@inline applyfun!(dψ,Lₙ::Tuple{},fₙ,pₙ,t,ψ) = nothing
 
-function (L::Liouvillian{N,F,D}){N,F,D}(::Type{Val{:jac}},t,ψ,J)
+# Jacobian
+function (L::Liouvillian)(::Type{Val{:jac}},t,ψ,J)
     copy!(J, L.L₀)
-    for i = 1:N
-        @inbounds applyjac!(J, L.Lₙ[i], L.fₙ[i], L.pₙ[i])
-    end
+    applyjac!(J, L.Lₙ, L.fₙ, L.pₙ, t)
 end
-
-(p::Liouvillian)(::Type{Val{:hes}},t,ψ,H) = scale!(H, 0.0)
-
-@inline function applyfun!(dψ,Lₙ,fₙ,pₙ,t,ψ,tmp)
-    spmdv_mul!(tmp, Lₙ, ψ)
-    scale!(tmp, fₙ(t,pₙ))
-    dψ .+= tmp
+@inline function applyjac!(J,Lₙ,fₙ,pₙ,t)
+    J .+= first(fₙ)(t,first(pₙ)) .* first(Lₙ)
+    applyjac!(J, tail(Lₙ), tail(fₙ), tail(pₙ), t)
 end
+@inline applyjac!(J,Lₙ::Tuple{},fₙ,pₙ,t) = nothing
 
-@inline function applyjac!(J,Lₙ,fₙ,pₙ)
-    J .+= scale!(Lₙ, fₙ(t,pₙ))
-end
-
-function spmdv_mul!(C::StridedVector, A::SparseMatrixCSC, B::StridedVector)
-    nzv = A.nzval
-    rv = A.rowval
-    fill!(C, zero(eltype(C)))
-    @inbounds for col = 1:A.n
-        b = B[col]
-        #if real(b) != 0.0 || imag(b) != 0.0
-            for j = A.colptr[col]:(A.colptr[col+1]-1)
-                C[rv[j]] += nzv[j]*b
-            end
-        #end
-    end
-    return C
-end
+# Hessian
+(p::Liouvillian)(::Type{Val{:hes}},t,ψ,H) = fill!(H, zero(eltype(H)))
