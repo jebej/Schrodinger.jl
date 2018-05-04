@@ -337,7 +337,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "api/states.html#Schrodinger.basis-Tuple{Integer,Integer}",
+    "location": "api/states.html#Schrodinger.basis-Tuple{Integer,Tuple{Vararg{Int64,D}} where D}",
     "page": "State Library",
     "title": "Schrodinger.basis",
     "category": "method",
