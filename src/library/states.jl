@@ -12,12 +12,14 @@ julia> ψ = basis(3,2)
 1.00∠0°|2⟩
 ```
 """
-function basis(N::Integer, n::Integer)
+function basis(n::Integer,dims::SDims)
+    N = prod(dims)
     N>n || throw(ArgumentError("basis level $n is too large for a $N-d space"))
     # Julia is 1-indexed!
-    return Ket(SparseVector(N,[n+1],[1.0]),(N,))
+    return Ket(SparseVector(N,[n+1],[1.0]),dims)
 end
 
+basis(N::Integer, n::Integer) = basis(n::Integer,(N,))
 
 """
     coherent(N, α, analytic=false)

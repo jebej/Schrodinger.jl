@@ -101,8 +101,8 @@ prettybraket(::Bra,coeffs,labels) = join(string.(coeffs,["⟨"],labels,["|"])," 
 function braketlabels{N}(n::Integer, bases::SDims{N})
     l = zeros(Int,N)
     for i in 1:N
-        l[i] = rem(n, bases[N-i+1])
-        n = div(n, bases[N-i+1])
+        l[i] = n % bases[N-i+1]
+        n = n ÷ bases[N-i+1]
     end
     return l
 end

@@ -19,6 +19,7 @@ function qzero(N::Integer, dims::SDims=(N,))
     nzval  = Vector{Float64}(0)
     return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),dims,true)
 end
+qzero(dims::SDims) = qzero(prod(dims),dims)
 
 
 """
@@ -42,6 +43,7 @@ function qeye(N::Integer, dims::SDims=(N,))
     nzval  = ones(N)
     return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),dims,true)
 end
+qeye(dims::SDims) = qeye(prod(dims),dims)
 
 """
     destroy(N)
