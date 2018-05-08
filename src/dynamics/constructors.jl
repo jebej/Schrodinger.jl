@@ -1,27 +1,20 @@
 # Schrodinger equation
 function SchrodingerEvo(H₀::Operator)
-    D = length(dims(H₀))
     # Constant Hamiltonian term
-    L₀ = -1.0im.*data(H₀)
-    return Liouvillian{0,D}(dims(H₀),L₀)
+    L₀ = -1im*data(H₀)
+    return Liouvillian(dims(H₀),L₀)
 end
-function SchrodingerEvo(H₀::Operator, Hₙ::Vector)
-    N = length(Hₙ); D = length(dims(H₀));
-    for i=1:N; dimsmatch(H₀,Hₙ[i][1]); end
+function SchrodingerEvo(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}})
+    for Hᵢ in Hₙ; dimsmatch(H₀,first(Hᵢ)); end
     # Constant Hamiltonian term
-    L₀ = -1.0im.*data(H₀)
+    L₀ = -1im*data(H₀)
     # Time-dependent Hamiltonian terms
-    Lₙ = ((-1.0im.*data(H[1]) for H in Hₙ)...)
-    fₙ = ((H[2] for H in Hₙ)...)
-    pₙ = ((length(H)==3?H[3]:[] for H in Hₙ)...)
-    return Liouvillian{N,D}(dims(H₀),L₀,Lₙ,fₙ,pₙ)
+    Lₙ,fₙ,pₙ = unpack_operators(-1im,data,Hₙ)
+    return Liouvillian(dims(H₀),L₀,Lₙ,fₙ,pₙ)
 end
-function SchrodingerEvo(H::Vector)
-    H₀ = H[1]::Operator
-    Hₙ = H[2:end]::Vector
-    return SchrodingerEvo(H₀,Hₙ)
-end
-SchrodingerEvo(H) = throw(ArgumentError("invalid Hamiltonian specification"))
+SchrodingerEvo(H₀::Operator,Hₙ::Vararg{Tuple}) = SchrodingerEvo(H₀,Hₙ)
+SchrodingerEvo(H::Tuple{Operator,Vararg{Tuple}}) = SchrodingerEvo(first(H),tail(H))
+SchrodingerEvo(::Any) = throw(ArgumentError("invalid Hamiltonian specification"))
 
 
 # von Neumann equation
@@ -29,140 +22,134 @@ SchrodingerEvo(H) = throw(ArgumentError("invalid Hamiltonian specification"))
 
 
 # Lindblad form master equation
-function LindbladEvo(H₀::Operator, Cₘ::Vector)
-    M = length(Cₘ); D = length(dims(H₀));
-    for i=1:M; dimsmatch(H₀,Cₘ[i]); end
-    Id = data(qeye(prod(dims(H₀))))
+function LindbladEvo(H₀::Operator, Cₘ::Tuple{Vararg{Operator}})
+    for Cᵢ in Cₘ; dimsmatch(H₀,Cᵢ); end
+    I = data(qeye(dims(H₀)))
     # Constant Hamiltonian term
-    L₀ = -1.0im.*(Id⊗data(H₀) - data(H₀).'⊗Id)
-    # Constant collapse operator terms
-    for i = 1:M
-        C = data(Cₘ[i])
-        CdC = C'*C
-        L₀ += conj(C)⊗C - 0.5.*(Id⊗CdC + CdC.'⊗Id)
-    end
-    return Liouvillian{0,D}(dims(H₀),L₀)
+    L₀ = -1im*(I⊗data(H₀) - data(H₀).'⊗I)
+    # Add constant collapse operator terms
+    L₀ = add_constant_collapse(L₀,Cₘ,I)
+    return Liouvillian(dims(H₀),L₀)
 end
-function LindbladEvo(H₀::Operator, Hₙ::Vector, Cₘ::Vector)
-    N = length(Hₙ); M = length(Cₘ); D = length(dims(H₀));
-    for i=1:N; dimsmatch(H₀,Hₙ[i][1]); end
-    for i=1:M; dimsmatch(H₀,Cₘ[i]); end
-    Id = data(qeye(prod(dims(H₀))))
+function LindbladEvo(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, Cₘ::Tuple{Vararg{Operator}})
+    for Hᵢ in Hₙ; dimsmatch(H₀,first(Hᵢ)); end
+    for Cᵢ in Cₘ; dimsmatch(H₀,Cᵢ); end
+    I = data(qeye(dims(H₀)))
     # Constant Hamiltonian term
-    L₀ = -1.0im.*(Id⊗data(H₀) - data(H₀).'⊗Id)
-    # Constant collapse operator terms
-    for i = 1:M
-        C = data(Cₘ[i])
-        CdC = C'*C
-        L₀ += conj(C)⊗C - 0.5.*(Id⊗CdC + CdC.'⊗Id)
-    end
+    L₀ = -1im*(I⊗data(H₀) - transpose(data(H₀))⊗I)
+    # Add constant collapse operator terms
+    L₀ = add_constant_collapse(L₀,Cₘ,I)
     # Time-dependent Hamiltonian terms
-    Lₙ = ((-1.0im.*(Id⊗data(H[1]) - data(H[1]).'⊗Id) for H in Hₙ)...)
-    fₙ = ((H[2] for H in Hₙ)...)
-    pₙ = ((length(H)==3?H[3]:[] for H in Hₙ)...)
-    return Liouvillian{N,D}(dims(H₀),L₀,Lₙ,fₙ,pₙ)
+    Lₙ,fₙ,pₙ = unpack_operators(-1im,data,Hₙ)
+    return Liouvillian(dims(H₀),L₀,@.((I,)⊗Lₙ-transpose(Lₙ)⊗(I,)),fₙ,pₙ)
 end
-function LindbladEvo(H::Vector, Cₘ::Vector)
-    H₀ = H[1]::Operator
-    Hₙ = H[2:end]::Vector
-    return LindbladEvo(H₀,Hₙ,Cₘ)
-end
-LindbladEvo(H,vararg...) = throw(ArgumentError("invalid Hamiltonian specification"))
+LindbladEvo(H₀::Operator,Cₘ::Vararg{Operator}) = LindbladEvo(H₀,Cₘ)
+LindbladEvo(H::Tuple{Operator,Vararg{Tuple}},Cₘ::Vararg{Operator}) = LindbladEvo(first(H),tail(H),Cₘ)
+LindbladEvo(H::Tuple{Operator,Vararg{Tuple}},Cₘ::Tuple{Vararg{Operator}}) = LindbladEvo(first(H),tail(H),Cₘ)
+LindbladEvo(::Any) = throw(ArgumentError("invalid Hamiltonian specification"))
 
 
 # Schrodinger evo propagator
+SchrodingerProp(H₀::Operator, tspan) = SchrodingerProp(H₀,float(tspan[2]-tspan[1]))
 function SchrodingerProp(H₀::Operator, Δt::Float64)
-    D = length(dims(H₀))
     # Constant Hamiltonian term
     U = expim(Hermitian(-full(H₀).*Δt))
-    return Propagator{D}(dims(H₀),U,Δt)
+    return Propagator(U,Δt,dims(H₀))
 end
-function SchrodingerProp(H₀::Operator, Hₙ::Vector, Δt::Float64, n::Int)
-    N = length(Hₙ); D = length(dims(H₀));
-    for i=1:N; dimsmatch(H₀,Hₙ[i][1]); end
+SchrodingerProp(H₀::Operator, Hₙ::Tuple, tspan, steps::Integer) = SchrodingerProp(H₀,(Hₙ,),tspan,steps)
+function SchrodingerProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, tspan, steps::Integer)
+    for Hᵢ in Hₙ; dimsmatch(H₀,first(Hᵢ)); end
     # Sampling times and spacing dt
-    ts = linspace(0,Δt,n+1)[2:end]; dt = ts[2]-ts[1]
+    t₁, t₂ = tspan; dt = (t₂-t₁)/steps
+    # Unpack arguments
+    Hn = unpack_operators(1,full,Hₙ)
     # Constant Hamiltonian term
-    U₀ = expim(Hermitian(-full(H₀).*dt))
+    U₀ = expim(Hermitian(-dt*full(H₀)))
     # Multiply-in sampled time-dependent terms interleaved with constant term
-    U = eye(Complex128,prod(dims(H₀)))
-    for t in ts
-        U = U₀*U
-        H = zeros(U)
-        for i in 1:N
-            f = Hₙ[i][2]
-            p = length(Hₙ[i])==3?Hₙ[i][3]:[]
-            H .+= full(Hₙ[i][1]).*(f(t,p)*dt)
-        end
-        U = expim(Hermitian(-H))*U
+    U = eye(U₀); H = Matrix{Base.promote_eltype(Hn[1]...)}(size(U₀)...)
+    A = similar(U)
+    for i = 1:steps
+        A_mul_B!(A,U₀,U); copy!(U,A)
+        step_hamiltonian!(H,Hn,(t₁,dt,i))
+        expim!(A,Hermitian(H))
+        U = A*U
     end
-    return Propagator{D}(dims(H₀),U,Δt)
-end
-function SchrodingerProp(H::Vector, Δt::Float64, n::Int)
-    H₀ = H[1]::Operator
-    Hₙ = H[2:end]::Vector
-    return SchrodingerProp(H₀,Hₙ,Δt,n)
+    return Propagator(U,float(t₂-t₁),dims(H₀))
 end
 SchrodingerProp(H) = throw(ArgumentError("invalid Propagator specification"))
 
 
 # Lindblad evo propagator
-function LindbladProp(H₀::Operator, Cₘ::Vector, Δt::Float64)
-    M = length(Cₘ); D = length(dims(H₀));
-    for i=1:M; dimsmatch(H₀,Cₘ[i]); end
-    Id = data(qeye(prod(dims(H₀))))
+LindbladProp(H₀::Operator, Cₘ::Operator, tspan) = LindbladProp(H₀,(Cₘ,),tspan)
+LindbladProp(H₀::Operator, Cₘ::Tuple{Vararg{Operator}}, tspan) = LindbladProp(H₀,Cₘ,tspan[2]-tspan[1])
+function LindbladProp(H₀::Operator, Cₘ::Tuple{Vararg{Operator}}, Δt::Float64)
+    for Cᵢ in Cₘ; dimsmatch(H₀,Cᵢ); end
+    I = eye(prod(dims(H₀)))
     # Constant Hamiltonian term
-    L₀ = -1.0im.*(Id⊗data(H₀) - data(H₀).'⊗Id)
+    L₀ = -1im.*(I⊗full(H₀) .- transpose(full(H₀))⊗I)
     # Constant collapse operator terms
-    for i = 1:M
-        C = data(Cₘ[i])
-        CdC = C'*C
-        L₀ += conj(C)⊗C - 0.5.*(Id⊗CdC + CdC.'⊗Id)
-    end
+    L₀ = add_constant_collapse(L₀,Cₘ,I)
     # Build constant propagator
-    U = expm(full(L₀).*Δt)
-    return Propagator{D}(dims(H₀),U,Δt)
+    U = LinAlg.expm!(L₀*Δt)
+    return Propagator(U,Δt,dims(H₀))
 end
-function LindbladProp(H₀::Operator, Hₙ::Vector, Cₘ::Vector, Δt::Float64, n::Int)
-    N = length(Hₙ); M = length(Cₘ); D = length(dims(H₀));
-    for i=1:N; dimsmatch(H₀,Hₙ[i][1]); end
-    for i=1:M; dimsmatch(H₀,Cₘ[i]); end
+LindbladProp(H₀::Operator, Hₙ::Tuple, Cₘ, tspan, steps::Integer) = LindbladProp(H₀,(Hₙ,),Cₘ,tspan,steps)
+LindbladProp(H₀::Operator, Hₙ, Cₘ::Operator, tspan, steps::Integer) = LindbladProp(H₀,Hₙ,(Cₘ,),tspan,steps)
+function LindbladProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, Cₘ::Tuple{Vararg{Operator}}, tspan, steps::Integer)
+    for Hᵢ in Hₙ; dimsmatch(H₀,first(Hᵢ)); end
+    for Cᵢ in Cₘ; dimsmatch(H₀,Cᵢ); end
+    I = eye(prod(dims(H₀)))
     # Sampling times and spacing dt
-    ts = linspace(0,Δt,n+1)[2:end]; dt = ts[2]-ts[1]
-    Id = data(qeye(prod(dims(H₀))))
+    t₁, t₂ = tspan; dt = (t₂-t₁)/steps
+    # Unpack arguments
+    Hn = unpack_operators(1,full,Hₙ)
     # Constant Hamiltonian term
-    L₀ = -1.0im.*(Id⊗data(H₀) - data(H₀).'⊗Id)
+    L₀ = -1im.*(I⊗full(H₀) .- transpose(full(H₀))⊗I)
     # Constant collapse operator terms
-    for i = 1:M
-        C = data(Cₘ[i])
-        CdC = C'*C
-        L₀ += conj(C)⊗C - 0.5.*(Id⊗CdC + CdC.'⊗Id)
-    end
+    L₀ = add_constant_collapse(L₀,Cₘ,I)
     # Build constant propagator part
-    U₀ = LinAlg.expm!(full(L₀).*dt)
+    U₀ = LinAlg.expm!(L₀.*dt)
     # Multiply-in sampled time-dependent terms interleaved with constant term
-    Lₙ = ((full(H[1]) for H in Hₙ)...)
-    fₙ = ((H[2] for H in Hₙ)...)
-    pₙ = ((length(H)==3?H[3]:[] for H in Hₙ)...)
-    U = eye(Complex128,prod(dims(H₀))^2)
-    L = Matrix{Complex128}(prod(dims(H₀)),prod(dims(H₀)))
-    C = similar(U)
-    for t in ts
-        A_mul_B!(C,U₀,U); copy!(U,C) # U = U₀*U, slow for large matrices
-        fill!(L,0)
-        for i in 1:N
-            L .-= Lₙ[i].*(fₙ[i](t,pₙ[i])*dt)
-        end
-        A = expim!(Hermitian(L))
+    U = eye(U₀); H = Matrix{Base.promote_eltype(Hn[1]...)}(size(U₀)...)
+    A = similar(U); B = similar(U)
+    for i = 1:steps
+        A_mul_B!(A,U₀,U); copy!(U,A)
+        step_hamiltonian!(H,Hn,(t₁,dt,i))
+        expim!(A,Hermitian(H))
         invA = LinAlg.inv!(lufact(A))
-        At_mul_B!(C,invA⊗Id,U)
-        I_kron_A_mul_B!(U,A,C) # A_mul_B!(U,Id⊗A,C)
+        At_mul_B!(B,invA⊗I,U)
+        I_kron_A_mul_B!(U,A,B) # A_mul_B!(U,Id⊗A,C)
     end
-    return Propagator{D}(dims(H₀),U,Δt)
-end
-function LindbladProp(H::Vector, Cₘ::Vector, Δt::Float64, n::Int)
-    H₀ = H[1]::Operator
-    Hₙ = H[2:end]::Vector
-    return LindbladProp(H₀,Hₙ,Cₘ,Δt,n)
+    return Propagator(U,float(t₂-t₁),dims(H₀))
 end
 LindbladProp(H) = throw(ArgumentError("invalid Propagator specification"))
+
+
+# Utils
+function unpack_operators(x::Number,f::Function,t::Tuple{Tuple{Operator,Function,Array},Vararg{Tuple}})
+    a, b = first(t), unpack_operators(tail(t))
+    return (x*f(a[1]), b[1]...), (a[2], b[2]...), (a[3], b[3]...)
+end
+function unpack_operators(x::Number,f::Function,t::Tuple{Tuple{Operator,Function},Vararg{Tuple}})
+    a, b = first(t), unpack_operators(tail(t))
+    return (x*f(a[1]), b[1]...), (a[2], b[2]...), ([], b[3]...)
+end
+unpack_operators(t::Tuple{}) = (), (), ()
+
+function add_constant_collapse(L₀,Cₘ,I)
+    for Cᵢ in Cₘ
+        C = data(Cᵢ); CdC = C'*C
+        L₀ += conj(C)⊗C - 0.5*(I⊗CdC + CdC.'⊗I)
+    end
+    return L₀
+end
+
+function step_hamiltonian!(H,Hn,tspec)
+    Hₙ,fₙ,pₙ = Hn
+    t₁, dt, i = tspec; tᵢ = t₁ + (i-1)*dt
+    fill!(H,0) # zero out matrix
+    for j = 1:length(Hₙ) # sample function at 3 points
+        Hᵢ,fᵢ,pᵢ = Hₙ[j],fₙ[j],pₙ[j]
+        H .+= -dt*(fᵢ(tᵢ,pᵢ) + fᵢ(tᵢ+0.5dt,pᵢ) + fᵢ(tᵢ+dt,pᵢ))/3 .* Hᵢ
+    end
+end

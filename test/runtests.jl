@@ -5,5 +5,6 @@ using Base.Test, Schrodinger
 include("quobj.jl")
 include("math.jl")
 include("special.jl")
+include("dynamics.jl")
 include("misc.jl")
 end
