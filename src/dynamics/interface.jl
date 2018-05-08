@@ -9,7 +9,7 @@ end
 function lsolve(L::Liouvillian,ψ₀::Ket,tspan,e_ops,alg;kwargs...)
     dimsmatch(L,ψ₀)
     prob = ODEProblem(L,complex(full(ψ₀)),tspan)
-    sol  = solve(prob,alg;dense=false,abstol=1E-8,reltol=1E-6,kwargs...)
+    sol  = solve(prob,alg;dense=false,abstol=1E-12,reltol=1E-10,kwargs...)
     states = Ket.(sol.u,[dims(ψ₀)])
     evals  = calc_expvals(e_ops,states)
     #probs  = levelprobs(states)
@@ -19,23 +19,23 @@ end
 function lsolve(L::Liouvillian,ρ₀::Operator,tspan,e_ops,alg;kwargs...)
     dimsmatch(L,ρ₀)
     prob = ODEProblem(L,vec(complex(full(ρ₀))),tspan)
-    sol  = solve(prob,alg;dense=false,abstol=1E-8,reltol=1E-6,kwargs...)
+    sol  = solve(prob,alg;dense=false,abstol=1E-12,reltol=1E-10,kwargs...)
     states = Operator.(oper.(sol.u),[dims(ρ₀)])
     evals  = calc_expvals(e_ops,states)
     return Result(sol.t,states,evals,sol.alg)
 end
 
-function sesolve(H,ψ₀::Ket,tspan,e_ops=[],alg=Vern8();kwargs...)
+function sesolve(H,ψ₀::Ket,tspan,e_ops=(),alg=Vern8();kwargs...)
     L = SchrodingerEvo(H)
     return lsolve(L,ψ₀,tspan,e_ops,alg;kwargs...)
 end
 
-function mesolve(H,C,ρ₀::Operator,tspan,e_ops=[],alg=Tsit5();kwargs...)
+function mesolve(H,C,ρ₀::Operator,tspan,e_ops=(),alg=Tsit5();kwargs...)
     L = LindbladEvo(H,C)
     return lsolve(L,ρ₀,tspan,e_ops,alg;kwargs...)
 end
 
-function mesolve(H,C,ψ₀::Ket,tspan,e_ops=[],alg=Tsit5();kwargs...)
+function mesolve(H,C,ψ₀::Ket,tspan,e_ops=(),alg=Tsit5();kwargs...)
     return mesolve(H,C,Operator(ψ₀),tspan,e_ops,alg;kwargs...)
 end
 
@@ -75,6 +75,7 @@ function psteady(U::Propagator,ρ₀::Operator,steps,e_ops)
     return Result([0.0,steps*U.Δt],states,evals,:SchrodingerPropSteady)
 end
 
+calc_expvals(o::Operator,states) = calc_expvals((o,),states)
 function calc_expvals(e_ops,states)
     isempty(e_ops) && return Matrix{Complex128}(0,0)
     M = length(e_ops); N = length(states)
