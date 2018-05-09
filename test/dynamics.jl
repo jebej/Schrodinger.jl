@@ -54,19 +54,19 @@ H1 = (σ_ue' + σ_ue);  # time-dependent term
 H1_coeff(t,p) = 9*exp(-(t/5)^2)
 S = @inferred SchrodingerEvo(H0,(H1,H1_coeff))
 res = lsolve(S, ψ₀, (-15.0,15.0), (n, σ_uu, σ_gg), Schrodinger.Tsit5())
-U1 = SchrodingerProp(H0,(H1,H1_coeff),(-15.0,15.0),4000)
-U2 = SchrodingerProp(S,(-15.0,15.0))
-@test U1(ψ₀) ≈ res.states[end] rtol=5E-4 # very poor showing here...
+U1 = @inferred SchrodingerProp(H0,(H1,H1_coeff),(-15.0,15.0),2000)
+U2 = @inferred SchrodingerProp(S,(-15.0,15.0))
+@test U1(ψ₀) ≈ res.states[end] rtol=5E-6 # okay showing here...
 @test U2(ψ₀) ≈ res.states[end] # this one is much better, need to figure out why
-@test U2.U ≈ U1.U rtol=5E-3 #...
+@test U2.U ≈ U1.U rtol=4E-5
 
 S = @inferred LindbladEvo((H0,(H1,H1_coeff,[1,2,3])),√(κ)*a)
 res = lsolve(S, Operator(ψ₀), (-15.0,15.0), (n, σ_uu, σ_gg), Schrodinger.Tsit5())
-U1 = LindbladProp(H0,(H1,H1_coeff),√(κ)*a,(-15.0,15.0),1000)
-U2 = LindbladProp(S,(-15.0,15.0),abstol=1E-7,reltol=1E-5)
-@test U1(Operator(ψ₀)) ≈ res.states[end] rtol=5E-3 # very poor showing here...
+U1 = @inferred LindbladProp(H0,(H1,H1_coeff),√(κ)*a,(-15.0,15.0),500)
+U2 = @inferred LindbladProp(S,(-15.0,15.0),abstol=1E-7,reltol=1E-5)
+@test U1(Operator(ψ₀)) ≈ res.states[end] rtol=4E-4 # very poor showing here...
 @test U2(Operator(ψ₀)) ≈ res.states[end] # this one is much better, need to figure out why
-@test U2.U ≈ U1.U rtol=3E-2 #...
+@test U2.U ≈ U1.U rtol=3E-3 #...
 end
 
 end

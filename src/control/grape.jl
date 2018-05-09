@@ -54,18 +54,18 @@ end
 
 calc_fprops!(O,u) = calc_fprops!(O.U,O.X,O.D,O.V,u,O.δt,O.Hd,O.Hc,O.H,O.u_last)
 
-function calc_fprops!(U,X,D,V,u,δt,Hd,Hc,H,u_last)
+function calc_fprops!(U,X,D,V,u,δt,Hd,Hc,_H,u_last)
     # If the control amplitudes u did not change, return
     u == u_last && return nothing
     # Otherwise calculate each individual propagator
-    n = length(U); m = length(Hc)
-    for j = 1:n
-        copy!(H,Hd)
-        for k = 1:m
-            H .+= u[(k-1)*n+j].*Hc[k]
+    n = length(U); m = length(Hc); H = Hermitian(_H)
+    for j = 1:n # loop over timeslices
+        H.data .= -δt.*Hd # copy drift (constant) Hamiltonian
+        for k = 1:m # loop over controls
+            H.data .+= -δt*u[(k-1)*n+j].*Hc[k] # add in time dependent parts
         end
-        # Calculate U and store eigenvectors and eigenvalues of -δt*H
-        expim!(U[j],Hermitian(scale!(H,-δt)),D[j],V[j],X[1])
+        # Calculate U and store eigenvectors and eigenvalues for this timeslice
+        expim!(U[j],H,D[j],V[j],X[1])
     end
     # Calculate forward propagators (cumulative product of U)
     copy!(X[1],U[1])
