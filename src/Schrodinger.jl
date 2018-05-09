@@ -1,5 +1,5 @@
 module Schrodinger
-using Base: tail, front
+using Base: tail, front, promote_eltype
 using DiffEqBase, OrdinaryDiffEq, Optim, Compat
 
 export Operator, Ket, Bra,

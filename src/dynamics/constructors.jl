@@ -28,7 +28,7 @@ function LindbladEvo(H₀::Operator, Cₘ::Tuple{Vararg{Operator}})
     # Constant Hamiltonian term
     L₀ = -1im*(I⊗data(H₀) - data(H₀).'⊗I)
     # Add constant collapse operator terms
-    L₀ = add_constant_collapse(L₀,Cₘ,I)
+    L₀ += sum_collapse(Cₘ,I,1)
     return Liouvillian(dims(H₀),L₀)
 end
 function LindbladEvo(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, Cₘ::Tuple{Vararg{Operator}})
@@ -38,7 +38,7 @@ function LindbladEvo(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, Cₘ::Tuple{Var
     # Constant Hamiltonian term
     L₀ = -1im*(I⊗data(H₀) - transpose(data(H₀))⊗I)
     # Add constant collapse operator terms
-    L₀ = add_constant_collapse(L₀,Cₘ,I)
+    L₀ += sum_collapse(Cₘ,I,1)
     # Time-dependent Hamiltonian terms
     Lₙ,fₙ,pₙ = unpack_operators(-1im,data,Hₙ)
     return Liouvillian(dims(H₀),L₀,@.((I,)⊗Lₙ-transpose(Lₙ)⊗(I,)),fₙ,pₙ)
@@ -61,18 +61,18 @@ function SchrodingerProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, tspan, step
     for Hᵢ in Hₙ; dimsmatch(H₀,first(Hᵢ)); end
     # Sampling times and spacing dt
     t₁, t₂ = tspan; dt = (t₂-t₁)/steps
-    # Unpack arguments
-    Hn = unpack_operators(1,full,Hₙ)
-    # Constant Hamiltonian term
-    U₀ = expim(Hermitian(-dt*full(H₀)))
-    # Multiply-in sampled time-dependent terms interleaved with constant term
-    U = eye(U₀); H = Matrix{Base.promote_eltype(Hn[1]...)}(size(H₀)...)
-    A = similar(U)
+    # Unpack constant and time dep operators
+    H0, Hn = full(H₀), unpack_operators(1,full,Hₙ)
+    # Multiply sampled propagators together to generate total evolution
+    U = eye(Complex128,size(H0)...)
+    H = Hermitian(zeros(promote_eltype(H0,Hn[1]...),size(H0)...))
+    A = similar(U); B = similar(U); C = similar(H.data); D = similar(U)
+    Λ = Vector{Float64}(size(H,1))
     for i = 1:steps
-        A_mul_B!(A,U₀,U); copy!(U,A)
-        step_hamiltonian!(H,Hn,(t₁,dt,i))
-        expim!(A,Hermitian(H))
-        U = A*U
+        step_hamiltonian!(H.data,H0,Hn,(t₁,dt,i)) # calc H for this time step
+        expim!(A,H,Λ,C,D) # A = exp(-1im*H*dt)
+        A_mul_B!(B,A,U) # U = A*U
+        U,B = B,U # swappitty swap for the next step
     end
     return Propagator(U,float(t₂-t₁),dims(H₀))
 end
@@ -86,11 +86,11 @@ function LindbladProp(H₀::Operator, Cₘ::Tuple{Vararg{Operator}}, Δt::Float6
     for Cᵢ in Cₘ; dimsmatch(H₀,Cᵢ); end
     I = eye(prod(dims(H₀)))
     # Constant Hamiltonian term
-    L₀ = -1im.*(I⊗full(H₀) .- transpose(full(H₀))⊗I)
-    # Constant collapse operator terms
-    L₀ = add_constant_collapse(L₀,Cₘ,I)
+    L₀Δt = -1im*Δt.*(I⊗full(H₀) .- transpose(full(H₀))⊗I)
+    # Add constant collapse operator terms
+    L₀Δt .+= sum_collapse(Cₘ,I,Δt)
     # Build constant propagator
-    U = LinAlg.expm!(L₀*Δt)
+    U = LinAlg.expm!(L₀Δt)
     return Propagator(U,Δt,dims(H₀))
 end
 LindbladProp(H₀::Operator, Hₙ::Tuple, Cₘ::Operator, tspan, steps::Integer) = LindbladProp(H₀,(Hₙ,),(Cₘ,),tspan,steps)
@@ -102,24 +102,23 @@ function LindbladProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, Cₘ::Tuple{Va
     I = eye(prod(dims(H₀)))
     # Sampling times and spacing dt
     t₁, t₂ = tspan; dt = (t₂-t₁)/steps
-    # Unpack arguments
-    Hn = unpack_operators(1,full,Hₙ)
-    # Constant Hamiltonian term
-    L₀ = -1im.*(I⊗full(H₀) .- transpose(full(H₀))⊗I)
-    # Constant collapse operator terms
-    L₀ = add_constant_collapse(L₀,Cₘ,I)
-    # Build constant propagator part
-    U₀ = LinAlg.expm!(L₀.*dt)
-    # Multiply-in sampled time-dependent terms interleaved with constant term
-    U = eye(U₀); H = Matrix{Base.promote_eltype(Hn[1]...)}(size(H₀)...)
-    A = similar(U); B = Matrix{Complex128}(size(H₀)...)
+    # Unpack constant and time dep operators
+    H0, Hn = full(H₀), unpack_operators(1,full,Hₙ)
+    # Build constant collapse propagator part
+    U₀ = LinAlg.expm!(sum_collapse(Cₘ,I,dt))
+    # Multiply sampled propagators together to generate total evolution
+    U = eye(Complex128,size(U₀)...)
+    H = Hermitian(zeros(promote_eltype(H0,Hn[1]...),size(H0)...))
+    A = Matrix{Complex128}(size(H0)...); B = similar(U); C = similar(H.data); D = similar(A)
+    Λ = Vector{Float64}(size(H,1))
     for i = 1:steps
-        A_mul_B!(A,U₀,U); copy!(U,A)
-        step_hamiltonian!(H,Hn,(t₁,dt,i))
-        expim!(B,Hermitian(H))
-        invB = LinAlg.inv!(lufact(B))
-        At_mul_B!(A,invB⊗I,U)
-        I_kron_A_mul_B!(U,B,A) # A_mul_B!(U,Id⊗A,C)
+        step_hamiltonian!(H.data,H0,Hn,(t₁,dt,i))
+        expim!(A,H,Λ,C,D) # A = exp(-1im*H*dt)
+        invA = LinAlg.inv!(lufact(A))
+        A_mul_B!(B,U₀,U)
+        At_mul_B!(U,invA⊗I,B)
+        I_kron_A_mul_B!(B,A,U)
+        U,B = B,U # swappitty swap for the next step
     end
     return Propagator(U,float(t₂-t₁),dims(H₀))
 end
@@ -128,27 +127,26 @@ LindbladProp(H) = throw(ArgumentError("invalid Propagator specification"))
 
 # Utils
 function unpack_operators(x::Number,f::Function,t::Tuple{Tuple{Operator,Function,Array},Vararg{Tuple}})
-    a, b = first(t), unpack_operators(tail(t))
+    a, b = first(t), unpack_operators(x,f,tail(t))
     return (x*f(a[1]), b[1]...), (a[2], b[2]...), (a[3], b[3]...)
 end
 function unpack_operators(x::Number,f::Function,t::Tuple{Tuple{Operator,Function},Vararg{Tuple}})
-    a, b = first(t), unpack_operators(tail(t))
+    a, b = first(t), unpack_operators(x,f,tail(t))
     return (x*f(a[1]), b[1]...), (a[2], b[2]...), ([], b[3]...)
 end
-unpack_operators(t::Tuple{}) = (), (), ()
+unpack_operators(x::Number,f::Function,t::Tuple{}) = (), (), ()
 
-function add_constant_collapse(L₀,Cₘ,I)
-    for Cᵢ in Cₘ
-        C = data(Cᵢ); CdC = C'*C
-        L₀ += conj(C)⊗C - 0.5*(I⊗CdC + CdC.'⊗I)
+function sum_collapse(Cₘ,I,dt)
+    mapreduce(+,Cₘ) do Cᵢ
+        C = full(Cᵢ); CdC = C'*C
+        dt*(conj(C)⊗C - 0.5*(I⊗CdC + transpose(CdC)⊗I))
     end
-    return L₀
 end
 
-function step_hamiltonian!(H,Hn,tspec)
+function step_hamiltonian!(H,H0,Hn,tspec)
     Hₙ,fₙ,pₙ = Hn
     t₁, dt, i = tspec; tᵢ = t₁ + (i-1)*dt
-    fill!(H,0) # zero out matrix
+    H .= -dt.*H0 # constant part
     for j = 1:length(Hₙ) # sample function at 3 points
         Hᵢ,fᵢ,pᵢ = Hₙ[j],fₙ[j],pₙ[j]
         H .+= -dt*(fᵢ(tᵢ,pᵢ) + fᵢ(tᵢ+0.5dt,pᵢ) + fᵢ(tᵢ+dt,pᵢ))/3 .* Hᵢ
