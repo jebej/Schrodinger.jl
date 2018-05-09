@@ -49,9 +49,7 @@ isequal{T<:QuObject}(A::T,B::T) = isequal(A.dims,B.dims)&&isequal(A.data,B.data)
 ==(A::Ket,B::Ket) = isequal(A.dims,B.dims)&&(A.data==B.data)
 ==(A::Bra,B::Bra) = isequal(A.dims,B.dims)&&(A.data==B.data)
 ==(A::Operator,B::Operator) = isequal(A.dims,B.dims)&&(A.data==B.data)
-isapprox(A::Ket,B::Ket) =  isequal(A.dims,B.dims)&&isapprox(A.data,B.data)
-isapprox(A::Bra,B::Bra) =  isequal(A.dims,B.dims)&&isapprox(A.data,B.data)
-isapprox(A::Operator,B::Operator) = isequal(A.dims,B.dims)&&isapprox(A.data,B.data)
+isapprox(A::QuObject,B::QuObject;kwargs...) =  isequal(A.dims,B.dims)&&isapprox(A.data,B.data;kwargs...)
 
 # Conversion and promotion rules
 convert{T,D}(::Type{Ket{T,D}},x::Ket) = Ket(convert(T,x.data),x.dims)

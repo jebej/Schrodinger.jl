@@ -93,12 +93,12 @@ function _inner_cs_1{S,M}(A::NTuple{M,<:AbstractMatrix},B::AbstractMatrix{S},s::
     # calculate |trace(A'*B)|cs (coherent subspaces)
     # this inner product cares only about relative phase between the subspaces contained in s
     x = inner.(A,(B,))
-    return first(x), Base.tail(x)
+    return first(x), tail(x)
 end
 
 function _inner_cs_1{S,M}(A::AbstractMatrix{S},B::NTuple{M,<:AbstractMatrix},s::IntSet)
     # calculate |trace(A'*B)|cs (coherent subspaces)
     # this inner product cares only about relative phase between the subspaces contained in s
     x = inner.((A,),B)
-    return first(x), Base.tail(x)
+    return first(x), tail(x)
 end
