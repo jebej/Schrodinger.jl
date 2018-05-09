@@ -2,7 +2,7 @@
 using Base.Test, Schrodinger
 
 @testset "Time Dynamics" begin
-N = 6 # cavity levels for tests
+N = 5 # cavity levels for tests
 
 @testset "Simple Qubit" begin
 ω = 0.2*2π
@@ -10,6 +10,7 @@ H = 0.5ω*σx
 ψ₀ = basis(2,0)
 res = sesolve(H,ψ₀,(0.0,10.0),(σz,σy),saveat=0.1)
 @test real.(res.evals) ≈ [cos.(ω.*res.times) sin.(π.+ω.*res.times)]
+@test SchrodingerProp(H,(0,10))(ψ₀) ≈ res.states[end]
 end
 
 @testset "Jaynes-Cummings" begin
@@ -22,16 +23,19 @@ sm = qeye(N) ⊗ destroy(2)
 Hj = ωc*a'*a + ωa*sm'*sm + g*(a'*sm + a*sm')
 O = (a'*a, sm'*sm)
 ψ₀ = normalize!(basis(N,1)+0.5*basis(N,3)+1im*basis(N,4)) ⊗ basis(2,0)
-res = sesolve(Hj, ψ₀, (0.0,25.0), qeye(N) ⊗ Operator([0 0;0 1]), abstol=1E-12, reltol=1E-12)
+res = sesolve(Hj, ψ₀, (0.0,25.0), qeye(N) ⊗ Operator([0 0;0 1]))
 f(t,g) = 0.5*(1 - (4/9*cos(2g*t) + 1/9*cos(√3*2g*t) + 4/9*cos(√4*2g*t)))
 @test real.(res.evals) ≈ f.(res.times,g)
+@test SchrodingerProp(Hj,(0.0,25.0))(ψ₀) ≈ res.states[end]
 
 ψ₀ = basis(N,0) ⊗ basis(2,1)
 c_ops = (√(κ)*a, √(κ)*sm)
 L = @inferred LindbladEvo(Hj,c_ops)
-resj = lsolve(L,Operator(ψ₀),(0.0,25.0), O, Schrodinger.Tsit5(),reltol=1E-10,abstol=1E-10)
+res = lsolve(L,Operator(ψ₀),(0.0,25.0), O, Schrodinger.Tsit5())
 f(t,g,κ,ϕ) = 0.5*(1+cos(t*2g+ϕ))*exp(-0.5κ*t)*exp(-0.5κ*t)
-@test real.(resj.evals) ≈ [f.(resj.times,g,κ,-π) f.(resj.times,g,κ,0)]
+@test real.(res.evals) ≈ [f.(res.times,g,κ,-π) f.(res.times,g,κ,0)]
+@test LindbladProp(Hj,c_ops,(0.0,25.0))(Operator(ψ₀)) ≈ res.states[end]
+
 end
 
 @testset "Three-Level Atom and Cavity" begin
@@ -49,10 +53,20 @@ H0 = n - c * (σ_ge' * a + a' * σ_ge) # time-independent term
 H1 = (σ_ue' + σ_ue);  # time-dependent term
 H1_coeff(t,p) = 9*exp(-(t/5)^2)
 S = @inferred SchrodingerEvo(H0,(H1,H1_coeff))
-resj = lsolve(S, ψ₀, (-15.0,15.0), (n, σ_uu, σ_gg), Schrodinger.Tsit5())
+res = lsolve(S, ψ₀, (-15.0,15.0), (n, σ_uu, σ_gg), Schrodinger.Tsit5())
+U1 = SchrodingerProp(H0,(H1,H1_coeff),(-15.0,15.0),4000)
+U2 = SchrodingerProp(S,(-15.0,15.0))
+@test U1(ψ₀) ≈ res.states[end] rtol=5E-4 # very poor showing here...
+@test U2(ψ₀) ≈ res.states[end] # this one is much better, need to figure out why
+@test U2.U ≈ U1.U rtol=5E-3 #...
 
 S = @inferred LindbladEvo((H0,(H1,H1_coeff,[1,2,3])),√(κ)*a)
-resj = lsolve(S, Operator(ψ₀), (-15.0,15.0), (n, σ_uu, σ_gg), Schrodinger.Tsit5())
+res = lsolve(S, Operator(ψ₀), (-15.0,15.0), (n, σ_uu, σ_gg), Schrodinger.Tsit5())
+U1 = LindbladProp(H0,(H1,H1_coeff),√(κ)*a,(-15.0,15.0),1000)
+U2 = LindbladProp(S,(-15.0,15.0),abstol=1E-7,reltol=1E-5)
+@test U1(Operator(ψ₀)) ≈ res.states[end] rtol=5E-3 # very poor showing here...
+@test U2(Operator(ψ₀)) ≈ res.states[end] # this one is much better, need to figure out why
+@test U2.U ≈ U1.U rtol=3E-2 #...
 end
 
 end

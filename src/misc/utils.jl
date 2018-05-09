@@ -126,7 +126,6 @@ ntuple_sans_m{n}(m,::Type{Val{n}}) = sorted_setdiff(ntuple(identity,Val{n}),(m,)
 
 # Thanks to @mbauman on Discourse for the following
 # https://discourse.julialang.org/t/type-stable-difference-of-tuples/3933/4
-using Base.tail
 @inline function sorted_setdiff(t1::Tuple, t2::Tuple)
     if t1[1] == t2[1]
         sorted_setdiff(tail(t1), tail(t2))

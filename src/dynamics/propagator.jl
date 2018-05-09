@@ -36,12 +36,12 @@ Operator(U::Propagator) = Operator(U.U,U.dims)
 # Convert a Liouvillian to a Propagator
 function SchrodingerProp(L::Liouvillian,tspan,alg=Vern8();kwargs...)
     prob = ODEProblem(L,eye(Complex128,prod(dims(L))),tspan)
-    sol  = solve(prob,alg;dense=false,saveat=tspan[end],abstol=1E-12,reltol=1E-10,kwargs...)
+    sol  = solve(prob,alg;save_start=false,saveat=tspan[end],abstol=1E-10,reltol=1E-8,kwargs...)
     return Propagator(sol.u[end],float(tspan[2]-tspan[1]),dims(L))
 end
 
 function LindbladProp(L::Liouvillian,tspan,alg=Tsit5();kwargs...)
     prob = ODEProblem(L,eye(Complex128,prod(dims(L))^2),tspan)
-    sol  = solve(prob,alg;dense=false,saveat=tspan[end],abstol=1E-12,reltol=1E-10,kwargs...)
+    sol  = solve(prob,alg;save_start=false,saveat=tspan[end],abstol=1E-8,reltol=1E-6,kwargs...)
     return Propagator(sol.u[end],float(tspan[2]-tspan[1]),dims(L))
 end

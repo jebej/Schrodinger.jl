@@ -66,7 +66,7 @@ function SchrodingerProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, tspan, step
     # Constant Hamiltonian term
     U₀ = expim(Hermitian(-dt*full(H₀)))
     # Multiply-in sampled time-dependent terms interleaved with constant term
-    U = eye(U₀); H = Matrix{Base.promote_eltype(Hn[1]...)}(size(U₀)...)
+    U = eye(U₀); H = Matrix{Base.promote_eltype(Hn[1]...)}(size(H₀)...)
     A = similar(U)
     for i = 1:steps
         A_mul_B!(A,U₀,U); copy!(U,A)
@@ -93,8 +93,9 @@ function LindbladProp(H₀::Operator, Cₘ::Tuple{Vararg{Operator}}, Δt::Float6
     U = LinAlg.expm!(L₀*Δt)
     return Propagator(U,Δt,dims(H₀))
 end
-LindbladProp(H₀::Operator, Hₙ::Tuple, Cₘ, tspan, steps::Integer) = LindbladProp(H₀,(Hₙ,),Cₘ,tspan,steps)
-LindbladProp(H₀::Operator, Hₙ, Cₘ::Operator, tspan, steps::Integer) = LindbladProp(H₀,Hₙ,(Cₘ,),tspan,steps)
+LindbladProp(H₀::Operator, Hₙ::Tuple, Cₘ::Operator, tspan, steps::Integer) = LindbladProp(H₀,(Hₙ,),(Cₘ,),tspan,steps)
+LindbladProp(H₀::Operator, Hₙ::Tuple, Cₘ::Tuple{Vararg{Operator}}, tspan, steps::Integer) = LindbladProp(H₀,(Hₙ,),Cₘ,tspan,steps)
+LindbladProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, Cₘ::Operator, tspan, steps::Integer) = LindbladProp(H₀,Hₙ,(Cₘ,),tspan,steps)
 function LindbladProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, Cₘ::Tuple{Vararg{Operator}}, tspan, steps::Integer)
     for Hᵢ in Hₙ; dimsmatch(H₀,first(Hᵢ)); end
     for Cᵢ in Cₘ; dimsmatch(H₀,Cᵢ); end
@@ -110,15 +111,15 @@ function LindbladProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, Cₘ::Tuple{Va
     # Build constant propagator part
     U₀ = LinAlg.expm!(L₀.*dt)
     # Multiply-in sampled time-dependent terms interleaved with constant term
-    U = eye(U₀); H = Matrix{Base.promote_eltype(Hn[1]...)}(size(U₀)...)
-    A = similar(U); B = similar(U)
+    U = eye(U₀); H = Matrix{Base.promote_eltype(Hn[1]...)}(size(H₀)...)
+    A = similar(U); B = Matrix{Complex128}(size(H₀)...)
     for i = 1:steps
         A_mul_B!(A,U₀,U); copy!(U,A)
         step_hamiltonian!(H,Hn,(t₁,dt,i))
-        expim!(A,Hermitian(H))
-        invA = LinAlg.inv!(lufact(A))
-        At_mul_B!(B,invA⊗I,U)
-        I_kron_A_mul_B!(U,A,B) # A_mul_B!(U,Id⊗A,C)
+        expim!(B,Hermitian(H))
+        invB = LinAlg.inv!(lufact(B))
+        At_mul_B!(A,invB⊗I,U)
+        I_kron_A_mul_B!(U,B,A) # A_mul_B!(U,Id⊗A,C)
     end
     return Propagator(U,float(t₂-t₁),dims(H₀))
 end
