@@ -22,7 +22,7 @@ It is possible to normalize the ket vector after construction with the `normaliz
 # Example
 ```jldoctest
 julia> ψ = normalize!(Ket([1,1]))
-2-d Schrodinger.Ket{Array{Float64,1},1} with space dimensions 2:
+2-d Schrodinger.Ket{Array{Float64,1},1} with dimensions 2
 0.71∠0°|0⟩ + 0.71∠0°|1⟩
 ```
 """
@@ -67,7 +67,7 @@ The `Operator` type has two fields, `data` and `dims`, which store the matrix da
 # Example
 ```jldoctest
 julia> σ = Operator([0 -im ; im 0])
-2×2 Schrodinger.Operator{Array{Complex{Float64},2},1} with space dimensions 2:
+2×2 Schrodinger.Operator{Array{Complex{Float64},2},1} with dimensions 2
  0.0+0.0im  0.0-1.0im
  0.0+1.0im  0.0+0.0im
 ```
