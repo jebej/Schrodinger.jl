@@ -41,7 +41,7 @@ tg = 6e-9 # gate time 6ns
 g = basis(2,0) # begin in ground state
 tspan = (-tg/2,tg/2) # pulse centered at t=0
 
-res1 = sesolve([qzero(2),(H,rotgaussianpulse,[tg,σ,π])],g,tspan,saveat=tg/200)
+res1 = sesolve((qzero(2),(H,rotgaussianpulse,[tg,σ,π])),g,tspan,saveat=tg/200)
 
 using PyPlot
 figure(figsize=(8,4.5), dpi=100);
@@ -66,7 +66,7 @@ Hc = Δ*Π₂ # constant Hamiltonian
 Hd = create(3)/2 + destroy(3)/2 # affected by Ɛˣ
 g = basis(3,0)
 
-res2 = sesolve([Hc,(Hd,rotgaussianpulse,[tg,σ,π])],g,tspan,saveat=tg/200)
+res2 = sesolve((Hc,(Hd,rotgaussianpulse,[tg,σ,π])),g,tspan,saveat=tg/200)
 figure(figsize=(8,4.5), dpi=100);
 plot(res2.times*1e9,levelprobs(res2.states)); grid()
 xlabel("Time (ns)"); ylabel("Level Probabilities");
@@ -118,7 +118,7 @@ Hdet = Π₁ # affected by dynamical detuning
 Hdx = create(3)/2 + destroy(3)/2 # affected by Ɛˣ
 Hdy = im*create(3)/2 - im*destroy(3)/2 # affected by Ɛʸ
 
-res3 = sesolve([Hc,(Hdet,dydet,[tg,σ,π,Δ,λ]),(Hdx,DRAGx,[tg,σ,π,Δ,λ]),(Hdy,DRAGy,[tg,σ,π,Δ,λ])],g,tspan,saveat=tg/200)
+res3 = sesolve((Hc,(Hdet,dydet,[tg,σ,π,Δ,λ]),(Hdx,DRAGx,[tg,σ,π,Δ,λ]),(Hdy,DRAGy,[tg,σ,π,Δ,λ])),g,tspan,saveat=tg/200)
 figure(figsize=(8,4.5), dpi=100);
 plot(res3.times*1e9,levelprobs(res3.states)); grid()
 xlabel("Time (ns)"); ylabel("Level Probabilities");
@@ -153,10 +153,10 @@ for (i,tg) in enumerate(tgs)
         op = axialops[j]
         tspan = (-tg/2,tg/2)
         # Gaussian
-        res4_1 = sesolve([Hc,(Hd,rotgaussianpulse,[tg,σ,π])],ket,tspan)
+        res4_1 = sesolve((Hc,(Hd,rotgaussianpulse,[tg,σ,π])),ket,tspan)
         sum1 += trace(Uideal*op*Uideal'*(res4_1.states[end]*res4_1.states[end]'))
         # DRAG
-        res4_2 = sesolve([Hc,(Hdet,dydet,[tg,σ,π,Δ,λ]),(Hdx,DRAGx,[tg,σ,π,Δ,λ]),(Hdy,DRAGy,[tg,σ,π,Δ,λ])],ket,tspan)
+        res4_2 = sesolve((Hc,(Hdet,dydet,[tg,σ,π,Δ,λ]),(Hdx,DRAGx,[tg,σ,π,Δ,λ]),(Hdy,DRAGy,[tg,σ,π,Δ,λ])),ket,tspan)
         sum2 += trace(Uideal*op*Uideal'*(res4_2.states[end]*res4_2.states[end]'))
     end
     Fg_res[i,:] = [sum1/6 sum2/6] # take average

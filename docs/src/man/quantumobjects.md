@@ -44,7 +44,7 @@ julia> α = 1.5+1im;
 
 julia> Φ = coherent(10,α)
 10-d Schrodinger.Ket{Array{Complex{Float64},1},1} with dimensions 10
-0.47∠101°|3⟩ + 0.45∠67°|2⟩ + 0.42∠135°|4⟩ + 0.35∠34°|1⟩ + 0.34∠168°|5⟩ +...
+0.47∠101°|3⟩ + 0.45∠67°|2⟩ + 0.42∠135°|4⟩ + 0.35∠34°|1⟩ + 0.34∠168°|5⟩ +…
 ```
 
 A coherent state is a superposition of number states, which is evident when displayed in the number basis. Note the three dots at the end of the line: Schrodinger.jl only displays the 5 largest components of a `Ket` vector. You can see the full vector with the [`full`](@ref) function:
