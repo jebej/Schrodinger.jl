@@ -97,7 +97,7 @@ O = -σz # observable
 We can now pass all three arguments (`H`, `g` and `O`) to the [`sesolve`](@ref) function (Schrodinger Equation solver) to solve for the time dynamics! We also pass a keyword argument `saveat` to make sure we have enough points. As can be seen, the results match with theory:
 
 ```jldoctest gettingstarted
-res = sesolve(H, g, t, [O], saveat=linspace(0,2,101))
+res = sesolve(H, g, t, [O], saveat=2/200)
 real.(res.evals) ≈ -cos.(ω.*res.times) # check against theory
 # output
 true
