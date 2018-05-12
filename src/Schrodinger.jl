@@ -1,4 +1,5 @@
 module Schrodinger
+using Base: tail, front
 using DiffEqBase, OrdinaryDiffEq, Optim, Compat
 
 export Operator, Ket, Bra,

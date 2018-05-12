@@ -62,23 +62,20 @@ promote_rule{T,S,D}(::Type{Bra{T,D}},::Type{Bra{S,D}}) = Bra{promote_type(T,S),D
 promote_rule{T,S,D}(::Type{Operator{T,D}},::Type{Operator{S,D}}) = Operator{promote_type(T,S),D}
 
 # Show methods
-function show{T<:QuMatrix}(io::IO, A::T)
+function show(io::IO, A::T) where T<:QuMatrix
     n = size(A,1)
-    dim = join(A.dims,'⊗')
-    print(io,"$n×$n $T with space dimensions $dim")
+    print(io, "$n×$n $T with dimensions ", join(A.dims,'⊗'))
 end
-function show{T<:QuMatrix}(io::IO, ::MIME"text/plain", A::T)
+function show(io::IO, ::MIME"text/plain", A::T) where T<:QuMatrix
     n = size(A,1)
-    dim = join(A.dims,'⊗')
-    println(io,"$n×$n $T with space dimensions $dim:")
-    Base.showarray(io,A.data, false, header=false)
+    println(io, "$n×$n $T with dimensions ", join(A.dims,'⊗'))
+    Base.showarray(io, A.data, false, header=false)
 end
-show(io::IO, ψ::QuVector) = print(io,braket(ψ))
-function show(io::IO, ::MIME"text/plain", ψ::QuVector)
+show(io::IO, ψ::QuVector) = print(io, braket(ψ))
+function show(io::IO, ::MIME"text/plain", ψ::T) where T<:QuVector
     n = size(ψ,1)
-    dim = join(ψ.dims,'⊗')
-    println(io,"$n-d $(typeof(ψ)) with space dimensions $dim:")
-    println(io,braket(ψ))
+    println(io, "$n-d $T with dimensions ", join(ψ.dims,'⊗'))
+    println(io, braket(ψ))
 end
 
 # Bra-ket printing
@@ -91,18 +88,12 @@ function braket(ψ::QuVector, N::Int = 5)
     coeffs = map(full(ψ.data[idx])) do x
         @sprintf("%.2f∠%d°", abs(x), rad2deg(angle(x)))
     end
-    labels = join.(reverse.(braketlabels.(idx.-1,[ψ.dims])),[","])
-    return prettybraket(ψ,coeffs,labels)*(length(perm)>N?" +...":"")
+    labels = join.(slabels.(idx.-1,(dims(ψ),)),',')
+    return prettybraket(ψ,coeffs,labels) * (length(perm)>N ? " +…" : "")
 end
 
-prettybraket(::Ket,coeffs,labels) = join(string.(coeffs,["|"],labels,["⟩"])," + ")
-prettybraket(::Bra,coeffs,labels) = join(string.(coeffs,["⟨"],labels,["|"])," + ")
+prettybraket(::Ket,coeffs,labels) = join(string.(coeffs,'|',labels,'⟩')," + ")
+prettybraket(::Bra,coeffs,labels) = join(string.(coeffs,'⟨',labels,'|')," + ")
 
-function braketlabels{N}(n::Integer, bases::SDims{N})
-    l = zeros(Int,N)
-    for i in 1:N
-        l[i] = n % bases[N-i+1]
-        n = n ÷ bases[N-i+1]
-    end
-    return l
-end
+@inline slabels(n::Integer, bases::SDims) = (slabels(n ÷ bases[end], front(bases))..., n % bases[end])
+@inline slabels(n::Integer, bases::SDims{1}) =  (n % bases[1],)
