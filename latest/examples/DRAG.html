@@ -11,7 +11,7 @@ function rotgaussianpulse(t::Real,p::Vector)
     return Ɛˣ
 end
 
-H = σx/2 # same as create(2)/2 + destroy(2)/2; using natural units where ħ=1</code></pre><pre><code class="language-none">2×2 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with space dimensions 2:
+H = σx/2 # same as create(2)/2 + destroy(2)/2; using natural units where ħ=1</code></pre><pre><code class="language-none">2×2 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 2
  0.0  0.5
  0.5  0.0</code></pre></div><p>We are now ready to solve for the time dynamics and plot our results. We&#39;ll use parameters that are typical for Transmon qubits.</p><div><pre><code class="language-julia">tg = 6e-9 # gate time 6ns
 σ = 0.5tg # standard deviation of gaussian pulse
