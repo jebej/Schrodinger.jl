@@ -1,6 +1,6 @@
 module Schrodinger
 using Base: tail, front, promote_eltype
-using DiffEqBase, OrdinaryDiffEq, Optim, Compat
+using OrdinaryDiffEq, Optim
 
 export Operator, Ket, Bra,
     data, dims, isnormalized, dimsmatch, dense, braket, isapproxhermitian,
