@@ -51,7 +51,7 @@ LindbladEvo(::Any) = throw(ArgumentError("invalid Hamiltonian specification"))
 
 # Schrodinger evo propagator
 SchrodingerProp(H₀::Operator, tspan) = SchrodingerProp(H₀,float(tspan[2]-tspan[1]))
-function SchrodingerProp(H₀::Operator, Δt::Float64)
+function SchrodingerProp(H₀::Operator, Δt::Real)
     # Constant Hamiltonian term
     U = expim(Hermitian(-full(H₀).*Δt))
     return Propagator(U,Δt,dims(H₀))
@@ -59,15 +59,16 @@ end
 SchrodingerProp(H₀::Operator, Hₙ::Tuple, tspan, steps::Integer) = SchrodingerProp(H₀,(Hₙ,),tspan,steps)
 function SchrodingerProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, tspan, steps::Integer)
     for Hᵢ in Hₙ; dimsmatch(H₀,first(Hᵢ)); end
+    F = real(eltype(H₀))
     # Sampling times and spacing dt
     t₁, t₂ = tspan; dt = (t₂-t₁)/steps
     # Unpack constant and time dep operators
     H0, Hn = full(H₀), unpack_operators(1,full,Hₙ)
     # Multiply sampled propagators together to generate total evolution
-    U = eye(Complex128,size(H0)...)
+    U = eye(Complex{F},size(H0)...)
     H = Hermitian(zeros(promote_eltype(H0,Hn[1]...),size(H0)...))
     A = similar(U); B = similar(U); C = similar(H.data); D = similar(U)
-    Λ = Vector{Float64}(size(H,1))
+    Λ = Vector{F}(size(H,1))
     for i = 1:steps
         step_hamiltonian!(H.data,H0,Hn,(t₁,dt,i)) # calc H for this time step
         expim!(A,H,Λ,C,D) # A = exp(-1im*H*dt)
@@ -82,9 +83,10 @@ SchrodingerProp(H) = throw(ArgumentError("invalid Propagator specification"))
 # Lindblad evo propagator
 LindbladProp(H₀::Operator, Cₘ::Operator, tspan) = LindbladProp(H₀,(Cₘ,),tspan)
 LindbladProp(H₀::Operator, Cₘ::Tuple{Vararg{Operator}}, tspan) = LindbladProp(H₀,Cₘ,tspan[2]-tspan[1])
-function LindbladProp(H₀::Operator, Cₘ::Tuple{Vararg{Operator}}, Δt::Float64)
+function LindbladProp(H₀::Operator, Cₘ::Tuple{Vararg{Operator}}, Δt::Real)
     for Cᵢ in Cₘ; dimsmatch(H₀,Cᵢ); end
-    I = eye(prod(dims(H₀)))
+    F = real(eltype(H₀))
+    I = eye(F,prod(dims(H₀)))
     # Constant Hamiltonian term
     L₀Δt = -1im*Δt.*(I⊗full(H₀) .- transpose(full(H₀))⊗I)
     # Add constant collapse operator terms
@@ -99,7 +101,8 @@ LindbladProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, Cₘ::Operator, tspan, 
 function LindbladProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, Cₘ::Tuple{Vararg{Operator}}, tspan, steps::Integer)
     for Hᵢ in Hₙ; dimsmatch(H₀,first(Hᵢ)); end
     for Cᵢ in Cₘ; dimsmatch(H₀,Cᵢ); end
-    I = eye(prod(dims(H₀)))
+    F = real(eltype(H₀))
+    I = eye(F,prod(dims(H₀)))
     # Sampling times and spacing dt
     t₁, t₂ = tspan; dt = (t₂-t₁)/steps
     # Unpack constant and time dep operators
@@ -107,10 +110,10 @@ function LindbladProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, Cₘ::Tuple{Va
     # Build constant collapse propagator part
     U₀ = LinAlg.expm!(sum_collapse(Cₘ,I,dt))
     # Multiply sampled propagators together to generate total evolution
-    U = eye(Complex128,size(U₀)...)
+    U = eye(Complex{F},size(U₀)...)
     H = Hermitian(zeros(promote_eltype(H0,Hn[1]...),size(H0)...))
-    A = Matrix{Complex128}(size(H0)...); B = similar(U); C = similar(H.data); D = similar(A)
-    Λ = Vector{Float64}(size(H,1))
+    A = Matrix{Complex{F}}(size(H0)...); B = similar(U); C = similar(H.data); D = similar(A)
+    Λ = Vector{F}(size(H,1))
     for i = 1:steps
         step_hamiltonian!(H.data,H0,Hn,(t₁,dt,i))
         expim!(A,H,Λ,C,D) # A = exp(-1im*H*dt)

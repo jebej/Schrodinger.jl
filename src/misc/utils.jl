@@ -75,10 +75,10 @@ function unwrap!(p)
     return p
 end
 
-expim(H::RealHermSymComplexHerm) = expim!(Matrix{Complex128}(H),copy(H))
-expim!(H::RealHermSymComplexHerm) = expim!(Matrix{Complex128}(H),H)
+expim(H::RealHermSymComplexHerm) = expim!(Matrix{complex(eltype(H))}(H),copy(H))
+expim!(H::RealHermSymComplexHerm) = expim!(Matrix{complex(eltype(H))}(H),H)
 
-function expim!(R::Matrix{Complex128},H::RealHermSymComplexHerm,Λ=Vector{Float64}(size(H,1)),U=Matrix(H),B=similar(R))
+function expim!(R::Matrix,H::RealHermSymComplexHerm,Λ=Vector{real(eltype(R))}(size(H,1)),U=Matrix(H),B=similar(R))
     # First decompose H into U*Λ*Uᴴ
     #F = eigfact!(H); copy!(Λ,F.values); copy!(U,F.vectors)
     hermfact!(Λ,U,H)

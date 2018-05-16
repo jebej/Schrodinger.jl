@@ -1,6 +1,6 @@
-immutable Propagator{D} <: AbstractParameterizedFunction{false}
-    U::Matrix{Complex128}
-    Δt::Float64
+immutable Propagator{T,D} <: AbstractParameterizedFunction{false}
+    U::Matrix{Complex{T}}
+    Δt::T
     dims::SDims{D}
 end
 
@@ -36,12 +36,12 @@ Operator(U::Propagator) = Operator(U.U,U.dims)
 # Convert a Liouvillian to a Propagator
 function SchrodingerProp(L::Liouvillian,tspan,alg=Vern8();kwargs...)
     prob = ODEProblem(L,eye(Complex128,prod(dims(L))),tspan)
-    sol  = solve(prob,alg;save_start=false,saveat=tspan[end],abstol=1E-10,reltol=1E-8,kwargs...)
+    sol  = solve(prob,alg;save_start=false,saveat=tspan[end],abstol=1E-8,reltol=1E-6,kwargs...)
     return Propagator(sol.u[end],float(tspan[2]-tspan[1]),dims(L))
 end
 
 function LindbladProp(L::Liouvillian,tspan,alg=Tsit5();kwargs...)
     prob = ODEProblem(L,eye(Complex128,prod(dims(L))^2),tspan)
-    sol  = solve(prob,alg;save_start=false,saveat=tspan[end],abstol=1E-8,reltol=1E-6,kwargs...)
+    sol  = solve(prob,alg;save_start=false,saveat=tspan[end],abstol=1E-7,reltol=1E-5,kwargs...)
     return Propagator(sol.u[end],float(tspan[2]-tspan[1]),dims(L))
 end
