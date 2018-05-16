@@ -54,11 +54,11 @@ end
 
 calc_fprops!(O,u) = calc_fprops!(O.U,O.X,O.D,O.V,u,O.δt,O.Hd,O.Hc,O.H,O.u_last)
 
-function calc_fprops!(U,X,D,V,u,δt,Hd,Hc,_H,u_last)
+function calc_fprops!(U,X,D,V,u,δt,Hd,Hc,H,u_last)
     # If the control amplitudes u did not change, return
     u == u_last && return nothing
     # Otherwise calculate each individual propagator
-    n = length(U); m = length(Hc); H = Hermitian(_H)
+    n = length(U); m = length(Hc)
     for j = 1:n # loop over timeslices
         H.data .= -δt.*Hd # copy drift (constant) Hamiltonian
         for k = 1:m # loop over controls

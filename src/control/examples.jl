@@ -47,10 +47,10 @@ function opt_3lvlNOT(n)
     tvec = linspace(-t/2,t/2,n)
     ui = gaussianpulse.(tvec,[[t/2,t,ω,0,pi]])
     #ui = 2.*cos.(ω.*tvec)
-    Ut = Operator([0 1 0; 1 0 0; 0 0 1]) # 3lvl NOT gate
-    #Ut = (Operator([0 1 0; 1 0 0; 0 0 0]),Operator([0 0 0; 0 0 0; 0 0 -1]))
+    #Ut = Operator([0 1 0; 1 0 0; 0 0 1]) # 3lvl NOT gate
+    Ut = (Operator([0 1 0; 1 0 0; 0 0 0]),Operator([0 0 0; 0 0 0; 0 0 -1]))
     # Create objective function type
-    O = CoherentSubspaces(Ut,1:2,Hd,Hc,t,n) # care only about computational subspace
+    O = CoherentSubspaces(Ut,[1],Hd,Hc,t,n) # care only about computational subspace
     grape(O,ui)
 end
 

@@ -12,7 +12,7 @@ immutable NormPSU{T,D} <: ObjectiveFunction
     D::Vector{Vector{Float64}} # eigenvalues associated to each propagator
     V::Vector{Matrix{T}} # eigenvector matrix associated to each propagator
     # Workspace variables
-    H::Matrix{T} # temporary storage for full Hamiltonian
+    H::Hermitian{T,Matrix{T}} # temporary storage for full Hamiltonian
     A::Matrix{Complex128} # temporary
     Jkj::Matrix{Complex128} # temporary
     cisDj::Vector{Complex128} # temporary
@@ -31,7 +31,7 @@ function NormPSU(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},t::Real,n::Int
     # Storage for last control ampitudes, NaN for first run
     u_last = fill(NaN64,m*n)
     # Generate cache for various objects
-    H = promote_type(typeof(Hd_d),eltype(Hc_d))(N,N)
+    H = Hermitian(zeros(promote_eltype(typeof(Hd_d),eltype(Hc_d)),N,N))
     A = Matrix{Complex128}(N,N)
     U = [Matrix{Complex128}(N,N) for i=1:n]
     X = [Matrix{Complex128}(N,N) for i=1:n]
@@ -39,7 +39,7 @@ function NormPSU(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},t::Real,n::Int
     copy!(P[end],Ut_d)
     # For the exact derivative we need to store eigenvectors and eigenvalues
     D = [Vector{Float64}(N) for i=1:n] # eigenvalues are always real
-    V = [similar(H) for i=1:n]
+    V = [similar(H.data) for i=1:n]
     # More temporary storage
     Jkj = Matrix{Complex128}(N,N)
     cisDj = Vector{Complex128}(N)
