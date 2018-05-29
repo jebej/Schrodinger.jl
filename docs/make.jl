@@ -17,6 +17,7 @@ makedocs(
             "man/dynamics.md",
         ],
         "Examples" => Any[
+            "examples/driven_TLS.md",
             "examples/DRAG.md",
         ],
         "API" => Any[
