@@ -1,3 +1,7 @@
+const ManyMatrices = Union{Vector{<:AbstractMatrix},NTuple{M,<:AbstractMatrix} where M}
+
+# Remove the two inner functions below (dense and sparse) for 0.7
+
 function inner{T,S}(A::AbstractMatrix{T},B::AbstractMatrix{S})
     # calculate trace(A'*B) efficiently
     m, n = size(A)
@@ -9,38 +13,44 @@ function inner{T,S}(A::AbstractMatrix{T},B::AbstractMatrix{S})
     return res
 end
 
-function inner{T1,T2,S1,S2}(A::SparseMatrixCSC{T1,S1},B::SparseMatrixCSC{T2,S2})
-    # calculate trace(A'*B) efficiently
+function inner(A::SparseMatrixCSC{T1,S1},B::SparseMatrixCSC{T2,S2}) where {T1,T2,S1,S2}
     m, n = size(A)
     size(B) == (m,n) || throw(DimensionMismatch("matrices must have the same dimensions"))
-    res = zero(promote_type(T1,T2))
+    r = zero(promote_type(T1,T2))
     @inbounds for j = 1:n
-        for i1 = A.colptr[j]:A.colptr[j+1]-1
-            ra = A.rowval[i1]
-            for i2 = B.colptr[j]:B.colptr[j+1]-1
-                rb = B.rowval[i2]
+        ia = A.colptr[j]; ia_nxt = A.colptr[j+1]
+        ib = B.colptr[j]; ib_nxt = B.colptr[j+1]
+        if ia < ia_nxt && ib < ib_nxt
+            ra = A.rowval[ia]; rb = B.rowval[ib]
+            while true
                 if ra < rb
-                    # since the rowval of B is larger than that of A, no need to keep checking for equality, go to the next rowval of A
-                    continue
-                elseif ra == rb
-                    res += A.nzval[i1]' * B.nzval[i2]
-                    # done with this row
-                    continue
+                    ia += 1
+                    ia < ia_nxt || break
+                    ra = A.rowval[ia]
+                elseif ra > rb
+                    ib += 1
+                    ib < ib_nxt || break
+                    rb = B.rowval[ib]
+                else # ra == rb
+                    r += A.nzval[ia]' * B.nzval[ib]
+                    ia += 1; ib += 1
+                    ia < ia_nxt && ib < ib_nxt || break
+                    ra = A.rowval[ia]; rb = B.rowval[ib]
                 end
             end
         end
     end
-    return res
+    return r
 end
 
-function inner_cs{S}(A,B::AbstractMatrix{S},s::IntSet)
+function inner_cs(A,B::AbstractMatrix,s::IntSet)
     # calculate |trace(A'*B)|cs (coherent subspaces)
     # this inner product cares only about relative phase between the subspaces contained in s
     x,y = _inner_cs_1(A,B,s)
     return _inner_cs_2(x,y)
 end
 
-function inner_cs_grad{S}(Pj,JXj::AbstractMatrix{S},x,y,s::IntSet)
+function inner_cs_grad(Pj,JXj::AbstractMatrix,x,y,s::IntSet)
     # calculate the partial derivative of |trace(A'*B)|cs (coherent subspaces)
     w,z = _inner_cs_1(Pj,JXj,s)
     res = real(w*x)
@@ -54,7 +64,9 @@ function inner_cs_grad{S}(Pj,JXj::AbstractMatrix{S},x,y,s::IntSet)
     return res/_inner_cs_2(x,y)
 end
 
-function _inner_cs_1{T,S}(A::AbstractMatrix{T},B::AbstractMatrix{S},s::IntSet)
+# sub-routines
+
+function _inner_cs_1(A::AbstractMatrix{T},B::AbstractMatrix{S},s::IntSet) where {T,S}
     m, n = size(A)
     size(B) == (m,n) || throw(DimensionMismatch("matrices must have the same dimensions"))
     x = zero(promote_type(T,S))
@@ -72,7 +84,21 @@ function _inner_cs_1{T,S}(A::AbstractMatrix{T},B::AbstractMatrix{S},s::IntSet)
             t += 1
         end
     end
-    return x,y
+    return x, y
+end
+
+function _inner_cs_1(A::ManyMatrices,B::AbstractMatrix,::IntSet)
+    # calculate |trace(A'*B)|cs (coherent subspaces)
+    # this inner product cares only about relative phase between the subspaces contained in s
+    x = inner.(A,(B,))
+    return first(x), tail(x)
+end
+
+function _inner_cs_1(A::AbstractMatrix,B::ManyMatrices,::IntSet)
+    # calculate |trace(A'*B)|cs (coherent subspaces)
+    # this inner product cares only about relative phase between the subspaces contained in s
+    x = inner.((A,),B)
+    return first(x), tail(x)
 end
 
 function _inner_cs_2(x::Number,y::Union{Vector{<:Number},NTuple{M,<:Number} where M})
@@ -88,17 +114,3 @@ function _inner_cs_2(x::Number,y::Union{Vector{<:Number},NTuple{M,<:Number} wher
 end
 
 f_cs_2(x::Number,y::Union{Vector{<:Number},NTuple{M,<:Number} where M}) = sum(abs,y)+abs(x)
-
-function _inner_cs_1{S,M}(A::NTuple{M,<:AbstractMatrix},B::AbstractMatrix{S},s::IntSet)
-    # calculate |trace(A'*B)|cs (coherent subspaces)
-    # this inner product cares only about relative phase between the subspaces contained in s
-    x = inner.(A,(B,))
-    return first(x), tail(x)
-end
-
-function _inner_cs_1{S,M}(A::AbstractMatrix{S},B::NTuple{M,<:AbstractMatrix},s::IntSet)
-    # calculate |trace(A'*B)|cs (coherent subspaces)
-    # this inner product cares only about relative phase between the subspaces contained in s
-    x = inner.((A,),B)
-    return first(x), tail(x)
-end
