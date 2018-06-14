@@ -1,6 +1,6 @@
 # Julia Base math definitions translation
 import Base: +, -, *, /, ^,
-    A_mul_Bc, Ac_mul_B, Ac_mul_Bc, A_mul_Bt, kron, dot,
+    A_mul_Bc, Ac_mul_B, Ac_mul_Bc, A_mul_Bt, kron, dot, vecdot,
     ctranspose, transpose, conj, BLAS.dotu,
     sqrtm, expm, logm, real, imag, abs, abs2, round
 
@@ -54,7 +54,7 @@ import Base: +, -, *, /, ^,
 A_mul_Bc(ρ::Operator,σ::Operator) = (dimsmatch(ρ,σ);Operator(A_mul_Bc(ρ.data,σ.data),ρ.dims))
 Ac_mul_B(ρ::Operator,σ::Operator) = (dimsmatch(ρ,σ);Operator(Ac_mul_B(ρ.data,σ.data),ρ.dims))
 Ac_mul_Bc(ρ::Operator,σ::Operator) = (dimsmatch(ρ,σ);Operator(Ac_mul_Bc(ρ.data,σ.data),ρ.dims))
-inner(ρ::Operator,σ::Operator) = (dimsmatch(ρ,σ);inner(ρ.data,σ.data))
+vecdot(ρ::Operator,σ::Operator) = (dimsmatch(ρ,σ);vecdot(ρ.data,σ.data))
 
 # Operator/Ket
 *(σ::Operator,ψ::Ket) = (dimsmatch(σ,ψ);Ket(*(σ.data,ψ.data),ψ.dims))

@@ -42,7 +42,9 @@ include("library/random.jl")
 include("library/drivefuns.jl")
 include("library/constants.jl")
 
-# A few VERSION-conditional definitions
-include("basepatch/v0.6.jl")
+# VERSION-conditional definitions
+if VERSION < v"0.7.0-"
+    include("basepatch/v0.6.jl")
+end
 
 end
