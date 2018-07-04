@@ -66,7 +66,7 @@ function SchrodingerProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, tspan, step
     H0, Hn = full(H₀), unpack_operators(1,full,Hₙ)
     # Multiply sampled propagators together to generate total evolution
     U = eye(Complex{F},size(H0)...)
-    H = Hermitian(zeros(promote_eltype(H0,Hn[1]...),size(H0)...))
+    H = Hermitian(zeros(compute_H_type(H0,Hn),size(H0)...))
     A = similar(U); B = similar(U); C = similar(H.data); D = similar(U)
     Λ = Vector{F}(size(H,1))
     for i = 1:steps
@@ -111,14 +111,14 @@ function LindbladProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, Cₘ::Tuple{Va
     U₀ = LinAlg.expm!(sum_collapse(Cₘ,I,dt))
     # Multiply sampled propagators together to generate total evolution
     U = eye(Complex{F},size(U₀)...)
-    H = Hermitian(zeros(promote_eltype(H0,Hn[1]...),size(H0)...))
+    H = Hermitian(zeros(compute_H_type(H0,Hn),size(H0)...))
     A = Matrix{Complex{F}}(size(H0)...); B = similar(U); C = similar(H.data); D = similar(A)
     Λ = Vector{F}(size(H,1))
     for i = 1:steps
         step_hamiltonian!(H.data,H0,Hn,(t₁,dt,i))
         expim!(A,H,Λ,C,D) # A = exp(-1im*H*dt)
         invA = LinAlg.inv!(lufact(A))
-        A_mul_B!(B,U₀,U)
+        A_mul_B!(B,U₀,U) # use the Lie product formula here for better results
         At_mul_B!(U,invA⊗I,B)
         I_kron_A_mul_B!(B,A,U)
         U,B = B,U # swappitty swap for the next step
@@ -155,3 +155,16 @@ function step_hamiltonian!(H,H0,Hn,tspec)
         H .+= -dt*(fᵢ(tᵢ,pᵢ) + fᵢ(tᵢ+0.5dt,pᵢ) + fᵢ(tᵢ+dt,pᵢ))/3 .* Hᵢ
     end
 end
+
+function compute_H_type(H0,Hn)
+    T1 = promote_eltype(H0,Hn[1]...)
+    T2 = promote_type(_typeof_H_funs(Hn[2],Hn[3])...)
+    return promote_type(T1,T2)
+end
+
+@inline function _typeof_H_funs(funs::NTuple{N,Function},ps::NTuple{N,Vector}) where N
+    this_T = typeof(first(funs)(0,first(ps)))
+    return (this_T, _typeof_H_funs(tail(funs),tail(ps))...)
+end
+
+@inline _typeof_H_funs(funs::Tuple{},ps::Tuple{}) = ()
