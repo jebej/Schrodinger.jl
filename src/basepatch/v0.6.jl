@@ -10,6 +10,8 @@ promote_rule(::Type{SparseMatrixCSC{T1,S1}},::Type{SparseMatrixCSC{T2,S2}}) wher
 promote_rule(::Type{SparseMatrixCSC{T1,S1}},::Type{<:AbstractMatrix{T2}}) where {T1,S1,T2} = Matrix{promote_type(T1,T2)}
 promote_rule(::Type{<:AbstractMatrix{T1}},::Type{SparseMatrixCSC{T2,S2}}) where {T1,T2,S2} = Matrix{promote_type(T1,T2)}
 
+promote_rule(::Type{SparseVector{T1,S1}},::Type{SparseVector{T2,S2}}) where {T1,T2,S1,S2} = SparseVector{promote_type(T1,T2),promote_type(S1,S2)}
+
 Base.@irrational SQRT_HALF 0.70710678118654752  sqrt(big(0.5))
 
 randn(rng::AbstractRNG,::Type{Complex{T}}) where {T<:AbstractFloat} = Complex{T}(SQRT_HALF*randn(rng,T), SQRT_HALF*randn(rng,T))
@@ -44,26 +46,17 @@ function vecdot(A::SparseMatrixCSC{T1,S1},B::SparseMatrixCSC{T2,S2}) where {T1,T
     return r
 end
 
-function kron{Tv,Ti}(x::SparseVector{Tv,Ti},y::SparseVector{Tv,Ti})
-    nnzx = nnz(x)
-    nnzy = nnz(y)
+function kron(x::SparseVector{T1,S1}, y::SparseVector{T2,S2}) where {T1,S1,T2,S2}
+    nnzx = nnz(x); nnzy = nnz(y)
     nnzz = nnzx*nnzy # number of nonzeros in new vector
-    nzind = Vector{Ti}(nnzz) # the indices of nonzeros
-    nzval = Vector{Tv}(nnzz) # the values of nonzeros
+    nzind = Vector{promote_type(S1,S2)}(nnzz) # the indices of nonzeros
+    nzval = Vector{typeof(one(T1)*one(T2))}(nnzz) # the values of nonzeros
     @inbounds for i = 1:nnzx, j = 1:nnzy
         this_ind = (i-1)*nnzy+j
         nzind[this_ind] = (x.nzind[i]-1)*y.n + y.nzind[j]
         nzval[this_ind] = x.nzval[i] * y.nzval[j]
     end
-    return SparseVector(x.n*y.n,nzind,nzval)
-end
-
-function kron{Tv1,Ti1,Tv2,Ti2}(x::SparseVector{Tv1,Ti1}, y::SparseVector{Tv2,Ti2})
-    Tv_res = promote_type(Tv1, Tv2)
-    Ti_res = promote_type(Ti1, Ti2)
-    A = convert(SparseVector{Tv_res,Ti_res}, x)
-    B = convert(SparseVector{Tv_res,Ti_res}, y)
-    return kron(A,B)
+    return SparseVector(x.n*y.n, nzind, nzval)
 end
 
 kron(A::SparseVector, B::VecOrMat) = kron(A, sparse(B))
