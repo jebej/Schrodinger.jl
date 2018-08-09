@@ -4,9 +4,9 @@ using OrdinaryDiffEq, Optim
 
 export Operator, Ket, Bra,
     data, dims, isnormalized, dimsmatch, dense, braket, isapproxhermitian,
-    isunitary, isapproxunitary,
-    ptrace, expect, fidelity, fidelity2, levelprobs, tensor,
     fock, basis, coherent, thermal, maxentangled, maxmixed, ket, qb,
+    isunitary, isapproxunitary, tensor, ptrace, expect, levelprobs,
+    fidelity, fidelity2, entanglement_fidelity, gate_fidelity,
     qzero, qeye, create, destroy, numberop, projectorop,
     displacementop, squeezeop,
     rand_unitary,

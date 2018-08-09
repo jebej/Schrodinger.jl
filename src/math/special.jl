@@ -7,9 +7,9 @@ Compute the expectation value of an operator \$σ\$ given a state ket \$|ψ⟩\$
 E(σ,|ψ⟩) &= ⟨ψ|σ|ψ⟩, \\\\
 E(σ,ρ) &= \\textrm{tr}(σρ).
 \\end{align*}
+```
 
 A specialized method exists for vector of `Ket` or `Operator` inputs.
-```
 """
 expect(σ::Operator,ψ::Ket) = (dimsmatch(σ,ψ); dot(data(ψ),data(σ)*data(ψ)))
 expect(ψ::Ket,σ::Operator) = expect(σ,ψ)
@@ -135,6 +135,59 @@ function fidelity2{N,T<:Ket}(A::NTuple{N,T},ϕ::Ket)
         end
     end
     return res
+end
+
+
+"""
+    entanglement_fidelity(U,V)
+
+Compute the entanglement fidelity of an imperfect quantum operation `V` with respect to an ideal operation `U`. The entanglement fidelity is given by the following formula:
+```math
+F_\\text{e}(\\mathcal{E}) = ⟨ϕ|(I⊗\\mathcal{E})(ϕ)|ϕ⟩,
+```
+where \$|ϕ⟩ = \\frac{1}{\\sqrt{d}}\\sum_{i=1}^d|i⟩|i⟩\$ is the maximally entangled state and \$\\mathcal{E}\$ is a trace preserving quantum operation.
+
+When trying to find the fidelity of a quantum gate \$U\$, implemented imperfectly as \$V\$, then \$\\mathcal{E} = U^†∘V\$. In the case where \$U\$ and \$V\$ are a simple operators,
+```math
+\\begin{align*}
+(I⊗\\mathcal{E})(ϕ) = (I⊗U^†V)|ϕ⟩⟨ϕ|(I⊗U^†V)^† \\quad\\text{and so}
+\\end{align*}
+```
+```math
+\\begin{align*}
+F_\\text{e}(\\mathcal{E}) &= ⟨ϕ|(I⊗U^†V)|ϕ⟩⟨ϕ|(I⊗U^†V)^†|ϕ⟩ \\\\
+  &= |⟨ϕ|(I⊗U^†V)|ϕ⟩|^2 \\\\
+  &= |⟨U,V⟩|^2/d^2 \\\\
+\\end{align*}
+```
+
+The entanglement fidelity is related to the [`average gate fidelity`](@ref gate_fidelity) by
+```math
+\\begin{align*}
+\\overline{F}(\\mathcal{E}) =  \\frac{d F_\\text{e}(\\mathcal{E}) + 1}{d + 1}.
+\\end{align*}
+```
+"""
+function entanglement_fidelity(U::Operator,V::Operator,d::Integer=prod(dims(U)))
+    dimsmatch(U,V)
+    return abs2(inner(U,V))/d^2
+end
+
+"""
+    gate_fidelity(U,V)
+
+Compute the average gate fidelity of an imperfect quantum operation `V` with respect to an ideal operation `U`.
+
+The average gate fidelity is related to the [`entanglement fidelity`](@ref entanglement_fidelity) by
+```math
+\\begin{align*}
+\\overline{F}(\\mathcal{E}) =  \\frac{d F_\\text{e}(\\mathcal{E}) + 1}{d + 1}.
+\\end{align*}
+```
+"""
+function gate_fidelity(U::Operator,V::Operator,d::Integer=prod(dims(U)))
+    dimsmatch(U,V)
+    return (abs2(inner(U,V)) + d)/(d^2 + d)
 end
 
 function oper(vecA::AbstractVector,N=isqrt(length(vecA)))
