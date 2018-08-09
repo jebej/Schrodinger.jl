@@ -413,7 +413,7 @@ var documenterSearchIndex = {"docs": [
     "page": "State Library",
     "title": "Schrodinger.ket",
     "category": "method",
-    "text": "ket(state,dims=2)\n\nGenerate a state ket from a tuple of basis levels and a tuple of corresponding space dimensions. Note that each space dimension must be larger than the level by at least 1. If only an integer is passed to dims, all basis levels will have the same dimension.\n\nReturns a sparse vector.\n\nExample\n\njulia> ψ = ket((3,0,1),(5,2,3))\n30-d Schrodinger.Ket{SparseVector{Float64,Int64},3} with dimensions 5⊗2⊗3\n1.00∠0°|3,0,1⟩\n\nSee also: qb, for qubit states.\n\n\n\n"
+    "text": "ket(state,dims=2)\n\nGenerate a state ket from a tuple of basis levels and a tuple of corresponding space dimensions. Note that each space dimension must be larger than the level by at least 1. If only an integer is passed to dims, all basis levels will have the same dimension.\n\nReturns a sparse vector.\n\nExample\n\njulia> ψ = ket((3,0,1),(5,2,3))\n30-d Schrodinger.Ket{SparseVector{Float64,Int64},3} with dimensions 5⊗2⊗3\n1.00∠0°|3,0,1⟩\n\nSee also: @qb_str, for generating qubit states via a bitstring.\n\n\n\n"
 },
 
 {
@@ -430,14 +430,6 @@ var documenterSearchIndex = {"docs": [
     "title": "Schrodinger.maxmixed",
     "category": "method",
     "text": "maxmixed(N)\n\nGenerate a maximally mixed density matrix. The maximally mixed state is a mixture of basis states with uniform probability.\n\nReturns a sparse matrix.\n\nExample\n\njulia> maxmixed(4)\n4×4 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 4\n 0.25  0.0   0.0   0.0\n 0.0   0.25  0.0   0.0\n 0.0   0.0   0.25  0.0\n 0.0   0.0   0.0   0.25\n\n\n\n"
-},
-
-{
-    "location": "api/states.html#Schrodinger.qb-Tuple{Vararg{Int64,N} where N}",
-    "page": "State Library",
-    "title": "Schrodinger.qb",
-    "category": "method",
-    "text": "qb(q1,q2,q3...)\n\nGenerate a qubit state from the given argument list. This function is similar to ket, except that the state levels are passed with separate arguments instead of a tuple.\n\nReturns a sparse vector.\n\nExample\n\njulia> Ψ⁻ = normalize!(qb(0,1) - qb(1,0))\n4-d Schrodinger.Ket{SparseVector{Float64,Int64},2} with dimensions 2⊗2\n0.71∠0°|0,1⟩ + 0.71∠180°|1,0⟩\n\n\n\n"
 },
 
 {
@@ -553,11 +545,19 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "api/functions.html#Schrodinger.entanglement_fidelity",
+    "page": "Function Library",
+    "title": "Schrodinger.entanglement_fidelity",
+    "category": "function",
+    "text": "entanglement_fidelity(U,V)\n\nCompute the entanglement fidelity of an imperfect quantum operation V with respect to an ideal operation U. The entanglement fidelity is given by the following formula:\n\nF_texte(mathcalE) = (ImathcalE)()\n\nwhere  = frac1sqrtdsum_i=1^dii is the maximally entangled state and mathcalE is a trace preserving quantum operation.\n\nWhen trying to find the fidelity of a quantum gate U, implemented imperfectly as V, then mathcalE = U^V. In the case where U and V are a simple operators,\n\nbeginalign*\n(ImathcalE)() = (IU^V)(IU^V)^ quadtextand so\nendalign*\n\nbeginalign*\nF_texte(mathcalE) = (IU^V)(IU^V)^ \n  = (IU^V)^2 \n  = UV^2d^2 \nendalign*\n\nThe entanglement fidelity is related to the average gate fidelity by\n\nbeginalign*\noverlineF(mathcalE) =  fracd F_texte(mathcalE) + 1d + 1\nendalign*\n\n\n\n"
+},
+
+{
     "location": "api/functions.html#Schrodinger.expect-Tuple{Schrodinger.Operator,Schrodinger.Ket}",
     "page": "Function Library",
     "title": "Schrodinger.expect",
     "category": "method",
-    "text": "expect(σ,ψ), expect(σ,ρ)\n\nCompute the expectation value of an operator  given a state ket  or a density matrix . The expectation value is defined as\n\nbeginalign*\nE() =  \nE() = textrmtr()\nendalign*\n\nA specialized method exists for vector of Ket or Operator inputs\n\n\n\n"
+    "text": "expect(σ,ψ), expect(σ,ρ)\n\nCompute the expectation value of an operator  given a state ket  or a density matrix . The expectation value is defined as\n\nbeginalign*\nE() =  \nE() = textrmtr()\nendalign*\n\nA specialized method exists for vector of Ket or Operator inputs.\n\n\n\n"
 },
 
 {
@@ -574,6 +574,14 @@ var documenterSearchIndex = {"docs": [
     "title": "Schrodinger.fidelity2",
     "category": "method",
     "text": "fidelity2(ρ,ψ)\n\nCompute the Uhlmann state fidelity between density matrices  and , a density matrix  and a ket , or two kets  and . The Uhlmann state fidelity is simply defined as the square of the \"regular\" state fidelity.\n\n\n\n"
+},
+
+{
+    "location": "api/functions.html#Schrodinger.gate_fidelity",
+    "page": "Function Library",
+    "title": "Schrodinger.gate_fidelity",
+    "category": "function",
+    "text": "gate_fidelity(U,V)\n\nCompute the average gate fidelity of an imperfect quantum operation V with respect to an ideal operation U.\n\nThe average gate fidelity is related to the entanglement fidelity by\n\nbeginalign*\noverlineF(mathcalE) =  fracd F_texte(mathcalE) + 1d + 1\nendalign*\n\n\n\n"
 },
 
 {
