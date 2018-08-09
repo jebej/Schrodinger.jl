@@ -157,30 +157,37 @@ julia> ψ = ket((3,0,1),(5,2,3))
 1.00∠0°|3,0,1⟩
 ```
 
-See also: [`qb`](@ref), for qubit states.
+See also: [`@qb_str`](@ref), for generating qubit states via a bitstring.
 """
-ket{N}(state::SDims{N},dims::Int=2) = ket(state,ntuple(_->dims,Val{N}()))
+ket{N}(state::SDims{N},dim::Int=2) = ket(state,ntuple(_->dim,Val(N)))
 function ket{N}(state::SDims{N},dims::SDims{N})
     @inbounds for i = 1:N
         dims[i]>state[i] || throw(ArgumentError("basis level $(state[i]) is too large for a $(dims[i])-d space"))
     end
-    n = tindex(state,dims) # 0-based indexing in tindex
+    n = tindex(state,dims) # 0-based indexing in tindex, returns 1 indexed index
     return Ket(SparseVector(prod(dims),[n],[1.0]),dims)
 end
 
 
 """
-    qb(q1,q2,q3...)
+    qb"bitstring"
 
-Generate a qubit state from the given argument list. This function is similar to [`ket`](@ref), except that the state levels are passed with separate arguments instead of a tuple.
+Generate a qubit state ket from the given bitstring. This string macro can also be invoked via the macro notation `@qb_str "bitstring"`.
 
 Returns a sparse vector.
 
 # Example
 ```jldoctest
-julia> Ψ⁻ = normalize!(qb(0,1) - qb(1,0))
+julia> Ψ⁻ = normalize!(qb"01" - qb"10")
 4-d Schrodinger.Ket{SparseVector{Float64,Int64},2} with dimensions 2⊗2
 0.71∠0°|0,1⟩ + 0.71∠180°|1,0⟩
 ```
+
+See also: [`ket`](@ref), for generating arbitrary states.
 """
-qb(state::Int...) = ket(state,2)
+macro qb_str(state::AbstractString)
+    quote
+        dims = $(ntuple(_->2,length(state)))
+        Ket(SparseVector(prod(dims),[$(parse(Int,state,2)+1)],[1.0]),dims)
+    end
+end

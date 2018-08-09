@@ -14,7 +14,7 @@ using Base.Test, Schrodinger
     α = 1.31+0.11im
     @test coherent(30,α)[6] ≈ exp(-0.5*abs2(α))*α^5/sqrt(factorial(5))
     @test coherent(30,α,false) ≈ coherent(30,α,true)
-    @test qb(0,1) == basis(2,0)⊗basis(2,1)
+    @test qb"01" == basis(2,0)⊗basis(2,1)
     @test data(ket((2,1,5,2),(5,3,10,4))).nzind[1] == 1+2+4*5+(4*10)*1+(4*10*3)*2
 end
 

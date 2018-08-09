@@ -8,6 +8,6 @@ end
 ```@autodocs
 Modules = [Schrodinger]
 Pages   = ["states.jl"]
-Order   = [:function]
+Order   = [:macro,:function]
 Private = false
 ```
