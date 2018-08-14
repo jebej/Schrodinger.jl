@@ -5,9 +5,13 @@ using Base.Test, Schrodinger
 # Build a few different variable for testing
 N = 13
 α = complex(1.1,-0.33)
+
 g = basis(2,0)
 e1 = basis(2,1)
+coherentα = coherent(N,α)
+coherentαhalf = coherent(N,0.5α)
 numop = numberop(N)
+
 const N! = normalize!
 
 @testset "Expectation Value" begin
@@ -18,7 +22,7 @@ const N! = normalize!
     @test expect(N!(g-e1),σx) ≈ -1
     @test expect(N!(g+1im*e1),σy) ≈ 1
     @test expect(σy,N!(g-1im*e1)) ≈ -1
-    @test expect(coherent(N,α),destroy(N)) ≈ α
+    @test expect(coherentα,destroy(N)) ≈ α
     @test expect(destroy(N),coherent(N,0.5α,true)) ≈ 0.5α
     @test [expect(basis(N,i),numop) for i=0:N-1] == collect(0:N-1)
     @test expect(N!(basis(N,2)+2*basis(N,3)),numop) == (2+2^2*3)/5
@@ -27,9 +31,10 @@ const N! = normalize!
     @test expect(projectorop(N,[2,4]),maxmixed(N)) == 2/N
 end
 
-agf_test(U,V,S) = (X=U'V; sum(ψ->abs2(ψ⋅(X*ψ)),S)/length(S))
-const ONEQUBIT = [g,e1,N!(g+e1),N!(g-e1),N!(g+1im*e1),N!(g-1im*e1)]
-const TWOQUBIT = Ket.(N!.(Vector{Complex128}[
+ONEQUBIT = [g,e1,N!(g+e1),N!(g-e1),N!(g+1im*e1),N!(g-1im*e1)]
+# Two-qubit stabilizer states from Table II in:
+# Garcia et al. Efficient Inner-product Algorithm for Stabilizer States. arXiv:1210.6646 (2012)
+TWOQUBIT = Ket.(N!.(Vector{Complex128}[
     # Separable states
     [0,0,1,0],[0,0,0,1],[0,0,1,1],[0,0,1,-1],[0,0,1,1im],[0,0,1,-1im],
     [1,0,-1,0],[0,1,0,-1],[1,1,-1,-1],[1,-1,-1,1],[1,1im,-1,-1im],[1,-1im,-1,1im],
@@ -46,28 +51,36 @@ const TWOQUBIT = Ket.(N!.(Vector{Complex128}[
     [1,1im,1im,1],[1,1im,-1im,-1],[1,-1im,1im,-1],[1,-1im,-1im,1],
     ]),((2,2),))
 
-@testset "Fidelity" begin
-    # Test calculation of fidelity
+@testset "Fidelity" begin # Test calculation of various fidelities
+    # fidelity
     @test fidelity(g,g) == 1
-    @test fidelity2(g,g) == 1
     @test fidelity(g,e1) == 0
-    @test fidelity2(g,e1) == 0
     @test fidelity(g,N!(g+e1)) == 1/√(2)
-    @test fidelity2(g,N!(g+e1)) ≈ 1/2
-    @test fidelity(Operator(coherent(N,α)),basis(N,3)) ≈ abs(coherent(N,α)[4])
-    @test fidelity(basis(N,3),Operator(coherent(N,0.5α))) ≈ abs(coherent(N,0.5α)[4])
-    @test fidelity2(Operator(coherent(N,0.5α)),basis(N,3)) ≈ abs2(coherent(N,0.5α)[4])
-    @test fidelity2(basis(N,3),Operator(coherent(N,α))) ≈ abs2(coherent(N,α)[4])
-    @test isapprox(fidelity(Operator(coherent(N,α)),Operator(basis(N,3))), abs(coherent(N,α)[4]), atol=1E-8)
+    @test fidelity(coherentα,basis(N,3)) ≈ abs(coherentα[4])
+    @test fidelity(Operator(coherentα),basis(N,3)) ≈ abs(coherentα[4])
+    @test fidelity(basis(N,3),Operator(coherentαhalf)) ≈ abs(coherentαhalf[4])
+    @test fidelity(Operator(coherentα),Operator(basis(N,3))) ≈ abs(coherentα[4])
     @test fidelity(Operator(basis(N,2)),Operator(coherent(N,1))) ≈ abs(coherent(N,1)[3])
+    # fidelity2
+    @test fidelity2(g,g) == 1
+    @test fidelity2(g,e1) == 0
+    @test fidelity2(g,N!(g+e1)) ≈ 1/2
+    @test fidelity2(coherentαhalf,basis(N,3)) ≈ abs2(coherentαhalf[4])
+    @test fidelity2(Operator(coherentαhalf),basis(N,3)) ≈ abs2(coherentαhalf[4])
+    @test fidelity2(basis(N,3),Operator(coherentα)) ≈ abs2(coherentα[4])
+    @test fidelity2(Operator(coherentαhalf),Operator(basis(N,3))) ≈ abs2(coherentαhalf[4]) atol=1E-10
     @test fidelity2(Operator(coherent(N,α,true)),Operator(basis(N,3))) ≈ abs2(coherent(N,α,true)[4])
     @test fidelity2(Operator(basis(N,2)),Operator(coherent(N,1))) ≈ abs2(coherent(N,1)[3])
+    # entanglement and average gate fidelity
+    const agf_test = (U,V,S) -> mean(fidelity2(ψ,U'*(V*ψ)) for ψ ∈ S)
     U1, V1 = rand_unitary(5), rand_unitary(5)
     @test entanglement_fidelity(U1,V1) ≈ (ε=qeye(5)⊗(U1'V1);ϕ=maxentangled(2,5);abs2(ϕ⋅(ε*ϕ)))
     U2, V2 = rand_unitary(2), rand_unitary(2)
     @test gate_fidelity(U2,V2) ≈ agf_test(U2,V2,ONEQUBIT)
+    @test gate_fidelity(U2,V2) ≈ (2*entanglement_fidelity(U2,V2)+1)/(2+1)
     U3, V3 = rand_unitary(4,(2,2)), rand_unitary(4,(2,2))
     @test gate_fidelity(U3,V3) ≈ agf_test(U3,V3,TWOQUBIT)
+    @test gate_fidelity(U3,V3) ≈ (4*entanglement_fidelity(U3,V3)+1)/(4+1)
 end
 
 @testset "Level Probabilities" begin
