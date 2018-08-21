@@ -19,7 +19,7 @@ A_mul_Bt{Tv,Ti}(x::SparseVector{Tv,Ti},y::SparseVector{Tv,Ti}) = A_mul_Bf(x,y,id
 A_mul_Bc{Tv,Ti}(x::SparseVector{Tv,Ti},y::SparseVector{Tv,Ti}) = A_mul_Bf(x,y,conj)
 
 function dotu{Tx<:Number,Ty<:Number}(x::AbstractSparseVector{Tx}, y::AbstractSparseVector{Ty})
-    is(x, y) && return sumabs2(x)
+    x === y && return sumabs2(x)
     n = length(x)
     length(y) == n || throw(DimensionMismatch())
     xnzind = nonzeroinds(x)

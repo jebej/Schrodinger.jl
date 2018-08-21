@@ -1,13 +1,17 @@
-const ManyMatrices = Union{Vector{<:AbstractMatrix},NTuple{M,<:AbstractMatrix} where M}
+const ManyMatrices = Union{Vector{<:AbstractMatrix},Tuple{Vararg{AbstractMatrix}}}
 
-function inner_cs(A,B::AbstractMatrix,s::IntSet)
+@inline inner(A,B) = vecdot(A,B)
+
+inner(A::Tuple{Vararg{Operator}},B::Operator) = inner_cs(data.(A),data(B))
+
+function inner_cs(A,B::AbstractMatrix,s::IntSet=IntSet())
     # calculate |trace(A'*B)|cs (coherent subspaces)
     # this inner product cares only about relative phase between the subspaces contained in s
     x,y = _inner_cs_1(A,B,s)
     return _inner_cs_2(x,y)
 end
 
-function inner_cs_grad(Pj,JXj::AbstractMatrix,x,y,s::IntSet)
+function inner_cs_grad(Pj,JXj::AbstractMatrix,x,y,s::IntSet=IntSet())
     # calculate the partial derivative of |trace(A'*B)|cs (coherent subspaces)
     w,z = _inner_cs_1(Pj,JXj,s)
     res = real(w*x)

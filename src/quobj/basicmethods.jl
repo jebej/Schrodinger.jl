@@ -13,6 +13,12 @@ dense(x::Bra) = Bra(full(x.data),x.dims)
 dense(A::Operator) = Operator(full(A.data),A.dims)
 dimsmatch(A::QuObject,B::QuObject) = A.dims==B.dims||throw(DimensionMismatch("subspace dimensions do not match"))
 
+# Tensored indexing methods
+getindex(A::QuVector,t::Tuple) =
+    (i=tensored_sub2ind(dims(A),t); getindex(A.data,i))
+getindex(A::QuMatrix,ti::Tuple,tj::Tuple) =
+    (i=tensored_sub2ind(dims(A),ti); j=tensored_sub2ind(dims(A),tj); getindex(A.data,i,j))
+
 # Translate basic Base array methods to QuObjects
 length(A::QuObject) = length(A.data)
 size(A::QuObject,d) = size(A.data,d)
@@ -49,7 +55,7 @@ isequal{T<:QuObject}(A::T,B::T) = isequal(A.dims,B.dims)&&isequal(A.data,B.data)
 ==(A::Ket,B::Ket) = isequal(A.dims,B.dims)&&(A.data==B.data)
 ==(A::Bra,B::Bra) = isequal(A.dims,B.dims)&&(A.data==B.data)
 ==(A::Operator,B::Operator) = isequal(A.dims,B.dims)&&(A.data==B.data)
-isapprox(A::QuObject,B::QuObject;kwargs...) =  isequal(A.dims,B.dims)&&isapprox(A.data,B.data;kwargs...)
+isapprox(A::QuObject,B::QuObject;kwargs...) = isequal(A.dims,B.dims)&&isapprox(A.data,B.data;kwargs...)
 
 # Conversion and promotion rules
 convert{T,D}(::Type{Ket{T,D}},x::Ket) = Ket(convert(T,x.data),x.dims)

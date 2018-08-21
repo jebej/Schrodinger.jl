@@ -58,39 +58,35 @@ function ptrace{T,no,ns}(A::AbstractArray{T}, out::NTuple{no,Int}, sysdims::NTup
     for i = 1:no
         out[i]>ns && throw(ArgumentError("subsystem index $(out[i]) larger than number of subsystems"))
     end
-    # Calculate dimensions and indices
-    keep  = sorted_setdiff(ntuple(identity,Val{ns}),out) # Indices of subsystems to keep
-    rkeep = revinds(keep,ns)
-    rout  = revinds(out,ns)
-    rsysdims  = revtuple(sysdims) # Dimensions of subsystems in reverse order
-    rkeepdims = gettuple(rsysdims,rkeep)
-    routdims  = gettuple(rsysdims,rout)
-    # Generate tuples of indices to loop over
-    R = product(range.(1,rkeepdims)...)
-    S = product(range.(1,routdims)...)
-    # Initialize two vectors for indexing purpose
-    rinds_ii = Vector{Int}(ns); rinds_jj = Vector{Int}(ns)
-    # Initialize output matrix
-    B = zeros(T,prod(rkeepdims),prod(rkeepdims))
+    # Calculate dimensions
+    keep  = sorted_setdiff(ntuple(identity,Val{ns}),out)
+    keepdims = gettuple(sysdims,keep)
+    outdims  = gettuple(sysdims,out)
+    # Generate tuples of subscripts to loop over
+    R = product((Base.OneTo.(keepdims).-1)...)
+    S = product((Base.OneTo.(outdims).-1)...)
+    # Initialize vectors for indexing purpose & output matrix
+    subs_ii = Vector{Int}(ns); subs_jj = Vector{Int}(ns)
+    B = zeros(T,prod(keepdims),prod(keepdims))
     # Main loop
     @inbounds for r in R, q in R
         # For each element in the reduced matrix
-        i, j = tindexr(q,rkeepdims), tindexr(r,rkeepdims)
+        i, j = tensored_sub2ind(keepdims,q), tensored_sub2ind(keepdims,r)
         for k=1:(ns-no)
-            rinds_ii[rkeep[k]] = q[k]; rinds_jj[rkeep[k]] = r[k]
+            subs_ii[keep[k]] = q[k]; subs_jj[keep[k]] = r[k]
         end
         for s in S
             # Sum over all the corresponding "diagonal" elements in the full density matrix
             for o=1:no
-                rinds_ii[rout[o]] = s[o]; rinds_jj[rout[o]] = s[o]
+                subs_ii[out[o]] = s[o]; subs_jj[out[o]] = s[o]
             end
-            ii, jj = tindexr(rinds_ii,rsysdims), tindexr(rinds_jj,rsysdims)
+            ii, jj = tensored_sub2ind(sysdims,subs_ii), tensored_sub2ind(sysdims,subs_jj)
             B[i,j] += _ptrace_ii_jj(A,ii,jj)
         end
     end
-    return B, gettuple(sysdims,keep)
+    return B, keepdims
 end
 
 # Dense partial trace kernel
 @inline _ptrace_ii_jj(A::Matrix,ii,jj) = A[ii,jj]
-@inline _ptrace_ii_jj(x::Vector,ii,jj) = x[ii]*conj(x[jj])
+@inline _ptrace_ii_jj(x::Vector,ii,jj) = x[ii]*x[jj]'

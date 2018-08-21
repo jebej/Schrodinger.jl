@@ -164,7 +164,7 @@ function ket{N}(state::SDims{N},dims::SDims{N})
     @inbounds for i = 1:N
         dims[i]>state[i] || throw(ArgumentError("basis level $(state[i]) is too large for a $(dims[i])-d space"))
     end
-    n = tindex(state,dims) # 0-based indexing in tindex, returns 1 indexed index
+    n = tensored_sub2ind(dims,state) # 0-based indexing in tindex, returns 1 indexed index
     return Ket(SparseVector(prod(dims),[n],[1.0]),dims)
 end
 

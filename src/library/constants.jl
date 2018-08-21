@@ -29,7 +29,6 @@ const σ₋ = sigmaminus
 # Function aliases
 const ⊗ = kron
 const tensor = kron
-const inner = vecdot
 const fock = basis
 const qzeros = qzero
 
