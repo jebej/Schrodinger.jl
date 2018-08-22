@@ -95,3 +95,7 @@ function expim!(R::Matrix,H::RealHermSymComplexHerm,Λ=Vector{real(eltype(R))}(s
     A_mul_Bc!(R,B,U)
     return R
 end
+
+lengthrange(a::Real,len::Integer) = UnitRange{typeof(a)}(a, oftype(a, a+len-1))
+
+tensored_iterator(dims::SDims) = (reverse(t) for t ∈ product(lengthrange.(0,reverse(dims))...))

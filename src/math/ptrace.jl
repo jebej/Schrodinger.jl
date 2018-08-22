@@ -1,5 +1,3 @@
-using Base.product
-
 """
     ptrace(ρ, out)
 
@@ -62,9 +60,8 @@ function ptrace{T,no,ns}(A::AbstractArray{T}, out::NTuple{no,Int}, sysdims::NTup
     keep  = sorted_setdiff(ntuple(identity,Val{ns}),out)
     keepdims = gettuple(sysdims,keep)
     outdims  = gettuple(sysdims,out)
-    # Generate tuples of subscripts to loop over
-    R = product((Base.OneTo.(keepdims).-1)...)
-    S = product((Base.OneTo.(outdims).-1)...)
+    # Generate iterators to loop over subscripts
+    R, S = tensored_iterator(keepdims), tensored_iterator(outdims)
     # Initialize vectors for indexing purpose & output matrix
     subs_ii = Vector{Int}(ns); subs_jj = Vector{Int}(ns)
     B = zeros(T,prod(keepdims),prod(keepdims))
