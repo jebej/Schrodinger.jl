@@ -92,12 +92,9 @@ function braket(ψ::QuVector, N::Int = 5)
     coeffs = map(full(ψ.data[idx])) do x
         @sprintf("%.2f∠%d°", abs(x), rad2deg(angle(x)))
     end
-    labels = join.(slabels.(idx.-1,(dims(ψ),)),',')
+    labels = join.(tensored_ind2sub.((dims(ψ),), idx.-1), ',')
     return prettybraket(ψ,coeffs,labels) * (length(perm)>N ? " +…" : "")
 end
 
 prettybraket(::Ket,coeffs,labels) = join(string.(coeffs,'|',labels,'⟩')," + ")
 prettybraket(::Bra,coeffs,labels) = join(string.(coeffs,'⟨',labels,'|')," + ")
-
-@inline slabels(n::Integer, bases::SDims) = (slabels(n ÷ bases[end], front(bases))..., n % bases[end])
-@inline slabels(n::Integer, bases::SDims{1}) =  (n % bases[1],)

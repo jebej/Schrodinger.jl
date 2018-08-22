@@ -1,6 +1,6 @@
 import Base: @_inline_meta
 
-# index in a tensored system (warning, this function needs subscripts that start at 0)
+# index in a tensored system (WARNING: subscripts must be 0-indexed, but returns 1-indexed index)
 tensored_sub2ind(dims::NTuple{N,Integer}, inds::Vector{<:Integer}) where N =
     (checkbounds(inds,N); @_inline_meta; _tensored_sub2ind(dims, inds, 1, 1))
 tensored_sub2ind(dims::NTuple{N,Integer}, inds::NTuple{N,Integer}) where N =
@@ -10,6 +10,11 @@ _tensored_sub2ind(dims::NTuple{N,Integer}, inds, D, ind) where N =
 _tensored_sub2ind(dims::Tuple{Integer}, inds, D, ind) =
     (ind + inds[1]*D)
 
+# give the tensored subscripts corresponding to the index (0-indexed)
+tensored_ind2sub(dims::SDims, ind::Integer) =
+    (@_inline_meta; next=ind÷dims[end]; (tensored_ind2sub(front(dims), next)..., ind-dims[end]*next))
+tensored_ind2sub(dims::SDims{1}, ind::Integer) =
+    (@_inline_meta; (ind,))
 
 revtuple{N}(t::NTuple{N,Any}) = ntuple(i->t[N+1-i],Val{N})
 revinds{N}(t::NTuple{N,Any},ns::Int) = ntuple(i->ns+1-t[N+1-i],Val{N})
