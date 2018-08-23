@@ -393,6 +393,14 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "api/states.html#Schrodinger.@qb_str-Tuple{AbstractString}",
+    "page": "State Library",
+    "title": "Schrodinger.@qb_str",
+    "category": "macro",
+    "text": "qb\"bitstring\"\n\nGenerate a qubit state ket from the given bitstring. This string macro can also be invoked via the macro notation @qb_str \"bitstring\".\n\nReturns a sparse vector.\n\nExample\n\njulia> Ψ⁻ = normalize!(qb\"01\" - qb\"10\")\n4-d Schrodinger.Ket{SparseVector{Float64,Int64},2} with dimensions 2⊗2\n0.71∠0°|0,1⟩ + 0.71∠180°|1,0⟩\n\nSee also: ket, for generating arbitrary states.\n\n\n\n"
+},
+
+{
     "location": "api/states.html#Schrodinger.basis-Tuple{Integer,Tuple{Vararg{Int64,D}} where D}",
     "page": "State Library",
     "title": "Schrodinger.basis",
@@ -445,7 +453,7 @@ var documenterSearchIndex = {"docs": [
     "page": "State Library",
     "title": "State Library",
     "category": "section",
-    "text": "Modules = [Schrodinger]\nPages   = [\"states.jl\"]\nOrder   = [:function]\nPrivate = false"
+    "text": "Modules = [Schrodinger]\nPages   = [\"states.jl\"]\nOrder   = [:macro,:function]\nPrivate = false"
 },
 
 {
