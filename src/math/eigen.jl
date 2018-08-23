@@ -9,4 +9,7 @@ function eig(A::QuMatrix, args...; kwargs...)
     return F.values, [Ket(F.vectors[:,i],dims(A)) for i = 1:size(F.vectors,2)]
 end
 
-eigs(A::QuMatrix, args...; kwargs...) = eigs(A.data, args...; kwargs...)
+function eig(A::Operator{<:SparseMatrixCSC,N}, args...; kwargs...) where N
+    D,V,_ = eigs(A.data, args...; which=:SR, kwargs...)
+    return return D, [Ket(V[:,i],dims(A)) for i = 1:size(V,2)]
+end
