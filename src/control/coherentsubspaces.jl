@@ -1,5 +1,5 @@
 immutable CoherentSubspaces{M,S<:Union{Matrix{Complex128},NTuple{M,Matrix{Complex128}}},T,D} <: ObjectiveFunction
-    dims::SDims{D}
+    dims::Dims{D}
     δt::Float64 # timestep (fixed)
     Ut::S # target unitary
     s::IntSet # coherent subspaces

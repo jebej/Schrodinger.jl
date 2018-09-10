@@ -13,13 +13,13 @@ julia> qzero(4,(2,2))
  0.0  0.0  0.0  0.0
 ```
 """
-function qzero(N::Integer, dims::SDims=(N,))
+function qzero(N::Integer, dims::Dims=(N,))
     rowval = Vector{Int}(0)
     colptr = ones(Int,N+1)
     nzval  = Vector{Float64}(0)
     return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),dims,true)
 end
-qzero(dims::SDims) = qzero(prod(dims),dims)
+qzero(dims::Dims) = qzero(prod(dims),dims)
 
 
 """
@@ -37,13 +37,13 @@ julia> qeye(4,(2,2))
  0.0  0.0  0.0  1.0
 ```
 """
-function qeye(N::Integer, dims::SDims=(N,))
+function qeye(N::Integer, dims::Dims=(N,))
     rowval = collect(1:N)
     colptr = Vector{Int}(N+1); colptr[1:N] = rowval; colptr[end] = N+1
     nzval  = ones(N)
     return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),dims,true)
 end
-qeye(dims::SDims) = qeye(prod(dims),dims)
+qeye(dims::Dims) = qeye(prod(dims),dims)
 
 """
     destroy(N)

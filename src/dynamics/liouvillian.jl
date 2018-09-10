@@ -3,10 +3,10 @@ immutable Liouvillian{N,F,D} <: AbstractParameterizedFunction{true}
     Lₙ::NTuple{N,SparseMatrixCSC{Complex128,Int}}
     fₙ::F
     pₙ::NTuple{N,Vector{Float64}}
-    dims::SDims{D}
+    dims::Dims{D}
 end
 
-Liouvillian(dims::SDims{D},L₀,Lₙ=(),fₙ=(),pₙ=()) where {D} =
+Liouvillian(dims::Dims{D},L₀,Lₙ=(),fₙ=(),pₙ=()) where {D} =
     Liouvillian{length(Lₙ),typeof(fₙ),D}(L₀,Lₙ,fₙ,pₙ,dims)
 
 dims(L::Liouvillian) = L.dims

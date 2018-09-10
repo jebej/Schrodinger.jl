@@ -2,7 +2,6 @@
 const SFloat{T<:AbstractFloat} = Union{T, Complex{T}}
 const SMatrix{T<:SFloat} = Union{SparseMatrixCSC{T,Int}, Diagonal{T}, Symmetric{T}, Hermitian{T}, Matrix{T}}
 const SVector{T<:SFloat} = Union{SparseVector{T,Int}, Vector{T}}
-const SDims{D} = NTuple{D,Int}
 
 # Base QuObject abstract types
 abstract type QuObject end
@@ -28,14 +27,14 @@ julia> ψ = normalize!(Ket([1,1]))
 """
 struct Ket{T<:SVector,D} <: QuVector
     data::T
-    dims::SDims{D}
-    function Ket{T,D}(x::T, dims::SDims{D}=size(x)) where {T<:SVector,D}
+    dims::Dims{D}
+    function Ket{T,D}(x::T, dims::Dims{D}=size(x)) where {T<:SVector,D}
         prod(dims)==length(x) || throw(ArgumentError("subspace dimensions $dims are not consistent with a vector of length $(length(x))"))
         return new{T,D}(x,dims)
     end
 end
-Ket(x::T, dims::SDims{D}=size(x)) where {T<:SVector,D} = Ket{T,D}(x,dims)
-Ket(x::AbstractVector,dims::SDims=size(x)) = Ket(float.(x),dims)
+Ket(x::T, dims::Dims{D}=size(x)) where {T<:SVector,D} = Ket{T,D}(x,dims)
+Ket(x::AbstractVector,dims::Dims=size(x)) = Ket(float.(x),dims)
 
 """
     Bra(x, dims=(length(x),))
@@ -48,14 +47,14 @@ It is possible to normalize the bra vector after construction with the `normaliz
 """
 struct Bra{T<:SVector,D} <: QuVector
     data::T
-    dims::SDims{D}
-    function Bra{T,D}(x::T,dims::SDims{D}=size(x)) where {T<:SVector,D}
+    dims::Dims{D}
+    function Bra{T,D}(x::T,dims::Dims{D}=size(x)) where {T<:SVector,D}
         prod(dims)==length(x) || throw(ArgumentError("subspace dimensions $dims are not consistent with a vector of length $(length(x))"))
         return new{T,D}(x, dims)
     end
 end
-Bra(x::T, dims::SDims{D}=size(x)) where {T<:SVector,D} = Bra{T,D}(x,dims)
-Bra(x::AbstractVector,dims::SDims=size(x)) = Bra(float.(x),dims)
+Bra(x::T, dims::Dims{D}=size(x)) where {T<:SVector,D} = Bra{T,D}(x,dims)
+Bra(x::AbstractVector,dims::Dims=size(x)) = Bra(float.(x),dims)
 
 """
     Operator(B, dims=(size(B,1),))
@@ -74,16 +73,16 @@ julia> σ = Operator([0 -im ; im 0])
 """
 struct Operator{T<:SMatrix,D} <: QuMatrix
     data::T
-    dims::SDims{D}
+    dims::Dims{D}
     herm::Bool
-    function Operator{T,D}(B::T,dims::SDims{D}=(size(B,1),),herm=isapproxhermitian(B)) where {T<:SMatrix,D}
+    function Operator{T,D}(B::T,dims::Dims{D}=(size(B,1),),herm=isapproxhermitian(B)) where {T<:SMatrix,D}
         N = checksquare(B)
         prod(dims)==N || throw(ArgumentError("subspace dimensions $dims are not consistent with a matrix of size $N"))
         return new{T,D}(B, dims, herm)
     end
 end
-Operator(B::T,dims::SDims{D}=(size(B,1),),herm=isapproxhermitian(B)) where {T<:SMatrix,D} = Operator{T,D}(B,dims,herm)
-Operator(B::AbstractMatrix,dims::SDims=(size(B,1),),herm=isapproxhermitian(B)) = Operator(float.(B),dims,herm)
+Operator(B::T,dims::Dims{D}=(size(B,1),),herm=isapproxhermitian(B)) where {T<:SMatrix,D} = Operator{T,D}(B,dims,herm)
+Operator(B::AbstractMatrix,dims::Dims=(size(B,1),),herm=isapproxhermitian(B)) = Operator(float.(B),dims,herm)
 
 # Conversion between different QuObjects
 Bra(x::Ket) = Bra(conj(x.data),x.dims)
@@ -95,7 +94,7 @@ Operator(x::Bra) = Operator(conj(x.data)*x.data.',x.dims,true)
 # Density type remnants
 struct Density{T<:SMatrix,D} <: QuMatrix
     data::T
-    dims::SDims{D}
+    dims::Dims{D}
     function (::Type{Density{T,D}}){T<:SMatrix,D}(A,dims)
         N = checksquare(A)
         prod(dims)==N || throw(ArgumentError("subspace dimensions $dims are not consistent with a matrix of size $N"))

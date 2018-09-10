@@ -1,5 +1,5 @@
 immutable NormPSU{T,D} <: ObjectiveFunction
-    dims::SDims{D}
+    dims::Dims{D}
     δt::Float64 # timestep (fixed)
     Ut::Matrix{Complex128} # target unitary
     Hd::Matrix{T} # drift Hamiltonian

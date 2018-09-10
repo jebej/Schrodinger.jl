@@ -11,6 +11,6 @@ julia> U'*U ≈ qeye(4,(2,2))
 true
 ```
 """
-function rand_unitary(N::Integer, dims::SDims=(N,))
+function rand_unitary(N::Integer, dims::Dims=(N,))
     return Operator(rand_unitary(Complex128,N),dims)
 end

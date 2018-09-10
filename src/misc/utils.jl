@@ -96,6 +96,10 @@ function expim!(R::Matrix,H::RealHermSymComplexHerm,Λ=Vector{real(eltype(R))}(s
     return R
 end
 
+excited_sys(A::QuObject, subs::Vararg{Integer}) = excited_sys(dims(A), sys)
+excited_sys(::Union{Dims{N},Val{N}}, subs::Vararg{Integer}) where N =
+    ntuple(i->ifelse(i ∈ subs, 1, 0), Val(N))
+
 lengthrange(a::Real,len::Integer) = UnitRange{typeof(a)}(a, oftype(a, a+len-1))
 
-tensored_iterator(dims::SDims) = (reverse(t) for t ∈ product(lengthrange.(0,reverse(dims))...))
+tensored_iterator(dims::Dims) = (revtuple(t) for t ∈ product(lengthrange.(0,revtuple(dims))...))

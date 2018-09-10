@@ -1,7 +1,7 @@
 immutable Propagator{T,D} <: AbstractParameterizedFunction{false}
     U::Matrix{Complex{T}}
     Δt::T
-    dims::SDims{D}
+    dims::Dims{D}
 end
 
 dimsmatch(U::Propagator,A::QuObject) = U.dims==dims(A) || throw(DimensionMismatch("subspace dimensions must match"))

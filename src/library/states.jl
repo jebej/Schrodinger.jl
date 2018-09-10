@@ -12,7 +12,7 @@ julia> ψ = basis(3,2)
 1.00∠0°|2⟩
 ```
 """
-function basis(n::Integer,dims::SDims)
+function basis(n::Integer,dims::Dims)
     N = prod(dims)
     N>n || throw(ArgumentError("basis level $n is too large for a $N-d space"))
     # Julia is 1-indexed!
@@ -159,8 +159,8 @@ julia> ψ = ket((3,0,1),(5,2,3))
 
 See also: [`@qb_str`](@ref), for generating qubit states via a bitstring.
 """
-ket{N}(state::SDims{N},dim::Int=2) = ket(state,ntuple(_->dim,Val(N)))
-function ket{N}(state::SDims{N},dims::SDims{N})
+ket{N}(state::Dims{N},dim::Int=2) = ket(state,ntuple(_->dim,Val(N)))
+function ket{N}(state::Dims{N},dims::Dims{N})
     @inbounds for i = 1:N
         dims[i]>state[i] || throw(ArgumentError("basis level $(state[i]) is too large for a $(dims[i])-d space"))
     end
