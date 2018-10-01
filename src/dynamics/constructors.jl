@@ -26,7 +26,7 @@ function LindbladEvo(H₀::Operator, Cₘ::Tuple{Vararg{Operator}})
     for Cᵢ in Cₘ; dimsmatch(H₀,Cᵢ); end
     I = data(qeye(dims(H₀)))
     # Constant Hamiltonian term
-    L₀ = -1im*(I⊗data(H₀) - data(H₀).'⊗I)
+    L₀ = -1im*(I⊗data(H₀) - transpose(data(H₀))⊗I)
     # Add constant collapse operator terms
     L₀ += sum_collapse(Cₘ,I,1)
     return Liouvillian(dims(H₀),L₀)

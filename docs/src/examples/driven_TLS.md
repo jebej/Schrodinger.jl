@@ -226,7 +226,7 @@ figure()
 ```
 ```@example driven_TLS
 t = linspace(0,12,101)
-ωd_ratio = linspace(0.6,1.4,101).'
+ωd_ratio = tranpose(linspace(0.6,1.4,101)
 chev = abs2.(c₁.(t,γ,ω.*ωd_ratio.-ω))
 imshow(chev,origin="lower",extent=[0.6,1.4,0,12],aspect=1/15)
 xlabel("\$ω_d/ω\$"); ylabel("Time");

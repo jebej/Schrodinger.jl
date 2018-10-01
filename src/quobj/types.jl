@@ -88,14 +88,14 @@ Operator(B::AbstractMatrix,dims::Dims=(size(B,1),),herm=isapproxhermitian(B)) = 
 Bra(x::Ket) = Bra(conj(x.data),x.dims)
 Ket(x::Bra) = Ket(conj(x.data),x.dims)
 Operator(x::Ket) = Operator(x.data*x.data',x.dims,true)
-Operator(x::Bra) = Operator(conj(x.data)*x.data.',x.dims,true)
+Operator(x::Bra) = Operator(conj(x.data)*tranpose(x.data),x.dims,true)
 
 
 # Density type remnants
 struct Density{T<:SMatrix,D} <: QuMatrix
     data::T
     dims::Dims{D}
-    function (::Type{Density{T,D}}){T<:SMatrix,D}(A,dims)
+    function Density{T,D}(A,dims) where {T<:SMatrix,D}
         N = checksquare(A)
         prod(dims)==N || throw(ArgumentError("subspace dimensions $dims are not consistent with a matrix of size $N"))
         isapproxhermitian(A) || throw(ArgumentError("a density matrix must be Hermitian"))

@@ -66,7 +66,7 @@ function levelprobs{T,M}(states::Vector{Ket{T,M}},S::Union{Integer,AbstractVecto
         for n = 1:N
             P[:,n] = levelprobs(states[n],s)
         end
-        return P.'
+        return transpose(P)
     end
     return probs
 end
@@ -77,7 +77,7 @@ function levelprobs{T,M}(states::Vector{Ket{T,M}})
     for n = 1:N
         P[:,n] = levelprobs(states[n])
     end
-    return P.'
+    return transpose(P)
 end
 
 """
@@ -195,5 +195,5 @@ function oper(vecA::AbstractVector,N=isqrt(length(vecA)))
 end
 
 function super(A::AbstractMatrix,B::AbstractMatrix=data(qeye(size(A,1))))
-    return B.' ⊗ A
+    return transpose(B) ⊗ A
 end
