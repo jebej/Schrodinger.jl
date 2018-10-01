@@ -50,8 +50,4 @@ if VERSION < v"0.7.0-"
     include("basepatch/v0.6.jl")
 end
 
-if VERSION > v"0.7.0-"
-    const trace = tr
-end
-
 end
