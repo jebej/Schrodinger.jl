@@ -159,8 +159,8 @@ julia> ψ = ket((3,0,1),(5,2,3))
 
 See also: [`@qb_str`](@ref), for generating qubit states via a bitstring.
 """
-ket{N}(state::Dims{N},dim::Int=2) = ket(state,ntuple(_->dim,Val(N)))
-function ket{N}(state::Dims{N},dims::Dims{N})
+ket(state::Dims{N},dim::Int=2) where {N} = ket(state,ntuple(_->dim,Val(N)))
+function ket(state::Dims{N},dims::Dims{N}) where {N}
     @inbounds for i = 1:N
         dims[i]>state[i] || throw(ArgumentError("basis level $(state[i]) is too large for a $(dims[i])-d space"))
     end

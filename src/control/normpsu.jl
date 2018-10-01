@@ -1,21 +1,21 @@
-immutable NormPSU{T,D} <: ObjectiveFunction
+struct NormPSU{T,D} <: ObjectiveFunction
     dims::Dims{D}
     δt::Float64 # timestep (fixed)
-    Ut::Matrix{Complex128} # target unitary
+    Ut::Matrix{ComplexF64} # target unitary
     Hd::Matrix{T} # drift Hamiltonian
     Hc::Vector{Matrix{T}} # control Hamiltonian(s)
     u_last::Vector{Float64} # last control amplitudes, ordered by control, and then time
     # Propagator and eigendecompotion storage
-    U::Vector{Matrix{Complex128}} # individual propagators
-    X::Vector{Matrix{Complex128}} # forward cumulative propagators
-    P::Vector{Matrix{Complex128}} # backwards cumulative propagators
+    U::Vector{Matrix{ComplexF64}} # individual propagators
+    X::Vector{Matrix{ComplexF64}} # forward cumulative propagators
+    P::Vector{Matrix{ComplexF64}} # backwards cumulative propagators
     D::Vector{Vector{Float64}} # eigenvalues associated to each propagator
     V::Vector{Matrix{T}} # eigenvector matrix associated to each propagator
     # Workspace variables
     H::Hermitian{T,Matrix{T}} # temporary storage for full Hamiltonian
-    A::Matrix{Complex128} # temporary
-    Jkj::Matrix{Complex128} # temporary
-    cisDj::Vector{Complex128} # temporary
+    A::Matrix{ComplexF64} # temporary
+    Jkj::Matrix{ComplexF64} # temporary
+    cisDj::Vector{ComplexF64} # temporary
 end
 
 NormPSU(dims,δt,Ut,Hd,Hc,u_last,U,X,P,D,V,H,A,Jkj,cisDj) = NormPSU{eltype(H),length(dims)}(dims,δt,Ut,Hd,Hc,u_last,U,X,P,D,V,H,A,Jkj,cisDj)
@@ -32,17 +32,17 @@ function NormPSU(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},t::Real,n::Int
     u_last = fill(NaN64,m*n)
     # Generate cache for various objects
     H = Hermitian(zeros(promote_eltype(typeof(Hd_d),eltype(Hc_d)),N,N))
-    A = Matrix{Complex128}(N,N)
-    U = [Matrix{Complex128}(N,N) for i=1:n]
-    X = [Matrix{Complex128}(N,N) for i=1:n]
-    P = [Matrix{Complex128}(N,N) for i=1:n]
+    A = Matrix{ComplexF64}(N,N)
+    U = [Matrix{ComplexF64}(N,N) for i=1:n]
+    X = [Matrix{ComplexF64}(N,N) for i=1:n]
+    P = [Matrix{ComplexF64}(N,N) for i=1:n]
     copy!(P[end],Ut_d)
     # For the exact derivative we need to store eigenvectors and eigenvalues
     D = [Vector{Float64}(N) for i=1:n] # eigenvalues are always real
     V = [similar(H.data) for i=1:n]
     # More temporary storage
-    Jkj = Matrix{Complex128}(N,N)
-    cisDj = Vector{Complex128}(N)
+    Jkj = Matrix{ComplexF64}(N,N)
+    cisDj = Vector{ComplexF64}(N)
     return NormPSU(dims(Hd),t/n,Ut_d,Hd_d,Hc_d,u_last,U,X,P,D,V,H,A,Jkj,cisDj)
 end
 

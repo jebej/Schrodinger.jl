@@ -49,7 +49,7 @@ ptrace(ψ::Bra, out) = ptrace(ψ',out)
 ptrace(x, out::Int, sysdims::NTuple) = ptrace(x,(out,),sysdims)
 
 # Dense partial trace
-function ptrace{T,no,ns}(A::AbstractArray{T}, out::NTuple{no,Int}, sysdims::NTuple{ns,Int})
+function ptrace(A::AbstractArray{T}, out::NTuple{no,Int}, sysdims::NTuple{ns,Int}) where {T,no,ns}
     # Make sure the input arguments make sense
     issorted(out) || throw(ArgumentError("subsystem indices $out must be sorted"))
     no>ns && throw(ArgumentError("more subsystem indices ($no) than number of subsystems ($ns)"))

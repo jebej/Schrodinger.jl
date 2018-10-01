@@ -1,6 +1,6 @@
-immutable Liouvillian{N,F,D} <: AbstractParameterizedFunction{true}
-    L₀::SparseMatrixCSC{Complex128,Int}
-    Lₙ::NTuple{N,SparseMatrixCSC{Complex128,Int}}
+struct Liouvillian{N,F,D}
+    L₀::SparseMatrixCSC{ComplexF64,Int}
+    Lₙ::NTuple{N,SparseMatrixCSC{ComplexF64,Int}}
     fₙ::F
     pₙ::NTuple{N,Vector{Float64}}
     dims::Dims{D}

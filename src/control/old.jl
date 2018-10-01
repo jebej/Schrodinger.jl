@@ -18,7 +18,7 @@ function infidelityprime!(fp,u,δt,Ut,Hd,Hc,H,A,U,X,D,V,P,u_last)
     # ∂fₑ/∂uₖⱼ = -∂Φ/∂uₖⱼ
     #          = -2*Re(⟨Pⱼ,Jₖⱼ*Xⱼ₋₁⟩⟨Uf,Ut⟩)/N² where Jₖⱼ = ∂Uⱼ/∂uₖⱼ
     Jkj = similar(A)
-    cisDj = Vector{Complex128}(length(D[1]))
+    cisDj = Vector{ComplexF64}(length(D[1]))
     a = inner(X[end],Ut)
     for j = 1:n
         cisDj .= cis.(D[j])
@@ -57,7 +57,7 @@ function gen_opt_fun(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},t::Real,n:
     Hc_d = full.(Hc)
     # Generate cache for various objects
     H = promote_type(typeof(Hd_d),eltype(Hc_d))(N,N)
-    A = Matrix{Complex128}(N,N)
+    A = Matrix{ComplexF64}(N,N)
     U = [similar(A) for i=1:n]
     X = deepcopy(U)
     P = deepcopy(U)

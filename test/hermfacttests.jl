@@ -1,6 +1,6 @@
 using BenchmarkTools
 
-H1 = rand(Complex128,4,4); H1 = Hermitian(H1+H1');
+H1 = rand(ComplexF64,4,4); H1 = Hermitian(H1+H1');
 H2 = rand(Float64,4,4);    H2 = Hermitian(H2+H2');
 
 H = H2

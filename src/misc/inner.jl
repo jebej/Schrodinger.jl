@@ -4,14 +4,14 @@ const ManyMatrices = Union{Vector{<:AbstractMatrix},Tuple{Vararg{AbstractMatrix}
 
 inner(A::Tuple{Vararg{Operator}},B::Operator) = inner_cs(data.(A),data(B))
 
-function inner_cs(A,B::AbstractMatrix,s::IntSet=IntSet())
+function inner_cs(A,B::AbstractMatrix,s::BitSet=BitSet())
     # calculate |trace(A'*B)|cs (coherent subspaces)
     # this inner product cares only about relative phase between the subspaces contained in s
     x,y = _inner_cs_1(A,B,s)
     return _inner_cs_2(x,y)
 end
 
-function inner_cs_grad(Pj,JXj::AbstractMatrix,x,y,s::IntSet=IntSet())
+function inner_cs_grad(Pj,JXj::AbstractMatrix,x,y,s::BitSet=BitSet())
     # calculate the partial derivative of |trace(A'*B)|cs (coherent subspaces)
     w,z = _inner_cs_1(Pj,JXj,s)
     res = real(w*x)
@@ -27,7 +27,7 @@ end
 
 # sub-routines
 
-function _inner_cs_1(A::AbstractMatrix{T},B::AbstractMatrix{S},s::IntSet) where {T,S}
+function _inner_cs_1(A::AbstractMatrix{T},B::AbstractMatrix{S},s::BitSet) where {T,S}
     m, n = size(A)
     size(B) == (m,n) || throw(DimensionMismatch("matrices must have the same dimensions"))
     x = zero(promote_type(T,S))
@@ -48,14 +48,14 @@ function _inner_cs_1(A::AbstractMatrix{T},B::AbstractMatrix{S},s::IntSet) where 
     return x, y
 end
 
-function _inner_cs_1(A::ManyMatrices,B::AbstractMatrix,::IntSet)
+function _inner_cs_1(A::ManyMatrices,B::AbstractMatrix,::BitSet)
     # calculate |trace(A'*B)|cs (coherent subspaces)
     # this inner product cares only about relative phase between the subspaces contained in s
     x = inner.(A,(B,))
     return first(x), tail(x)
 end
 
-function _inner_cs_1(A::AbstractMatrix,B::ManyMatrices,::IntSet)
+function _inner_cs_1(A::AbstractMatrix,B::ManyMatrices,::BitSet)
     # calculate |trace(A'*B)|cs (coherent subspaces)
     # this inner product cares only about relative phase between the subspaces contained in s
     x = inner.((A,),B)

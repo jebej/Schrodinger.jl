@@ -2,6 +2,11 @@ import Base: kron, promote_rule, randn, vec, vecdot
 
 export sincos
 
+const ComplexF64 = Complex128
+const ComplexF32 = Complex64
+
+const BitSet = IntSet
+
 vec(x::RowVector) = x.vec
 
 sincos(x::Number) = (sin(x),cos(x))

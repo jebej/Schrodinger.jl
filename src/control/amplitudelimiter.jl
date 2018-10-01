@@ -20,12 +20,12 @@
 penalty(u,ulim=1,p=1) = (abs(u)/ulim)^100p
 penaltyprime(u,ulim=1,p=1) = 100p*(abs(u)/ulim)^(100p-1)
 
-immutable AmplitudeLimiter{T<:Union{Array,Number}} <: PenaltyFunction
+struct AmplitudeLimiter{T<:Union{Array,Number}} <: PenaltyFunction
     limit::T
     p::Float64
 end
 
-function objective{T<:Array}(L::AmplitudeLimiter{T},u)
+function objective(L::AmplitudeLimiter{T},u) where {T<:Array}
     N = length(u)
     N == length(L.limit) || throw(DimensionMismatch("Control and limit amplitudes do not have the same size!"))
     res = 0.0
@@ -35,11 +35,11 @@ function objective{T<:Array}(L::AmplitudeLimiter{T},u)
     return res/N
 end
 
-function objective{T<:Number}(L::AmplitudeLimiter{T},u)
+function objective(L::AmplitudeLimiter{T},u) where {T<:Number}
     return sum(u->penalty(u,L.limit,L.p),u)/length(u)
 end
 
-function gradient!{T<:Array}(L::AmplitudeLimiter{T},fp,u)
+function gradient!(L::AmplitudeLimiter{T},fp,u) where {T<:Array}
     N = length(u)
     N == length(L.limit) || throw(DimensionMismatch("Control and limit amplitudes do not have the same size!"))
     for i = 1:N
@@ -48,7 +48,7 @@ function gradient!{T<:Array}(L::AmplitudeLimiter{T},fp,u)
     return fp
 end
 
-function gradient!{T<:Number}(L::AmplitudeLimiter{T},fp,u)
+function gradient!(L::AmplitudeLimiter{T},fp,u) where {T<:Number}
     N = length(u)
     for i = 1:N
         @inbounds fp[i] += penaltyprime(u[i],L.limit,L.p)/N

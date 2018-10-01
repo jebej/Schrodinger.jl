@@ -1,7 +1,7 @@
-immutable Result{T<:QuObject,A}
+struct Result{T<:QuObject,A}
     times::Vector{Float64}
     states::Vector{T}
-    evals::Matrix{Complex128}
+    evals::Matrix{ComplexF64}
     #probs::Vector{Matrix{Float64}}
     solver::A
 end
@@ -77,9 +77,9 @@ end
 
 calc_expvals(o::Operator,states) = calc_expvals((o,),states)
 function calc_expvals(e_ops,states)
-    isempty(e_ops) && return Matrix{Complex128}(0,0)
+    isempty(e_ops) && return Matrix{ComplexF64}(0,0)
     M = length(e_ops); N = length(states)
-    expvals = Matrix{Complex128}(N,M)
+    expvals = Matrix{ComplexF64}(N,M)
     for (j,σ) in enumerate(e_ops)
         eval = view(expvals,:,j)
         expect!(eval, σ, states)
