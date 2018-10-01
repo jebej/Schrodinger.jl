@@ -1,6 +1,6 @@
-using Base.SparseArrays: nonzeroinds, _spdot
+using Compat.SparseArrays: nonzeroinds, _spdot
 
-function A_mul_Bf{Tv,Ti}(x::SparseVector{Tv,Ti},y::SparseVector{Tv,Ti},f::Function)
+function A_mul_Bf(x::SparseVector{Tv,Ti},y::SparseVector{Tv,Ti},f::Function) where {Tv,Ti}
     nnzx = nnz(x)
     nnzy = nnz(y)
     nnzz = nnzx*nnzy # number of nonzeros in new matrix
@@ -15,10 +15,10 @@ function A_mul_Bf{Tv,Ti}(x::SparseVector{Tv,Ti},y::SparseVector{Tv,Ti},f::Functi
     end
     return sparse(I,J,V,x.n,y.n)
 end
-A_mul_Bt{Tv,Ti}(x::SparseVector{Tv,Ti},y::SparseVector{Tv,Ti}) = A_mul_Bf(x,y,identity)
-A_mul_Bc{Tv,Ti}(x::SparseVector{Tv,Ti},y::SparseVector{Tv,Ti}) = A_mul_Bf(x,y,conj)
+A_mul_Bt(x::SparseVector{Tv,Ti},y::SparseVector{Tv,Ti}) where {Tv,Ti} = A_mul_Bf(x,y,identity)
+A_mul_Bc(x::SparseVector{Tv,Ti},y::SparseVector{Tv,Ti}) where {Tv,Ti} = A_mul_Bf(x,y,conj)
 
-function dotu{Tx<:Number,Ty<:Number}(x::AbstractSparseVector{Tx}, y::AbstractSparseVector{Ty})
+function dotu(x::AbstractSparseVector{Tx}, y::AbstractSparseVector{Ty}) where {Tx<:Number,Ty<:Number}
     x === y && return sumabs2(x)
     n = length(x)
     length(y) == n || throw(DimensionMismatch())
@@ -29,7 +29,7 @@ function dotu{Tx<:Number,Ty<:Number}(x::AbstractSparseVector{Tx}, y::AbstractSpa
     return _spdot(*,1,length(xnzind),xnzind,xnzval,1,length(ynzind),ynzind,ynzval)
 end
 
-function dotu{Tx<:Number,Ty<:Number}(x::StridedVector{Tx}, y::AbstractSparseVector{Ty})
+function dotu(x::StridedVector{Tx}, y::AbstractSparseVector{Ty}) where {Tx<:Number,Ty<:Number}
     n = length(x)
     length(y) == n || throw(DimensionMismatch())
     nzind = nonzeroinds(y)
@@ -41,7 +41,7 @@ function dotu{Tx<:Number,Ty<:Number}(x::StridedVector{Tx}, y::AbstractSparseVect
     return s
 end
 
-function dotu{Tx<:Number,Ty<:Number}(x::AbstractSparseVector{Tx}, y::StridedVector{Ty})
+function dotu(x::AbstractSparseVector{Tx}, y::StridedVector{Ty}) where {Tx<:Number,Ty<:Number}
     n = length(y)
     length(x) == n || throw(DimensionMismatch())
     nzind = nonzeroinds(x)

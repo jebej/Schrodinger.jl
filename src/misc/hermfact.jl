@@ -5,7 +5,7 @@ hermfact!(w::Vector,Z::Matrix,H::Hermitian) = syevr!(w,Z,H.uplo,H.data,0.0,0.0,0
 
 ## double precision complex
 
-function syevr!(w::Vector{Float64}, Z::Matrix{Complex128}, uplo::Char, A::StridedMatrix{Complex128},
+function syevr!(w::Vector{Float64}, Z::Matrix{ComplexF64}, uplo::Char, A::StridedMatrix{ComplexF64},
                 vl::AbstractFloat, vu::AbstractFloat, il::Integer, iu::Integer, abstol::AbstractFloat)
     chkstride1(A)
     n = checksquare(A)
@@ -17,7 +17,7 @@ function syevr!(w::Vector{Float64}, Z::Matrix{Complex128}, uplo::Char, A::Stride
     m = Ref{Int}()
     ldz = n
     isuppz = Vector{Int}(2n)
-    work   = Vector{Complex128}(1)
+    work   = Vector{ComplexF64}(1)
     lwork  = Int(-1)
     rwork  = Vector{Float64}(1)
     lrwork = Int(-1)
@@ -27,10 +27,10 @@ function syevr!(w::Vector{Float64}, Z::Matrix{Complex128}, uplo::Char, A::Stride
     for i = 1:2
         ccall((:zheevr_64_, liblapack), Void,
               (Ptr{UInt8}, Ptr{UInt8}, Ptr{UInt8}, Ptr{Int},
-               Ptr{Complex128}, Ptr{Int}, Ptr{Complex128}, Ptr{Complex128},
-               Ptr{Int}, Ptr{Int}, Ptr{Complex128}, Ptr{Int},
-               Ptr{Float64}, Ptr{Complex128}, Ptr{Int}, Ptr{Int},
-               Ptr{Complex128}, Ptr{Int}, Ptr{Float64}, Ptr{Int},
+               Ptr{ComplexF64}, Ptr{Int}, Ptr{ComplexF64}, Ptr{ComplexF64},
+               Ptr{Int}, Ptr{Int}, Ptr{ComplexF64}, Ptr{Int},
+               Ptr{Float64}, Ptr{ComplexF64}, Ptr{Int}, Ptr{Int},
+               Ptr{ComplexF64}, Ptr{Int}, Ptr{Float64}, Ptr{Int},
                Ptr{Int}, Ptr{Int}, Ptr{Int}),
               &jobz, &range, &uplo, &n,
               A, &lda, &vl, &vu,
@@ -41,7 +41,7 @@ function syevr!(w::Vector{Float64}, Z::Matrix{Complex128}, uplo::Char, A::Stride
         chklapackerror(info[])
         if i == 1
             lwork = Int(real(work[1]))
-            work = Vector{Complex128}(lwork)
+            work = Vector{ComplexF64}(lwork)
             lrwork = Int(rwork[1])
             rwork = Vector{Float64}(lrwork)
             liwork = iwork[1]
@@ -53,7 +53,7 @@ end
 
 ## single precision complex
 
-function syevr!(w::Vector{Float32}, Z::Matrix{Complex64}, uplo::Char, A::StridedMatrix{Complex64},
+function syevr!(w::Vector{Float32}, Z::Matrix{ComplexF32}, uplo::Char, A::StridedMatrix{ComplexF32},
                 vl::AbstractFloat, vu::AbstractFloat, il::Integer, iu::Integer, abstol::AbstractFloat)
     chkstride1(A)
     n = checksquare(A)
@@ -65,7 +65,7 @@ function syevr!(w::Vector{Float32}, Z::Matrix{Complex64}, uplo::Char, A::Strided
     m = Ref{Int}()
     ldz = n
     isuppz = Vector{Int}(2n)
-    work   = Vector{Complex64}(1)
+    work   = Vector{ComplexF32}(1)
     lwork  = Int(-1)
     rwork  = Vector{Float32}(1)
     lrwork = Int(-1)
@@ -75,10 +75,10 @@ function syevr!(w::Vector{Float32}, Z::Matrix{Complex64}, uplo::Char, A::Strided
     for i = 1:2
         ccall((:cheevr_64_, liblapack), Void,
               (Ptr{UInt8}, Ptr{UInt8}, Ptr{UInt8}, Ptr{Int},
-               Ptr{Complex64}, Ptr{Int}, Ptr{Complex64}, Ptr{Complex64},
-               Ptr{Int}, Ptr{Int}, Ptr{Complex64}, Ptr{Int},
-               Ptr{Float32}, Ptr{Complex64}, Ptr{Int}, Ptr{Int},
-               Ptr{Complex64}, Ptr{Int}, Ptr{Float32}, Ptr{Int},
+               Ptr{ComplexF32}, Ptr{Int}, Ptr{ComplexF32}, Ptr{ComplexF32},
+               Ptr{Int}, Ptr{Int}, Ptr{ComplexF32}, Ptr{Int},
+               Ptr{Float32}, Ptr{ComplexF32}, Ptr{Int}, Ptr{Int},
+               Ptr{ComplexF32}, Ptr{Int}, Ptr{Float32}, Ptr{Int},
                Ptr{Int}, Ptr{Int}, Ptr{Int}),
               &jobz, &range, &uplo, &n,
               A, &lda, &vl, &vu,
@@ -89,7 +89,7 @@ function syevr!(w::Vector{Float32}, Z::Matrix{Complex64}, uplo::Char, A::Strided
         chklapackerror(info[])
         if i == 1
             lwork = Int(real(work[1]))
-            work = Vector{Complex64}(lwork)
+            work = Vector{ComplexF32}(lwork)
             lrwork = Int(rwork[1])
             rwork = Vector{Float32}(lrwork)
             liwork = iwork[1]

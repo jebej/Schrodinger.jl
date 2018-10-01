@@ -178,7 +178,7 @@ julia> projectorop(5,[1,3])
  0.0  0.0  0.0  0.0  0.0
 ```
 """
-function projectorop{T<:Integer}(N::Integer,S::AbstractVector{T})
+function projectorop(N::Integer,S::AbstractVector{<:Integer})
     maximum(S)<N || throw(ArgumentError("a $N-d space cannot be projected on level $(maximum(S))"))
     I = S.+1
     V = ones(length(S))

@@ -1,4 +1,4 @@
-import Base: eigfact, eigvals, eig, eigs
+import Compat.LinearAlgebra: eigfact, eigvals, eig, eigs
 
 eigfact(A::QuMatrix, args...; kwargs...) = eigfact(A.data, args...; kwargs...)
 

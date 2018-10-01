@@ -1,4 +1,6 @@
 module Schrodinger
+using Compat
+using Compat.LinearAlgebra, Compat.SparseArrays, Compat.Printf
 using Base: tail, front, product, promote_eltype
 using OrdinaryDiffEq, Optim
 

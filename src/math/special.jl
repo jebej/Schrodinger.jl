@@ -16,9 +16,9 @@ expect(ψ::Ket,σ::Operator) = expect(σ,ψ)
 expect(σ::Operator,ρ::Operator) = (dimsmatch(σ,ρ); trace(data(σ)*data(ρ)))
 
 # Faster expectation value methods when passing in many inputs
-function expect!{T,D}(res,σ::Operator,states::Vector{Ket{T,D}})
+function expect!(res,σ::Operator,states::Vector{Ket{T,D}}) where {T,D}
     dimsmatch(σ,states[1])
-    tmp = Vector{Complex128}(prod(dims(σ)))
+    tmp = Vector{ComplexF64}(prod(dims(σ)))
     for (i,ψ) in enumerate(states)
         A_mul_B!(tmp,data(σ),data(ψ))
         res[i] = dot(data(ψ),tmp)
@@ -26,10 +26,10 @@ function expect!{T,D}(res,σ::Operator,states::Vector{Ket{T,D}})
     return res
 end
 
-function expect!{T,D}(res,σ::Operator,states::Vector{Operator{T,D}})
+function expect!(res,σ::Operator,states::Vector{Operator{T,D}}) where {T,D}
     dimsmatch(σ,states[1])
     superσ = super(data(σ))
-    tmp = Vector{Complex128}(prod(dims(σ))^2)
+    tmp = Vector{ComplexF64}(prod(dims(σ))^2)
     N = length(tmp); sqrtNp1 = isqrt(N)+1
     fill!(res, zero(eltype(tmp)))
     for (i,ρ) in enumerate(states)
@@ -50,14 +50,14 @@ A system index, or vector of indices, can be passed as a second argument. In tha
 
 A specialized method exists for vector of `Ket` or `Operator` inputs.
 """
-levelprobs{T,N}(ψ::Ket{T,N}) = abs2(ψ)
-levelprobs{T,N}(ψ::Ket{T,N},s::Integer) = real(diag(ptrace(ψ,ntuple_sans_m(s,Val{N}))))
-levelprobs{T,N}(ρ::Operator{T,N}) = real(diag(ρ))
-levelprobs{T,N}(ρ::Operator{T,N},s::Integer) = real(diag(ptrace(ρ,ntuple_sans_m(s,Val{N}))))
+levelprobs(ψ::Ket{T,N}) where {T,N} = abs2(ψ)
+levelprobs(ψ::Ket{T,N},s::Integer) where {T,N} = real(diag(ptrace(ψ,ntuple_sans_m(s,Val{N}))))
+levelprobs(ρ::Operator{T,N}) where {T,N} = real(diag(ρ))
+levelprobs(ρ::Operator{T,N},s::Integer) where {T,N} = real(diag(ptrace(ρ,ntuple_sans_m(s,Val{N}))))
 levelprobs(ψ::QuObject,S::AbstractVector) = map(s->levelprobs(ψ,s),S)
 
 # Faster levelprobs methods when passing in many inputs
-function levelprobs{T,M}(states::Vector{Ket{T,M}},S::Union{Integer,AbstractVector})
+function levelprobs(states::Vector{Ket{T,M}},S::Union{Integer,AbstractVector}) where {T,M}
     N = length(states)
     D = dims(states[1])
     probs = map(S) do s
@@ -66,18 +66,18 @@ function levelprobs{T,M}(states::Vector{Ket{T,M}},S::Union{Integer,AbstractVecto
         for n = 1:N
             P[:,n] = levelprobs(states[n],s)
         end
-        return P.'
+        return transpose(P)
     end
     return probs
 end
 
-function levelprobs{T,M}(states::Vector{Ket{T,M}})
+function levelprobs(states::Vector{Ket{T,M}}) where {T,M}
     N = length(states)
     P = Matrix{Float64}(prod(dims(states[1])),N)
     for n = 1:N
         P[:,n] = levelprobs(states[n])
     end
-    return P.'
+    return transpose(P)
 end
 
 """
@@ -123,7 +123,7 @@ end
 fidelity2(ψ::Ket,ρ::Operator) = fidelity2(ρ,ψ)
 fidelity2(ψ::Ket,ϕ::Ket) = abs2(dot(ψ,ϕ))
 
-function fidelity2{N,T<:Ket}(A::NTuple{N,T},ϕ::Ket)
+function fidelity2(A::NTuple{N,T},ϕ::Ket) where {N,T<:Ket}
     # If sum(A) = ψ is a valid Ket, then this function will calculate the state fidelity between ψ and ϕ, ignoring all relative phases between the different parts of ψ (as well as the global phase, of course)
     # F² = ∑ᵢ(|⟨ψᵢ,ϕ⟩|² + ∑ⱼ₌₁ⁱ⁻¹2*|⟨ψᵢ,ϕ⟩|*|⟨ψⱼ,ϕ⟩|)
     f2 = fidelity2.(A,ϕ) # (|⟨ψ₁,ϕ⟩|², |⟨ψ₂,ϕ⟩|², ...)
@@ -195,5 +195,5 @@ function oper(vecA::AbstractVector,N=isqrt(length(vecA)))
 end
 
 function super(A::AbstractMatrix,B::AbstractMatrix=data(qeye(size(A,1))))
-    return B.' ⊗ A
+    return transpose(B) ⊗ A
 end

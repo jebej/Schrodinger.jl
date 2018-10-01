@@ -34,7 +34,7 @@ end
 ONEQUBIT = [g,e1,N!(g+e1),N!(g-e1),N!(g+1im*e1),N!(g-1im*e1)]
 # Two-qubit stabilizer states from Table II in:
 # Garcia et al. Efficient Inner-product Algorithm for Stabilizer States. arXiv:1210.6646 (2012)
-TWOQUBIT = Ket.(N!.(Vector{Complex128}[
+TWOQUBIT = Ket.(N!.(Vector{ComplexF64}[
     # Separable states
     [0,0,1,0],[0,0,0,1],[0,0,1,1],[0,0,1,-1],[0,0,1,1im],[0,0,1,-1im],
     [1,0,-1,0],[0,1,0,-1],[1,1,-1,-1],[1,-1,-1,1],[1,1im,-1,-1im],[1,-1im,-1,1im],

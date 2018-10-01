@@ -1,23 +1,23 @@
-immutable CoherentSubspaces{M,S<:Union{Matrix{Complex128},NTuple{M,Matrix{Complex128}}},T,D} <: ObjectiveFunction
+struct CoherentSubspaces{M,S<:Union{Matrix{ComplexF64},NTuple{M,Matrix{ComplexF64}}},T,D} <: ObjectiveFunction
     dims::Dims{D}
     δt::Float64 # timestep (fixed)
     Ut::S # target unitary
-    s::IntSet # coherent subspaces
+    s::BitSet # coherent subspaces
     Ne::Int # effective target Operator dimension (rank of target operator)
     Hd::Matrix{T} # drift Hamiltonian
     Hc::Vector{Matrix{T}} # control Hamiltonian(s)
     u_last::Vector{Float64} # last control amplitudes, ordered by control, and then time
     # Propagator and eigendecompotion storage
-    U::Vector{Matrix{Complex128}} # individual propagators
-    X::Vector{Matrix{Complex128}} # forward cumulative propagators
+    U::Vector{Matrix{ComplexF64}} # individual propagators
+    X::Vector{Matrix{ComplexF64}} # forward cumulative propagators
     P::Vector{S} # backwards cumulative propagators
     D::Vector{Vector{Float64}} # eigenvalues associated to each propagator
     V::Vector{Matrix{T}} # eigenvector matrix associated to each propagator
     # Workspace variables
     H::Hermitian{T,Matrix{T}} # temporary storage for full Hamiltonian
-    A::Matrix{Complex128} # temporary
-    Jkj::Matrix{Complex128} # temporary
-    cisDj::Vector{Complex128} # temporary
+    A::Matrix{ComplexF64} # temporary
+    Jkj::Matrix{ComplexF64} # temporary
+    cisDj::Vector{ComplexF64} # temporary
 end
 
 CoherentSubspaces(dims,δt,Ut::NTuple{M,<:Matrix},s,Ne,Hd,Hc,u_last,U,X,P,D,V,H,A,Jkj,cisDj) where M = CoherentSubspaces{M,typeof(Ut),eltype(H),length(dims)}(dims,δt,Ut,s,Ne,Hd,Hc,u_last,U,X,P,D,V,H,A,Jkj,cisDj)
@@ -35,17 +35,17 @@ function CoherentSubspaces(Ut::NTuple{M,<:Operator},s::IntCol,Hd::Operator,Hc::V
     u_last = fill(NaN64,m*n)
     # Generate cache for various objects
     H = Hermitian(zeros(promote_eltype(typeof(Hd_d),eltype(Hc_d)),N,N))
-    A = Matrix{Complex128}(N,N)
-    U = [Matrix{Complex128}(N,N) for i=1:n]
-    X = [Matrix{Complex128}(N,N) for i=1:n]
+    A = Matrix{ComplexF64}(N,N)
+    U = [Matrix{ComplexF64}(N,N) for i=1:n]
+    X = [Matrix{ComplexF64}(N,N) for i=1:n]
     P = [similar.(Ut_d) for i=1:n]
     for i=1:M; copy!(P[end][i],Ut_d[i]); end
     # For the exact derivative we need to store eigenvectors and eigenvalues
     D = [Vector{Float64}(N) for i=1:n] # eigenvalues are always real
     V = [similar(H.data) for i=1:n]
     # More temporary storage
-    Jkj = Matrix{Complex128}(N,N)
-    cisDj = Vector{Complex128}(N)
+    Jkj = Matrix{ComplexF64}(N,N)
+    cisDj = Vector{ComplexF64}(N)
     return CoherentSubspaces(dims(Hd),t/n,Ut_d,s,Ne,Hd_d,Hc_d,u_last,U,X,P,D,V,H,A,Jkj,cisDj)
 end
 
@@ -61,17 +61,17 @@ function CoherentSubspaces(Ut::Operator,s::IntCol,Hd::Operator,Hc::Vector{<:Oper
     u_last = fill(NaN64,m*n)
     # Generate cache for various objects
     H = Hermitian(zeros(promote_eltype(typeof(Hd_d),eltype(Hc_d)),N,N))
-    A = Matrix{Complex128}(N,N)
-    U = [Matrix{Complex128}(N,N) for i=1:n]
-    X = [Matrix{Complex128}(N,N) for i=1:n]
-    P = [Matrix{Complex128}(N,N) for i=1:n]
+    A = Matrix{ComplexF64}(N,N)
+    U = [Matrix{ComplexF64}(N,N) for i=1:n]
+    X = [Matrix{ComplexF64}(N,N) for i=1:n]
+    P = [Matrix{ComplexF64}(N,N) for i=1:n]
     copy!(P[end],Ut_d)
     # For the exact derivative we need to store eigenvectors and eigenvalues
     D = [Vector{Float64}(N) for i=1:n] # eigenvalues are always real
     V = [similar(H.data) for i=1:n]
     # More temporary storage
-    Jkj = Matrix{Complex128}(N,N)
-    cisDj = Vector{Complex128}(N)
+    Jkj = Matrix{ComplexF64}(N,N)
+    cisDj = Vector{ComplexF64}(N)
     return CoherentSubspaces(dims(Hd),t/n,Ut_d,s,Ne,Hd_d,Hc_d,u_last,U,X,P,D,V,H,A,Jkj,cisDj)
 end
 

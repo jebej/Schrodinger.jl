@@ -2,14 +2,14 @@ using Optim: AbstractOptimizer, Options, MultivariateOptimizationResults
 
 abstract type ObjectiveFunction end
 abstract type PenaltyFunction end
-const IntCol = Union{AbstractVector{Int},IntSet,Set{Int},NTuple{N,Int} where N}
+const IntCol = Union{AbstractVector{Int},BitSet,Set{Int},NTuple{N,Int} where N}
 
-immutable GrapeResult{D,T<:AbstractMatrix,P<:MultivariateOptimizationResults}
+struct GrapeResult{D,T<:AbstractMatrix,P<:MultivariateOptimizationResults}
     Ut::Operator{T,D}
-    Ui::Operator{Matrix{Complex128},D}
+    Ui::Operator{Matrix{ComplexF64},D}
     ui::Matrix{Float64}
     fi::Float64
-    Uf::Operator{Matrix{Complex128},D}
+    Uf::Operator{Matrix{ComplexF64},D}
     uf::Matrix{Float64}
     ff::Float64
     t::Float64

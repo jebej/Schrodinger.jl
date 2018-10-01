@@ -1,8 +1,8 @@
-using Base.LinAlg.RealHermSymComplexHerm
-import Base: IntSet, reverse
+import Compat.LinearAlgebra: RealHermSymComplexHerm, BlasComplex, normalize
+import Base: BitSet, reverse
 
-convert(::Type{IntSet},r::IntCol) = IntSet(r)
-IntSet(elems::Vararg{Int}) = IntSet(elems)
+convert(::Type{BitSet},r::IntCol) = BitSet(r)
+BitSet(elems::Vararg{Int}) = BitSet(elems)
 
 reverse(n::Number) = n
 
@@ -17,10 +17,10 @@ function randomsmooth(n::Integer,m::Integer)
 end
 
 function randomsmooth(n::Integer)
-    x = linspace(0,1,n).'
+    x = transpose(linspace(0,1,n))
     N = rand(4:7) # number of sines to use
-    f = 2.0 .+ 10.*rand(N) # frequencies
-    A = normalize!(1./f.*(rand(N).-0.5),2) # amplitudes
+    f = 2.0 .+ 10 .* rand(N) # frequencies
+    A = normalize!((rand(N).-0.5)./f,2) # amplitudes
     ϕ = 2π.*rand(N) # phase
     return vec(sum(A.*sin.(f.*x.+ϕ),1))
 end
@@ -48,7 +48,7 @@ function sqrtfact(n::Integer)
     end
 end
 
-function rand_unitary{T<:LinAlg.BlasComplex}(::Type{T},n::Integer)
+function rand_unitary(::Type{T},n::Integer) where {T<:BlasComplex}
     # Generate a Haar distributed random unitary matrix
     # ref https://arxiv.org/pdf/math-ph/0609050.pdf
     A  = randn(T,n,n)
@@ -60,8 +60,8 @@ function rand_unitary{T<:LinAlg.BlasComplex}(::Type{T},n::Integer)
     return U
 end
 
-Base.normalize(z::Complex) = z == 0 ? one(z) : z/abs(z)
-Base.normalize(z::Real) = one(z)
+normalize(z::Complex) = z == 0 ? one(z) : z/abs(z)
+normalize(z::Real) = one(z)
 
 function unwrap!(p)
     n,m = size(p,1),size(p,2)

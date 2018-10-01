@@ -54,7 +54,7 @@ function hermitianize!(A::AbstractMatrix)
     return A
 end
 
-function isunitary{T}(A::AbstractMatrix{T})
+function isunitary(A::AbstractMatrix{T}) where {T}
     # check efficiently if A'*A = I
     m, n = size(A)
     m == n || return false
@@ -72,7 +72,7 @@ function isunitary{T}(A::AbstractMatrix{T})
     return true
 end
 
-function isunitary{T,S}(A::SparseMatrixCSC{T,S})
+function isunitary(A::SparseMatrixCSC{T,S}) where {T,S}
     # check efficiently if A'*A = I
     m, n = size(A)
     m == n || return false
@@ -98,7 +98,7 @@ function isunitary{T,S}(A::SparseMatrixCSC{T,S})
     return true
 end
 
-function isapproxunitary{T}(A::AbstractMatrix{T})
+function isapproxunitary(A::AbstractMatrix{T}) where {T}
     # check efficiently if A'*A ≈ I
     m, n = size(A)
     m == n || return false
@@ -120,7 +120,7 @@ function isapproxunitary{T}(A::AbstractMatrix{T})
     return true
 end
 
-function isapproxunitary{T,S}(A::SparseMatrixCSC{T,S})
+function isapproxunitary(A::SparseMatrixCSC{T,S}) where {T,S}
     # check efficiently if A'*A ≈ I
     m, n = size(A)
     m == n || return false

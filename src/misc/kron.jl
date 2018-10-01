@@ -1,4 +1,4 @@
-function I_kron_A{T}(d::Int, A::AbstractMatrix{T})
+function I_kron_A(d::Int, A::AbstractMatrix{T}) where {T}
     n, m = size(A)
     B = zeros(T,d*n,d*m)
     @inbounds for k = 1:d

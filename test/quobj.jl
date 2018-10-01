@@ -49,8 +49,8 @@ end
 
 @testset "Matrix Property Checks" begin
     # Tests matrix property checks
-    H = Schrodinger.hermitianize!(rand(Complex128,5,5))
-    H_s = Schrodinger.hermitianize!(sprand(Complex128,5,5,0.1))
+    H = Schrodinger.hermitianize!(rand(ComplexF64,5,5))
+    H_s = Schrodinger.hermitianize!(sprand(ComplexF64,5,5,0.1))
     x = sparse([1,2,3,4,5],[3,5,3,1,1],[1+5im,3.4,1im,2.5+2.5im,6.6])
     @test isapproxhermitian(H+full(x)*1E-15)
     @test !isapproxhermitian(H+full(x)*1E-12)
