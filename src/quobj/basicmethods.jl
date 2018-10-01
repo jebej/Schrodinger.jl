@@ -1,7 +1,7 @@
-import Base: length, size, LinAlg.checksquare, eltype, getindex, setindex!,
-     diag, full, complex, norm, trace, rank, normalize!, normalize, scale!,
-     ishermitian, issymmetric, isdiag, triu, tril,
-     similar, copy, hash, isequal, ==, convert, promote_rule, isapprox, show
+import Base: length, size, eltype, getindex, setindex!, similar, copy, hash,
+    isequal, ==, convert, promote_rule, isapprox, show
+import Compat.LinearAlgebra: checksquare, diag, full, complex, norm, trace,
+    rank, normalize!, normalize, scale!, ishermitian, issymmetric, isdiag, triu, tril
 
 # Special QuObject methods
 data(A::QuObject) = A.data
@@ -49,22 +49,22 @@ issymmetric(A::QuMatrix) = issymmetric(A.data)
 isunitary(A::QuMatrix) = isunitary(A.data)
 isapproxunitary(A::QuMatrix) = isapproxunitary(A.data)
 isdiag(A::QuMatrix) = isdiag(A.data)
-similar{T<:QuObject}(A::T) = T(similar(A.data),A.dims)
-copy{T<:QuObject}(A::T) = T(copy(A.data),A.dims)
-hash{T<:QuObject}(A::T,h::UInt) = hash(hash(A.data,hash(A.dims,hash(T))),h)
-isequal{T<:QuObject}(A::T,B::T) = isequal(A.dims,B.dims)&&isequal(A.data,B.data)
+similar(A::T) where {T<:QuObject}= T(similar(A.data),A.dims)
+copy(A::T) where {T<:QuObject} = T(copy(A.data),A.dims)
+hash(A::T,h::UInt) where {T<:QuObject} = hash(hash(A.data,hash(A.dims,hash(T))),h)
+isequal(A::T,B::T) where {T<:QuObject} = isequal(A.dims,B.dims)&&isequal(A.data,B.data)
 ==(A::Ket,B::Ket) = isequal(A.dims,B.dims)&&(A.data==B.data)
 ==(A::Bra,B::Bra) = isequal(A.dims,B.dims)&&(A.data==B.data)
 ==(A::Operator,B::Operator) = isequal(A.dims,B.dims)&&(A.data==B.data)
 isapprox(A::QuObject,B::QuObject;kwargs...) = isequal(A.dims,B.dims)&&isapprox(A.data,B.data;kwargs...)
 
 # Conversion and promotion rules
-convert{T,D}(::Type{Ket{T,D}},x::Ket) = Ket(convert(T,x.data),x.dims)
-convert{T,D}(::Type{Bra{T,D}},x::Bra) = Bra(convert(T,x.data),x.dims)
-convert{T,D}(::Type{Operator{T,D}},A::Operator) = Operator(convert(T,A.data),A.dims,A.herm)
-promote_rule{T,S,D}(::Type{Ket{T,D}},::Type{Ket{S,D}}) = Ket{promote_type(T,S),D}
-promote_rule{T,S,D}(::Type{Bra{T,D}},::Type{Bra{S,D}}) = Bra{promote_type(T,S),D}
-promote_rule{T,S,D}(::Type{Operator{T,D}},::Type{Operator{S,D}}) = Operator{promote_type(T,S),D}
+convert(::Type{Ket{T,D}},x::Ket) where {T,D} = Ket(convert(T,x.data),x.dims)
+convert(::Type{Bra{T,D}},x::Bra) where {T,D} = Bra(convert(T,x.data),x.dims)
+convert(::Type{Operator{T,D}},A::Operator) where {T,D} = Operator(convert(T,A.data),A.dims,A.herm)
+promote_rule(::Type{Ket{T,D}},::Type{Ket{S,D}}) where {T,S,D} = Ket{promote_type(T,S),D}
+promote_rule(::Type{Bra{T,D}},::Type{Bra{S,D}}) where {T,S,D} = Bra{promote_type(T,S),D}
+promote_rule(::Type{Operator{T,D}},::Type{Operator{S,D}}) where {T,S,D} = Operator{promote_type(T,S),D}
 
 # Show methods
 function show(io::IO, A::T) where T<:QuMatrix

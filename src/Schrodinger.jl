@@ -1,4 +1,6 @@
 module Schrodinger
+using Compat
+using Compat.LinearAlgebra, Compat.SparseArrays, Compat.Printf
 using Base: tail, front, product, promote_eltype
 using OrdinaryDiffEq, Optim
 
@@ -46,6 +48,10 @@ include("library/constants.jl")
 # VERSION-conditional definitions
 if VERSION < v"0.7.0-"
     include("basepatch/v0.6.jl")
+end
+
+if VERSION > v"0.7.0-"
+    const trace = tr
 end
 
 end

@@ -83,10 +83,10 @@ function grape(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},u_init,t::Real,n
     # Optimization options
     #opt = Optim.Options(g_tol = 1E-9)
     # Run optimization
-    res = optimize(od,vec(u_init.'),ConjugateGradient())
-    #res = optimize(od,vec(u_init.'))
+    res = optimize(od,vec(transpose(u_init)),ConjugateGradient())
+    #res = optimize(od,vec(transpose(u_init)))
     # Reshape final control amplitude matrix
-    uf = reshape(Optim.minimizer(res),m,n).'
+    uf = transpose(reshape(Optim.minimizer(res),m,n))
     return uf, Uf, res
 end
 
