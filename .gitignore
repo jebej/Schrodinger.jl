@@ -5,6 +5,6 @@
 /docs/build
 /docs/site
 /docs/localmake.jl
-/docs/makedocs.lnk
+/docs/make.cmd
 /docs/test.md
 /examples
