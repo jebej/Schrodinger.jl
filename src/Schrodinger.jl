@@ -18,6 +18,11 @@ export Operator, Ket, Bra,
     grape, NormPSU, CoherentSubspaces,
     expim, gaussian, inner
 
+# VERSION-conditional definitions
+if VERSION < v"0.7.0-"
+    include("basepatch/v0.6.jl")
+end
+
 include("quobj/types.jl")
 include("quobj/basicmethods.jl")
 include("math/basemath.jl")
@@ -44,10 +49,5 @@ include("library/states.jl")
 include("library/random.jl")
 include("library/drivefuns.jl")
 include("library/constants.jl")
-
-# VERSION-conditional definitions
-if VERSION < v"0.7.0-"
-    include("basepatch/v0.6.jl")
-end
 
 end
