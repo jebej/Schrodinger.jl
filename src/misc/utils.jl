@@ -1,5 +1,8 @@
-import Compat.LinearAlgebra: RealHermSymComplexHerm, BlasComplex, normalize
-import Base: BitSet, reverse
+import Compat.LinearAlgebra: RealHermSymComplexHerm, normalize
+import Base: reverse
+if VERSION > v"0.7.0-"
+    import Base: BitSet
+end
 
 convert(::Type{BitSet},r::IntCol) = BitSet(r)
 BitSet(elems::Vararg{Int}) = BitSet(elems)
@@ -46,18 +49,6 @@ function sqrtfact(n::Integer)
     else
         throw(ArgumentError("n must be larger than or equal to 0"))
     end
-end
-
-function rand_unitary(::Type{T},n::Integer) where {T<:BlasComplex}
-    # Generate a Haar distributed random unitary matrix
-    # ref https://arxiv.org/pdf/math-ph/0609050.pdf
-    A  = randn(T,n,n)
-    qr = qrfact!(A)
-    U  = full(qr[:Q])
-    @inbounds for i = 1:n
-        U[:,i] .*= sign(qr[:R][i,i]) # U = Q*Diagonal(diag(R)./abs.(diag(R)))
-    end
-    return U
 end
 
 normalize(z::Complex) = z == 0 ? one(z) : z/abs(z)

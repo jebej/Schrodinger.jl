@@ -14,3 +14,15 @@ true
 function rand_unitary(N::Integer, dims::Dims=(N,))
     return Operator(rand_unitary(ComplexF64,N),dims)
 end
+
+function rand_unitary(::Type{T},n::Integer) where {T<:Compat.LinearAlgebra.BlasComplex}
+    # Generate a Haar distributed random unitary matrix
+    # ref https://arxiv.org/pdf/math-ph/0609050.pdf
+    A = randn(T,n,n)
+    f = qrfact!(A)
+    U = Matrix(Compat.LinearAlgebra.QRCompactWYQ(f.factors,f.T))
+    @inbounds for i = 1:n
+        U[:,i] .*= sign(f.factors[i,i]) # U = Q*Diagonal(diag(R)./abs.(diag(R)))
+    end
+    return U
+end

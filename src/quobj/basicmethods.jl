@@ -1,6 +1,6 @@
 import Base: length, size, eltype, getindex, setindex!, similar, copy, hash,
     isequal, ==, convert, promote_rule, isapprox, show
-import Compat.LinearAlgebra: checksquare, diag, full, complex, norm, trace,
+import Compat.LinearAlgebra: checksquare, diag, complex, norm, trace,
     rank, normalize!, normalize, scale!, ishermitian, issymmetric, isdiag, triu, tril
 
 # Special QuObject methods
@@ -8,9 +8,9 @@ data(A::QuObject) = A.data
 dims(A::QuObject) = A.dims
 isnormalized(A::QuVector) = norm(A) ≈ 1
 isnormalized(A::QuMatrix) = trace(A) ≈ 1
-dense(x::Ket) = Ket(full(x.data),x.dims)
-dense(x::Bra) = Bra(full(x.data),x.dims)
-dense(A::Operator) = Operator(full(A.data),A.dims)
+dense(x::Ket) = Ket(Vector(x.data),x.dims)
+dense(x::Bra) = Bra(Vector(x.data),x.dims)
+dense(A::Operator) = Operator(Matrix(A.data),A.dims)
 dimsmatch(A::QuObject,B::QuObject) =
     A.dims==B.dims || throw(DimensionMismatch("subspace dimensions do not match"))
 
@@ -31,7 +31,7 @@ setindex!(A::QuObject,v,idx...) = setindex!(A.data,v,idx...)
 diag(A::QuMatrix,k::Int=0) = diag(A.data,k)
 triu(A::QuMatrix) = Operator(triu(A.data),A.dims)
 tril(A::QuMatrix) = Operator(tril(A.data),A.dims)
-full(A::QuObject) = full(A.data)
+full(A::QuObject) = Array(A.data)
 complex(x::Ket) = Ket(complex(x.data),x.dims)
 complex(x::Bra) = Bra(complex(x.data),x.dims)
 complex(A::Operator) = Operator(complex(A.data),A.dims)
@@ -86,16 +86,16 @@ end
 # Bra-ket printing
 function braket(ψ::QuVector, N::Int = 5)
     # N is the max number of kets/bras to show
-    idx = find(x->abs2(x)>2.5E-5,ψ.data) # keep amplitudes larger than 0.005
+    idx = findall(x->abs2(x)>2.5E-5,ψ.data) # keep amplitudes larger than 0.005
     isempty(idx) && return "0"
     perm = sortperm(ψ.data[idx], by=abs2, rev=true)
     idx = length(perm)>N ? idx[perm[1:N]] : idx[perm]
-    coeffs = map(full(ψ.data[idx])) do x
+    coeffs = map(Array(ψ.data[idx])) do x
         @sprintf("%.2f∠%d°", abs(x), rad2deg(angle(x)))
     end
-    labels = join.(tensored_ind2sub.((dims(ψ),), idx.-1), ',')
+    labels = join.(tensored_ind2sub.((dims(ψ),), idx.-1), ",")
     return prettybraket(ψ,coeffs,labels) * (length(perm)>N ? " +…" : "")
 end
 
-prettybraket(::Ket,coeffs,labels) = join(string.(coeffs,'|',labels,'⟩')," + ")
-prettybraket(::Bra,coeffs,labels) = join(string.(coeffs,'⟨',labels,'|')," + ")
+prettybraket(::Ket,coeffs,labels) = join(string.(coeffs,"|",labels,"⟩")," + ")
+prettybraket(::Bra,coeffs,labels) = join(string.(coeffs,"⟨",labels,"|")," + ")

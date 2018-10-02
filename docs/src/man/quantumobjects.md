@@ -220,7 +220,7 @@ Many other mathematical functions are available and work as expected:
  - `exp`, `sqrt`, `log`
  - trig functions are missing for now!
  - `real`, `imag`, `abs`, `abs2`
- - `ctranspose`, `conj`, `transpose`
+ - `adjoint`, `conj`, `transpose`
 
 ## Other Quantum Objects
 

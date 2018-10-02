@@ -1,8 +1,10 @@
 # Julia Base math definitions translation
 import Base: +, -, *, /, ^, real, imag, abs, abs2, round
 import Compat.LinearAlgebra: A_mul_Bc, Ac_mul_B, Ac_mul_Bc, A_mul_Bt, kron, dot,
-    vecdot, ctranspose, transpose, conj, BLAS.dotu, sqrtm, expm, logm
-
+    vecdot, transpose, conj, BLAS.dotu, sqrtm, expm, logm
+if VERSION > v"0.7.0-"
+    import LinearAlgebra: adjoint
+end
 # Additive identity and inverse
 +(A::T) where {T<:QuObject} = A
 -(A::T) where {T<:QuObject} = T(-A.data,A.dims)
@@ -87,9 +89,9 @@ kron(A::Operator,B::Operator) = Operator(kron(A.data,B.data),(A.dims...,B.dims..
 kron(x::T1,y::T2) where {T1<:QuObject,T2<:QuObject} = throw(ArgumentError("cannot tensor $(tname(T1)) with $(tname(T2))"))
 
 # Transposition and conjugation
-ctranspose(ψ::Ket) = Bra(ψ)
-ctranspose(ψ::Bra) = Ket(ψ)
-ctranspose(ρ::Operator) = Operator(ctranspose(ρ.data),ρ.dims)
+adjoint(ψ::Ket) = Bra(ψ)
+adjoint(ψ::Bra) = Ket(ψ)
+adjoint(ρ::Operator) = Operator(adjoint(ρ.data),ρ.dims)
 transpose(ρ::Operator) = Operator(transpose(ρ.data),ρ.dims)
 conj(A::T) where {T<:QuObject} = T(conj.(A.data),A.dims)
 
