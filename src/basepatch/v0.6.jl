@@ -5,6 +5,7 @@ export sincos
 const ComplexF64 = Complex128
 const ComplexF32 = Complex64
 const adjoint = ctranspose
+const qr! = qrfact!
 
 vec(x::RowVector) = x.vec
 
