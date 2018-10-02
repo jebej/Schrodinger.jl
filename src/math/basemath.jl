@@ -2,9 +2,7 @@
 import Base: +, -, *, /, ^, real, imag, abs, abs2, round
 import Compat.LinearAlgebra: A_mul_Bc, Ac_mul_B, Ac_mul_Bc, A_mul_Bt, kron, dot,
     vecdot, transpose, conj, BLAS.dotu, sqrtm, expm, logm
-if VERSION > v"0.7.0-"
-    import LinearAlgebra: adjoint
-end
+
 # Additive identity and inverse
 +(A::T) where {T<:QuObject} = A
 -(A::T) where {T<:QuObject} = T(-A.data,A.dims)
@@ -96,9 +94,9 @@ transpose(ρ::Operator) = Operator(transpose(ρ.data),ρ.dims)
 conj(A::T) where {T<:QuObject} = T(conj.(A.data),A.dims)
 
 # Math
-sqrtm(ρ::Operator) = Operator(sqrtm(full(ρ)),ρ.dims)
-expm(ρ::Operator) = Operator(expm(full(ρ)),ρ.dims)
-logm(ρ::Operator) = Operator(logm(full(ρ)),ρ.dims)
+sqrtm(ρ::Operator) = Operator(sqrtm(Matrix(ρ.data)),ρ.dims)
+expm(ρ::Operator) = Operator(expm(Matrix(ρ.data)),ρ.dims)
+logm(ρ::Operator) = Operator(logm(Matrix(ρ.data)),ρ.dims)
 # TODO: julia is missing trig functions on matrices, we can do them via diagonalization
 
 # Misc

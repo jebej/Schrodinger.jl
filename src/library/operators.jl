@@ -14,9 +14,9 @@ julia> qzero(4,(2,2))
 ```
 """
 function qzero(N::Integer, dims::Dims=(N,))
-    rowval = Vector{Int}(0)
+    rowval = Vector{Int}(undef,0)
     colptr = ones(Int,N+1)
-    nzval  = Vector{Float64}(0)
+    nzval  = Vector{Float64}(undef,0)
     return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),dims,true)
 end
 qzero(dims::Dims) = qzero(prod(dims),dims)
@@ -39,7 +39,7 @@ julia> qeye(4,(2,2))
 """
 function qeye(N::Integer, dims::Dims=(N,))
     rowval = collect(1:N)
-    colptr = Vector{Int}(N+1); colptr[1:N] = rowval; colptr[end] = N+1
+    colptr = Vector{Int}(undef,N+1); colptr[1:N] = rowval; colptr[end] = N+1
     nzval  = ones(N)
     return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),dims,true)
 end
@@ -62,7 +62,7 @@ julia> destroy(4)
 """
 function destroy(N::Integer)
     rowval = collect(1:N-1)
-    colptr = Vector{Int}(N+1); colptr[1] = 1; colptr[2:end] = 1:N
+    colptr = Vector{Int}(undef,N+1); colptr[1] = 1; colptr[2:end] = 1:N
     nzval  = [sqrt(i) for i in 1:N-1]
     return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,),false)
 end
@@ -84,7 +84,7 @@ julia> create(4)
 """
 function create(N::Integer)
     rowval = collect(2:N)
-    colptr = Vector{Int}(N+1); colptr[1:N] = 1:N; colptr[end] = N
+    colptr = Vector{Int}(undef,N+1); colptr[1:N] = 1:N; colptr[end] = N
     nzval  = [sqrt(i) for i in 1:N-1]
     return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,),false)
 end
@@ -107,7 +107,7 @@ julia> numberop(4)
 function numberop(N::Integer)
     # "nzval" includes a structural 0 for the [1,1] entry
     rowval = collect(1:N)
-    colptr = Vector{Int}(N+1); colptr[1:N] = rowval; colptr[end] = N+1
+    colptr = Vector{Int}(undef,N+1); colptr[1:N] = rowval; colptr[end] = N+1
     nzval  = [float(n) for n = 0:N-1]
     return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,),true)
 end
@@ -195,7 +195,7 @@ https://en.wikipedia.org/wiki/Generalizations_of_Pauli_matrices
 function sylvesterop(N::Integer,k::Integer,j::Integer)
     ωʲ = Complex(cospi(2j/N),sinpi(2j/N))
     rowval = [mod1(i+k,N) for i = 1:N]
-    colptr = Vector{Int}(N+1); colptr[1:N] = 1:N; colptr[end] = N+1
+    colptr = Vector{Int}(undef,N+1); colptr[1:N] = 1:N; colptr[end] = N+1
     nzval  = [ωʲ^m for m = 0:N-1]
     return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,),false)
 end
@@ -207,7 +207,7 @@ Generate the N-d shift matrix Σ₁.
 """
 function Sigma1(N)
     rowval = circshift(1:N,-1)
-    colptr = Vector{Int}(N+1); colptr[1:N] = 1:N; colptr[end] = N+1
+    colptr = Vector{Int}(undef,N+1); colptr[1:N] = 1:N; colptr[end] = N+1
     nzval  = ones(N)
     return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,),false)
 end
@@ -220,7 +220,7 @@ Generate the N-d clock matrix Σ₃.
 function Sigma3(N)
     ω = Complex(cospi(2/N),sinpi(2/N))
     rowval = collect(1:N)
-    colptr = Vector{Int}(N+1); colptr[1:N] = 1:N; colptr[end] = N+1
+    colptr = Vector{undef,Int}(N+1); colptr[1:N] = 1:N; colptr[end] = N+1
     nzval  = [ω^m for m = 0:N-1]
     return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,),false)
 end

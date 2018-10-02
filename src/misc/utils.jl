@@ -1,8 +1,5 @@
 import Compat.LinearAlgebra: RealHermSymComplexHerm, normalize
 import Base: reverse
-if VERSION > v"0.7.0-"
-    import Base: BitSet
-end
 
 convert(::Type{BitSet},r::IntCol) = BitSet(r)
 BitSet(elems::Vararg{Int}) = BitSet(elems)

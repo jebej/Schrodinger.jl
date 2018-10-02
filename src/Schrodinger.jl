@@ -21,6 +21,11 @@ export Operator, Ket, Bra,
 # VERSION-conditional definitions
 if VERSION < v"0.7.0-"
     include("basepatch/v0.6.jl")
+elseif VERSION > v"0.7.0-"
+    import Base: BitSet
+    import LinearAlgebra: adjoint
+    export full
+    const expm = exp
 end
 
 include("quobj/types.jl")
