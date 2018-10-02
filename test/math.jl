@@ -1,5 +1,7 @@
 # QuObj Tests
-using Base.Test, Schrodinger
+using Schrodinger
+using Schrodinger: ComplexF64
+using Compat.Test, Compat.LinearAlgebra, Compat.SparseArrays
 
 @testset "QuObj Basic Math" begin
 # Build a few different variable for testing
