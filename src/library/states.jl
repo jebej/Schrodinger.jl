@@ -139,7 +139,7 @@ function maxentangled(n::Int,N::Int=2)
     c = div(N^n-1,N-1)
     nzind = [1+m*c for m=0:N-1]
     nzval = fill(1/sqrt(N),N)
-    return Ket(SparseVector(N^n,nzind,nzval),ntuple(_->N,Val{n}))
+    return Ket(SparseVector(N^n,nzind,nzval),ntuple(_->N,Val(n)))
 end
 
 

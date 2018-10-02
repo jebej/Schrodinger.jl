@@ -51,9 +51,9 @@ A system index, or vector of indices, can be passed as a second argument. In tha
 A specialized method exists for vector of `Ket` or `Operator` inputs.
 """
 levelprobs(ψ::Ket{T,N}) where {T,N} = abs2(ψ)
-levelprobs(ψ::Ket{T,N},s::Integer) where {T,N} = real(diag(ptrace(ψ,ntuple_sans_m(s,Val{N}))))
+levelprobs(ψ::Ket{T,N},s::Integer) where {T,N} = real(diag(ptrace(ψ,ntuple_sans_m(s,Val(N)))))
 levelprobs(ρ::Operator{T,N}) where {T,N} = real(diag(ρ))
-levelprobs(ρ::Operator{T,N},s::Integer) where {T,N} = real(diag(ptrace(ρ,ntuple_sans_m(s,Val{N}))))
+levelprobs(ρ::Operator{T,N},s::Integer) where {T,N} = real(diag(ptrace(ρ,ntuple_sans_m(s,Val(N)))))
 levelprobs(ψ::QuObject,S::AbstractVector) = map(s->levelprobs(ψ,s),S)
 
 # Faster levelprobs methods when passing in many inputs

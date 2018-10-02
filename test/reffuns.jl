@@ -27,7 +27,7 @@ function ptrace_ref{no,ns}(x::Vector, out::NTuple{no,Int}, sysdims::NTuple{ns,In
         out[i]>ns && throw(ArgumentError("subsystem index $(out[i]) larger than number of subsystems"))
     end
     # First, calculate systems, dimensions, etc.
-    keep = sorted_setdiff(ntuple(identity,Val{ns}),out) # Subsystems to keep
+    keep = sorted_setdiff(ntuple(identity,Val(ns)),out) # Subsystems to keep
     rsysdims = revtuple(sysdims) # Dimensions of subsystems in reverse order
     keepdims = gettuple(sysdims,keep) # Dimensions of subsystems to keep
     outdims  = gettuple(sysdims,out) # Dimensions of subsystems to trace out
