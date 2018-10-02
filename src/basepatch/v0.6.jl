@@ -1,11 +1,10 @@
-import Base: kron, promote_rule, randn, vec, vecdot
+import Base: kron, promote_rule, randn, vec, vecdot, IntSet, LinAlg.ctranspose, full
 
 export sincos
 
 const ComplexF64 = Complex128
 const ComplexF32 = Complex64
-
-const BitSet = IntSet
+const adjoint = ctranspose
 
 vec(x::RowVector) = x.vec
 
