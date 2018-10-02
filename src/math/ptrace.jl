@@ -57,7 +57,7 @@ function ptrace(A::AbstractArray{T}, out::NTuple{no,Int}, sysdims::NTuple{ns,Int
         out[i]>ns && throw(ArgumentError("subsystem index $(out[i]) larger than number of subsystems"))
     end
     # Calculate dimensions
-    keep  = sorted_setdiff(ntuple(identity,Val{ns}),out)
+    keep  = sorted_setdiff(ntuple(identity,Val(ns)),out)
     keepdims = gettuple(sysdims,keep)
     outdims  = gettuple(sysdims,out)
     # Generate iterators to loop over subscripts
