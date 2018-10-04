@@ -24,24 +24,24 @@ SchrodingerEvo(::Any) = throw(ArgumentError("invalid Hamiltonian specification")
 # Lindblad form master equation
 function LindbladEvo(H₀::Operator, Cₘ::Tuple{Vararg{Operator}})
     for Cᵢ in Cₘ; dimsmatch(H₀,Cᵢ); end
-    I = data(qeye(dims(H₀)))
+    Id = data(qeye(dims(H₀)))
     # Constant Hamiltonian term
-    L₀ = -1im*(I⊗data(H₀) - transpose(data(H₀))⊗I)
+    L₀ = -1im*(Id⊗data(H₀) - transpose(data(H₀))⊗Id)
     # Add constant collapse operator terms
-    L₀ += sum_collapse(Cₘ,I,1)
+    L₀ += sum_collapse(Cₘ,Id,1)
     return Liouvillian(dims(H₀),L₀)
 end
 function LindbladEvo(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, Cₘ::Tuple{Vararg{Operator}})
     for Hᵢ in Hₙ; dimsmatch(H₀,first(Hᵢ)); end
     for Cᵢ in Cₘ; dimsmatch(H₀,Cᵢ); end
-    I = data(qeye(dims(H₀)))
+    Id = data(qeye(dims(H₀)))
     # Constant Hamiltonian term
-    L₀ = -1im*(I⊗data(H₀) - transpose(data(H₀))⊗I)
+    L₀ = -1im*(Id⊗data(H₀) - transpose(data(H₀))⊗Id)
     # Add constant collapse operator terms
-    L₀ += sum_collapse(Cₘ,I,1)
+    L₀ += sum_collapse(Cₘ,Id,1)
     # Time-dependent Hamiltonian terms
     Lₙ,fₙ,pₙ = unpack_operators(-1im,data,Hₙ)
-    return Liouvillian(dims(H₀),L₀,@.((I,)⊗Lₙ-transpose(Lₙ)⊗(I,)),fₙ,pₙ)
+    return Liouvillian(dims(H₀),L₀,@.((Id,)⊗Lₙ-transpose(Lₙ)⊗(Id,)),fₙ,pₙ)
 end
 LindbladEvo(H₀::Operator,Cₘ::Vararg{Operator}) = LindbladEvo(H₀,Cₘ)
 LindbladEvo(H::Tuple{Operator,Vararg{Tuple}},Cₘ::Vararg{Operator}) = LindbladEvo(first(H),tail(H),Cₘ)
@@ -65,7 +65,7 @@ function SchrodingerProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, tspan, step
     # Unpack constant and time dep operators
     H0, Hn = full(H₀), unpack_operators(1,full,Hₙ)
     # Multiply sampled propagators together to generate total evolution
-    U = eye(Complex{F},size(H0)...)
+    U = Matrix{Complex{F}}(I, size(H0))
     H = Hermitian(zeros(compute_H_type(H0,Hn),size(H0)...))
     A = similar(U); B = similar(U); C = similar(H.data); D = similar(U)
     Λ = Vector{F}(undef,size(H,1))
@@ -85,12 +85,12 @@ LindbladProp(H₀::Operator, Cₘ::Operator, tspan) = LindbladProp(H₀,(Cₘ,),
 LindbladProp(H₀::Operator, Cₘ::Tuple{Vararg{Operator}}, tspan) = LindbladProp(H₀,Cₘ,tspan[2]-tspan[1])
 function LindbladProp(H₀::Operator, Cₘ::Tuple{Vararg{Operator}}, Δt::Real)
     for Cᵢ in Cₘ; dimsmatch(H₀,Cᵢ); end
-    F = real(eltype(H₀))
-    I = eye(F,prod(dims(H₀)))
+    F = real(eltype(H₀)); d = prod(dims(H₀))
+    Id = Matrix{F}(I, d, d)
     # Constant Hamiltonian term
-    L₀Δt = -1im*Δt.*(I⊗full(H₀) .- transpose(full(H₀))⊗I)
+    L₀Δt = -1im*Δt.*(Id⊗full(H₀) .- transpose(full(H₀))⊗Id)
     # Add constant collapse operator terms
-    L₀Δt .+= sum_collapse(Cₘ,I,Δt)
+    L₀Δt .+= sum_collapse(Cₘ,Id,Δt)
     # Build constant propagator
     U = Compat.LinearAlgebra.expm!(L₀Δt)
     return Propagator(U,Δt,dims(H₀))
@@ -101,16 +101,16 @@ LindbladProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, Cₘ::Operator, tspan, 
 function LindbladProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, Cₘ::Tuple{Vararg{Operator}}, tspan, steps::Integer)
     for Hᵢ in Hₙ; dimsmatch(H₀,first(Hᵢ)); end
     for Cᵢ in Cₘ; dimsmatch(H₀,Cᵢ); end
-    F = real(eltype(H₀))
-    I = eye(F,prod(dims(H₀)))
+    F = real(eltype(H₀)); d = prod(dims(H₀))
+    Id = Matrix{F}(I, d, d)
     # Sampling times and spacing dt
     t₁, t₂ = tspan; dt = (t₂-t₁)/steps
     # Unpack constant and time dep operators
     H0, Hn = full(H₀), unpack_operators(1,full,Hₙ)
     # Build constant collapse propagator part
-    U₀ = Compat.LinearAlgebra.expm!(sum_collapse(Cₘ,I,dt))
+    U₀ = Compat.LinearAlgebra.expm!(sum_collapse(Cₘ,Id,dt))
     # Multiply sampled propagators together to generate total evolution
-    U = eye(Complex{F},size(U₀)...)
+    U = Matrix{Complex{F}}(I, size(U₀))
     H = Hermitian(zeros(compute_H_type(H0,Hn),size(H0)...))
     A = Matrix{Complex{F}}(undef,size(H0)...); B = similar(U); C = similar(H.data); D = similar(A)
     Λ = Vector{F}(undef,size(H,1))
@@ -119,7 +119,7 @@ function LindbladProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, Cₘ::Tuple{Va
         expim!(A,H,Λ,C,D) # A = exp(-1im*H*dt)
         invA = Compat.LinearAlgebra.inv!(lufact(A))
         mul!(B,U₀,U) # use the Lie product formula here for better results
-        At_mul_B!(U,invA⊗I,B)
+        At_mul_B!(U,invA⊗Id,B)
         I_kron_mul!(B,A,U)
         U,B = B,U # swappitty swap for the next step
     end
@@ -139,10 +139,10 @@ function unpack_operators(x::Number,f::Function,t::Tuple{Tuple{Operator,Function
 end
 unpack_operators(x::Number,f::Function,t::Tuple{}) = (), (), ()
 
-function sum_collapse(Cₘ,I,dt)
+function sum_collapse(Cₘ,Id,dt)
     mapreduce(+,Cₘ) do Cᵢ
         C = full(Cᵢ); CdC = C'*C
-        dt*(conj(C)⊗C - 0.5*(I⊗CdC + transpose(CdC)⊗I))
+        dt*(conj(C)⊗C - 0.5*(Id⊗CdC + transpose(CdC)⊗Id))
     end
 end
 

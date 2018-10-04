@@ -14,7 +14,7 @@ coherentα = coherent(N,α)
 coherentαhalf = coherent(N,0.5α)
 numop = numberop(N)
 
-const N! = normalize!
+N! = normalize!
 
 @testset "Expectation Value" begin
     # Test calculation of expectation valu
