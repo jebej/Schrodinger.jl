@@ -4,9 +4,9 @@ function A_mul_Bf(x::SparseVector{Tv,Ti},y::SparseVector{Tv,Ti},f::Function) whe
     nnzx = nnz(x)
     nnzy = nnz(y)
     nnzz = nnzx*nnzy # number of nonzeros in new matrix
-    I = Vector{Ti}(nnzz) # the indices of nonzeros
-    J = Vector{Ti}(nnzz) # the indices of nonzeros
-    V  = Vector{Tv}(nnzz) # the values of nonzeros
+    I = Vector{Ti}(undef,nnzz) # the indices of nonzeros
+    J = Vector{Ti}(undef,nnzz) # the indices of nonzeros
+    V  = Vector{Tv}(undef,nnzz) # the values of nonzeros
     @inbounds for i = 1:nnzx, j = 1:nnzy
         this_ind = (i-1)*nnzy+j
         I[this_ind] = x.nzind[i]
@@ -19,7 +19,7 @@ A_mul_Bt(x::SparseVector{Tv,Ti},y::SparseVector{Tv,Ti}) where {Tv,Ti} = A_mul_Bf
 A_mul_Bc(x::SparseVector{Tv,Ti},y::SparseVector{Tv,Ti}) where {Tv,Ti} = A_mul_Bf(x,y,conj)
 
 function dotu(x::AbstractSparseVector{Tx}, y::AbstractSparseVector{Ty}) where {Tx<:Number,Ty<:Number}
-    x === y && return sumabs2(x)
+    x === y && return sum(abs2,x)
     n = length(x)
     length(y) == n || throw(DimensionMismatch())
     xnzind = nonzeroinds(x)

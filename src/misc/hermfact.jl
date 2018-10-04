@@ -1,10 +1,6 @@
-@static if VERSION < v"0.7.0-"
-    using Base.LinAlg: chkstride1, checksquare, LAPACK.chklapackerror,
-        BlasInt, BLAS.@blasfunc
-else
-    using LinearAlgebra: chkstride1, checksquare, LAPACK.chklapackerror,
-        BlasInt, BLAS.@blasfunc
-end
+using Compat.LinearAlgebra: chkstride1, checksquare, LAPACK.chklapackerror,
+    BlasInt, BLAS.@blasfunc
+
 const liblapack = Base.liblapack_name
 
 hermfact!(w::Vector,Z::Matrix,H::Hermitian) = syevr!(w,Z,H.uplo,H.data,0.0,0.0,0,0,-1.0)

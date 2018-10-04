@@ -68,7 +68,7 @@ function gradient!(O::NormPSU,fp,u)
         O.cisDj .= cis.(O.D[j])
         for k = 1:m
             Jmat!(O.Jkj,O.Hc[k],O.cisDj,O.D[j],O.V[j],O.δt,O.A)
-            j==1 ? copy!(O.A,O.Jkj) : A_mul_B!(O.A,O.Jkj,O.X[j-1])
+            j==1 ? copy!(O.A,O.Jkj) : mul!(O.A,O.Jkj,O.X[j-1])
             fp[(k-1)*n+j] = -real(inner(O.P[j],O.A)*a)/N
         end
     end

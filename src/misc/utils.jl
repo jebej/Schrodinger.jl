@@ -9,7 +9,7 @@ reverse(n::Number) = n
 tname(T::Type) = T.name.name
 
 function randomsmooth(n::Integer,m::Integer)
-    R = Matrix{Float64}(n,m)
+    R = Matrix{Float64}(undef,n,m)
     for i = 1:m
         R[:,i] = randomsmooth(n)
     end
@@ -42,7 +42,7 @@ function sqrtfact(n::Integer)
     if 0 <= n < 128
         return sqrtfact_table[n+1]
     elseif n >= 128 # Stirling series for values not stored in the table
-        return sqrt(sqrt(2π*n)*(n/e)^n*(1.0+1/12n+1/288n^2))
+        return sqrt(sqrt(2π*n)*(n/ℯ)^n*(1.0+1/12n+1/288n^2))
     else
         throw(ArgumentError("n must be larger than or equal to 0"))
     end

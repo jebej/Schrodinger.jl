@@ -1,6 +1,6 @@
 const ManyMatrices = Union{Vector{<:AbstractMatrix},Tuple{Vararg{AbstractMatrix}}}
 
-@inline inner(A,B) = vecdot(A,B)
+@inline inner(A,B) = dot(A,B)
 
 inner(A::Tuple{Vararg{Operator}},B::Operator) = inner_cs(data.(A),data(B))
 

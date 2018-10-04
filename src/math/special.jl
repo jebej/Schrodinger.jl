@@ -18,9 +18,9 @@ expect(σ::Operator,ρ::Operator) = (dimsmatch(σ,ρ); trace(data(σ)*data(ρ)))
 # Faster expectation value methods when passing in many inputs
 function expect!(res,σ::Operator,states::Vector{Ket{T,D}}) where {T,D}
     dimsmatch(σ,states[1])
-    tmp = Vector{ComplexF64}(prod(dims(σ)))
+    tmp = Vector{ComplexF64}(undef,prod(dims(σ)))
     for (i,ψ) in enumerate(states)
-        A_mul_B!(tmp,data(σ),data(ψ))
+        mul!(tmp,data(σ),data(ψ))
         res[i] = dot(data(ψ),tmp)
     end
     return res
@@ -29,11 +29,11 @@ end
 function expect!(res,σ::Operator,states::Vector{Operator{T,D}}) where {T,D}
     dimsmatch(σ,states[1])
     superσ = super(data(σ))
-    tmp = Vector{ComplexF64}(prod(dims(σ))^2)
+    tmp = Vector{ComplexF64}(undef,prod(dims(σ))^2)
     N = length(tmp); sqrtNp1 = isqrt(N)+1
     fill!(res, zero(eltype(tmp)))
     for (i,ρ) in enumerate(states)
-        A_mul_B!(tmp,superσ,vec(data(ρ)))
+        mul!(tmp,superσ,vec(data(ρ)))
         for n = 1:sqrtNp1:N
             res[i] += tmp[n]
         end
@@ -62,7 +62,7 @@ function levelprobs(states::Vector{Ket{T,M}},S::Union{Integer,AbstractVector}) w
     D = dims(states[1])
     probs = map(S) do s
         s > M && throw(ArgumentError("System index $s is larger than the number of systems, $M."))
-        P = Matrix{Float64}(D[s],N)
+        P = Matrix{Float64}(undef,D[s],N)
         for n = 1:N
             P[:,n] = levelprobs(states[n],s)
         end
@@ -73,7 +73,7 @@ end
 
 function levelprobs(states::Vector{Ket{T,M}}) where {T,M}
     N = length(states)
-    P = Matrix{Float64}(prod(dims(states[1])),N)
+    P = Matrix{Float64}(undef,prod(dims(states[1])),N)
     for n = 1:N
         P[:,n] = levelprobs(states[n])
     end

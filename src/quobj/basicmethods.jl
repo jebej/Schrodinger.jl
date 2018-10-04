@@ -1,7 +1,7 @@
 import Base: length, size, eltype, getindex, setindex!, similar, copy, hash,
-    isequal, ==, convert, promote_rule, isapprox, show
-import Compat.LinearAlgebra: checksquare, diag, complex, norm, trace,
-    rank, normalize!, normalize, scale!, ishermitian, issymmetric, isdiag, triu, tril
+    isequal, ==, convert, promote_rule, isapprox, show, full
+import Compat.LinearAlgebra: checksquare, diag, complex, norm, rank,
+    normalize!, normalize, scale!, ishermitian, issymmetric, isdiag, triu, tril
 
 # Special QuObject methods
 data(A::QuObject) = A.data

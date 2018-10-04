@@ -9,7 +9,7 @@ function I_kron_A(d::Int, A::AbstractMatrix{T}) where {T}
     return B
 end
 
-function I_kron_A_mul_B!(C,A,B)
+function I_kron_mul!(C,A,B)
     n = checksquare(A)
     n^2 == checksquare(B) == checksquare(C) || throw(DimensionMismatch("invalid dimensions"))
     for j = 1:n
@@ -18,7 +18,7 @@ function I_kron_A_mul_B!(C,A,B)
             ii = (i-1)*n+1 : (i-1)*n+n
             Cij = view(C,ii,jj)
             Bij = view(B,ii,jj)
-            A_mul_B!(Cij,A,Bij)
+            mul!(Cij,A,Bij)
         end
     end
     return C

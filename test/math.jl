@@ -56,14 +56,12 @@ plus = normalize!(g+1.0im*basis(2,1))
     @test_throws ArgumentError 2/e1
     @test_throws ArgumentError 2/(g')
     @test_throws ArgumentError 2/(e1')
-    @test_broken (x=(g/0);isnan(x[2])&&isinf(x[1])) # see julia PR #22715
+    if VERSION > v"0.7.0-"
+        @test (x=(g/0);isnan(x[2])&&isinf(x[1])) # see julia PR #22715
+    end
     @test (x=(e1/0);isnan(x[1])&&isinf(x[2]))
     @test ρ/2 == qeye(4)/8
-    if VERSION>=v"0.6.0"
-        @test (x=ρ/0;isnan(x[2,1])&&isinf(x[1,1]))
-    else
-        @test_broken (x=ρ/0;isnan(x[2,1])&&isinf(x[1,1])) # remove once 0.5 is dropped
-    end
+    @test (x=ρ/0;isnan(x[2,1])&&isinf(x[1,1]))
     @test (x=σ/0;isnan(x[1,1])&&isinf(x[2,1]))
     @test_throws ArgumentError 3/ρ
     @test_throws ArgumentError 3/σ
@@ -71,7 +69,11 @@ plus = normalize!(g+1.0im*basis(2,1))
     @test_throws ArgumentError plus^3.3
     @test ρ^3 == 0.015625*qeye(4)
     @test σx^2 == σy^2 == σz^2 == σ0
-    @test_throws MethodError data(ρ^2.5) == data(ρ)^2.5
+    if VERSION < v"0.7.0-"
+        @test_throws MethodError data(ρ^2.5)
+    else
+        @test data(ρ^2.5) == data(ρ)^2.5
+    end
     @test data(dense(ρ)^2.5) == full(ρ)^2.5
     @test (σ^2)[4,2] == √(2)*√(3)
     @test_broken data(σ^2.5) == data(σ)^2.5

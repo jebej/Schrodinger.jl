@@ -68,11 +68,11 @@ function SchrodingerProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, tspan, step
     U = eye(Complex{F},size(H0)...)
     H = Hermitian(zeros(compute_H_type(H0,Hn),size(H0)...))
     A = similar(U); B = similar(U); C = similar(H.data); D = similar(U)
-    Λ = Vector{F}(size(H,1))
+    Λ = Vector{F}(undef,size(H,1))
     for i = 1:steps
         step_hamiltonian!(H.data,H0,Hn,(t₁,dt,i)) # calc H for this time step
         expim!(A,H,Λ,C,D) # A = exp(-1im*H*dt)
-        A_mul_B!(B,A,U) # U = A*U
+        mul!(B,A,U) # U = A*U
         U,B = B,U # swappitty swap for the next step
     end
     return Propagator(U,float(t₂-t₁),dims(H₀))
@@ -92,7 +92,7 @@ function LindbladProp(H₀::Operator, Cₘ::Tuple{Vararg{Operator}}, Δt::Real)
     # Add constant collapse operator terms
     L₀Δt .+= sum_collapse(Cₘ,I,Δt)
     # Build constant propagator
-    U = LinAlg.expm!(L₀Δt)
+    U = Compat.LinearAlgebra.expm!(L₀Δt)
     return Propagator(U,Δt,dims(H₀))
 end
 LindbladProp(H₀::Operator, Hₙ::Tuple, Cₘ::Operator, tspan, steps::Integer) = LindbladProp(H₀,(Hₙ,),(Cₘ,),tspan,steps)
@@ -108,19 +108,19 @@ function LindbladProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, Cₘ::Tuple{Va
     # Unpack constant and time dep operators
     H0, Hn = full(H₀), unpack_operators(1,full,Hₙ)
     # Build constant collapse propagator part
-    U₀ = LinAlg.expm!(sum_collapse(Cₘ,I,dt))
+    U₀ = Compat.LinearAlgebra.expm!(sum_collapse(Cₘ,I,dt))
     # Multiply sampled propagators together to generate total evolution
     U = eye(Complex{F},size(U₀)...)
     H = Hermitian(zeros(compute_H_type(H0,Hn),size(H0)...))
-    A = Matrix{Complex{F}}(size(H0)...); B = similar(U); C = similar(H.data); D = similar(A)
-    Λ = Vector{F}(size(H,1))
+    A = Matrix{Complex{F}}(undef,size(H0)...); B = similar(U); C = similar(H.data); D = similar(A)
+    Λ = Vector{F}(undef,size(H,1))
     for i = 1:steps
         step_hamiltonian!(H.data,H0,Hn,(t₁,dt,i))
         expim!(A,H,Λ,C,D) # A = exp(-1im*H*dt)
-        invA = LinAlg.inv!(lufact(A))
-        A_mul_B!(B,U₀,U) # use the Lie product formula here for better results
+        invA = Compat.LinearAlgebra.inv!(lufact(A))
+        mul!(B,U₀,U) # use the Lie product formula here for better results
         At_mul_B!(U,invA⊗I,B)
-        I_kron_A_mul_B!(B,A,U)
+        I_kron_mul!(B,A,U)
         U,B = B,U # swappitty swap for the next step
     end
     return Propagator(U,float(t₂-t₁),dims(H₀))

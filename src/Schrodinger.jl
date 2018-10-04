@@ -1,6 +1,6 @@
 module Schrodinger
 using Compat
-using Compat.LinearAlgebra, Compat.SparseArrays, Compat.Printf
+using Compat.LinearAlgebra, Compat.SparseArrays, Compat.Statistics, Compat.Printf
 using Base: tail, front, product, promote_eltype
 using OrdinaryDiffEq, Optim
 
@@ -19,13 +19,17 @@ export Operator, Ket, Bra,
     expim, gaussian, inner
 
 # VERSION-conditional definitions
+if VERSION < v"1.1.0-"
+    include("basepatch/v1.0.jl")
+end
 if VERSION < v"0.7.0-"
     include("basepatch/v0.6.jl")
-elseif VERSION > v"0.7.0-"
+end
+if VERSION > v"0.7.0-"
     import Base: BitSet
-    import LinearAlgebra: adjoint
-    export full
-    const expm = exp
+    import LinearAlgebra: adjoint, exp, expm, tr
+    trace(A::AbstractMatrix) = tr(A)
+    expm(A::AbstractMatrix) = exp(A)
 end
 
 include("quobj/types.jl")
