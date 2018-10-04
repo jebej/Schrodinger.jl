@@ -19,7 +19,7 @@ function ptrace_ref(A::Matrix, out, sysdims::NTuple)
     return squeeze(sum(C[:,:,1:dimstrace+1:dimstrace^2],3),3), sysdims[keep]
 end
 
-function ptrace_ref{no,ns}(x::Vector, out::NTuple{no,Int}, sysdims::NTuple{ns,Int})
+function ptrace_ref(x::Vector, out::NTuple{no,Int}, sysdims::NTuple{ns,Int}) where {no,ns}
     # Make sure the input arguments make sense
     issorted(out) || throw(ArgumentError("subsystem indices $out must be sorted"))
     no>ns && throw(ArgumentError("more subsystem indices ($no) than number of subsystems ($ns)"))

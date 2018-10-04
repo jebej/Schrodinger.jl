@@ -39,8 +39,8 @@ end
     @test (A=maxmixed(4); diag(A) == fill(0.25,4) && isdiag(A))
     @test (A=thermal(10,0.45); diag(A)[1:2] ≈ [6.89660888E-1,2.14032689E-1] && isdiag(A))
     @test data(qzero(6,(2,3))) == zeros(6,6)
-    @test data(qeye(6,(2,3))) == eye(6)
-    @test data(qeye(6,(2,3))) == eye(6)
+    @test data(qeye(6,(2,3))) == Matrix{Float64}(I, 6, 6)
+    @test data(qeye(6,(2,3))) == Matrix{Float64}(I, 6, 6)
     @test diag(create(6),-1) == [sqrt(n) for n = 1:5]
     @test destroy(6) == create(6)'
     @test (A=numberop(6); diag(A) == [n for n = 0:5] && isdiag(A))

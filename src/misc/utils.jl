@@ -66,7 +66,7 @@ end
 expim(H::RealHermSymComplexHerm) = expim!(Matrix{complex(eltype(H))}(H),copy(H))
 expim!(H::RealHermSymComplexHerm) = expim!(Matrix{complex(eltype(H))}(H),H)
 
-function expim!(R::Matrix,H::RealHermSymComplexHerm,Λ=Vector{real(eltype(R))}(size(H,1)),U=Matrix(H),B=similar(R))
+function expim!(R::Matrix,H::RealHermSymComplexHerm,Λ=Vector{real(eltype(R))}(undef,size(H,1)),U=Matrix(H),B=similar(R))
     # First decompose H into U*Λ*Uᴴ
     #F = eigfact!(H); copy!(Λ,F.values); copy!(U,F.vectors)
     hermfact!(Λ,U,H)
