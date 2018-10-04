@@ -61,7 +61,7 @@ TWOQUBIT = Ket.(N!.(Vector{ComplexF64}[
     @test fidelity(coherentα,basis(N,3)) ≈ abs(coherentα[4])
     @test fidelity(Operator(coherentα),basis(N,3)) ≈ abs(coherentα[4])
     @test fidelity(basis(N,3),Operator(coherentαhalf)) ≈ abs(coherentαhalf[4])
-    @test fidelity(Operator(coherentα),Operator(basis(N,3))) ≈ abs(coherentα[4])
+    @test fidelity(Operator(coherentα),Operator(basis(N,3))) ≈ abs(coherentα[4]) rtol=1E-7
     @test fidelity(Operator(basis(N,2)),Operator(coherent(N,1))) ≈ abs(coherent(N,1)[3])
     # fidelity2
     @test fidelity2(g,g) == 1

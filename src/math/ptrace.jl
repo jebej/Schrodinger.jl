@@ -63,7 +63,7 @@ function ptrace(A::AbstractArray{T}, out::NTuple{no,Int}, sysdims::NTuple{ns,Int
     # Generate iterators to loop over subscripts
     R, S = tensored_iterator(keepdims), tensored_iterator(outdims)
     # Initialize vectors for indexing purpose & output matrix
-    subs_ii = Vector{Int}(ns); subs_jj = Vector{Int}(ns)
+    subs_ii = Vector{Int}(undef,ns); subs_jj = Vector{Int}(undef,ns)
     B = zeros(T,prod(keepdims),prod(keepdims))
     # Main loop
     @inbounds for r in R, q in R

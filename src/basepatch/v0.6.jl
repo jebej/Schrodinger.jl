@@ -1,5 +1,5 @@
-import Base: kron, promote_rule, randn, vec, vecdot, IntSet, LinAlg.ctranspose, full
-
+import Base: kron, promote_rule, randn, vec, dot, vecdot, IntSet
+import Base.LinAlg: trace, ctranspose
 export sincos
 
 const ComplexF64 = Complex128
@@ -7,15 +7,13 @@ const ComplexF32 = Complex64
 const adjoint = ctranspose
 const qr! = qrfact!
 
+mul!(C::AbstractVecOrMat,A::AbstractVecOrMat,B::AbstractVecOrMat) = A_mul_B!(C,A,B)
+mul!(C::AbstractVecOrMat,A::AbstractSparseArray,B::AbstractVecOrMat,a::Number,b::Number) = A_mul_B!(a,A,B,b,C)
+dot(A::AbstractMatrix,B::AbstractMatrix) = vecdot(A,B)
+
 vec(x::RowVector) = x.vec
 
 sincos(x::Number) = (sin(x),cos(x))
-
-promote_rule(::Type{SparseMatrixCSC{T1,S1}},::Type{SparseMatrixCSC{T2,S2}}) where {T1,T2,S1,S2} = SparseMatrixCSC{promote_type(T1,T2),promote_type(S1,S2)}
-promote_rule(::Type{SparseMatrixCSC{T1,S1}},::Type{<:AbstractMatrix{T2}}) where {T1,S1,T2} = Matrix{promote_type(T1,T2)}
-promote_rule(::Type{<:AbstractMatrix{T1}},::Type{SparseMatrixCSC{T2,S2}}) where {T1,T2,S2} = Matrix{promote_type(T1,T2)}
-
-promote_rule(::Type{SparseVector{T1,S1}},::Type{SparseVector{T2,S2}}) where {T1,T2,S1,S2} = SparseVector{promote_type(T1,T2),promote_type(S1,S2)}
 
 Base.@irrational SQRT_HALF 0.70710678118654752  sqrt(big(0.5))
 

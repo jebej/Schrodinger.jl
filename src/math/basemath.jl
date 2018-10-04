@@ -1,27 +1,27 @@
 # Julia Base math definitions translation
 import Base: +, -, *, /, ^, real, imag, abs, abs2, round
 import Compat.LinearAlgebra: A_mul_Bc, Ac_mul_B, Ac_mul_Bc, A_mul_Bt, kron, dot,
-    vecdot, transpose, conj, BLAS.dotu, sqrtm, expm, logm
+    transpose, conj, BLAS.dotu, sqrtm, expm, logm
 
 # Additive identity and inverse
 +(A::T) where {T<:QuObject} = A
 -(A::T) where {T<:QuObject} = T(-A.data,A.dims)
 
 # QuVector / Number algebra
-+(x::Ket,b::Number) = Ket(x.data+b,x.dims)
-+(b::Number,x::Ket) = Ket(x.data+b,x.dims)
--(x::Ket,b::Number) = Ket(x.data-b,x.dims)
--(b::Number,x::Ket) = Ket(b-x.data,x.dims)
-*(x::Ket,b::Number) = Ket(x.data*b,x.dims)
-*(b::Number,x::Ket) = Ket(x.data*b,x.dims)
-/(x::Ket,b::Number) = Ket(x.data/b,x.dims)
-+(x::Bra,b::Number) = Bra(x.data+b,x.dims)
-+(b::Number,x::Bra) = Bra(x.data+b,x.dims)
--(x::Bra,b::Number) = Bra(x.data-b,x.dims)
--(b::Number,x::Bra) = Bra(b-x.data,x.dims)
-*(x::Bra,b::Number) = Bra(x.data*b,x.dims)
-*(b::Number,x::Bra) = Bra(x.data*b,x.dims)
-/(x::Bra,b::Number) = Bra(x.data/b,x.dims)
++(x::Ket,b::Number) = Ket(x.data.+b,x.dims)
++(b::Number,x::Ket) = Ket(x.data.+b,x.dims)
+-(x::Ket,b::Number) = Ket(x.data.-b,x.dims)
+-(b::Number,x::Ket) = Ket(b.-x.data,x.dims)
+*(x::Ket,b::Number) = Ket(x.data.*b,x.dims)
+*(b::Number,x::Ket) = Ket(x.data.*b,x.dims)
+/(x::Ket,b::Number) = Ket(x.data./b,x.dims)
++(x::Bra,b::Number) = Bra(x.data.+b,x.dims)
++(b::Number,x::Bra) = Bra(x.data.+b,x.dims)
+-(x::Bra,b::Number) = Bra(x.data.-b,x.dims)
+-(b::Number,x::Bra) = Bra(b.-x.data,x.dims)
+*(x::Bra,b::Number) = Bra(x.data.*b,x.dims)
+*(b::Number,x::Bra) = Bra(x.data.*b,x.dims)
+/(x::Bra,b::Number) = Bra(x.data./b,x.dims)
 ^(x::T,b::Number) where {T<:QuVector} = throw(ArgumentError("cannot exponentiate $(tname(T))"))
 ^(x::T,b::Integer) where {T<:QuVector} = throw(ArgumentError("cannot exponentiate $(tname(T))"))
 
@@ -53,7 +53,7 @@ import Compat.LinearAlgebra: A_mul_Bc, Ac_mul_B, Ac_mul_Bc, A_mul_Bt, kron, dot,
 A_mul_Bc(ρ::Operator,σ::Operator) = (dimsmatch(ρ,σ);Operator(A_mul_Bc(ρ.data,σ.data),ρ.dims))
 Ac_mul_B(ρ::Operator,σ::Operator) = (dimsmatch(ρ,σ);Operator(Ac_mul_B(ρ.data,σ.data),ρ.dims))
 Ac_mul_Bc(ρ::Operator,σ::Operator) = (dimsmatch(ρ,σ);Operator(Ac_mul_Bc(ρ.data,σ.data),ρ.dims))
-vecdot(ρ::Operator,σ::Operator) = (dimsmatch(ρ,σ);vecdot(ρ.data,σ.data))
+dot(ρ::Operator,σ::Operator) = (dimsmatch(ρ,σ);dot(ρ.data,σ.data))
 
 # Operator/Ket
 *(σ::Operator,ψ::Ket) = (dimsmatch(σ,ψ);Ket(*(σ.data,ψ.data),ψ.dims))
@@ -69,12 +69,12 @@ A_mul_Bc(σ::Operator,ψ::Bra) = (dimsmatch(σ,ψ);Ket(*(σ.data,conj.(ψ.data))
 Ac_mul_Bc(σ::Operator,ψ::Bra) = (dimsmatch(σ,ψ);Ket(Ac_mul_B(σ.data,conj.(ψ.data)),ψ.dims))
 
 # Ket/Ket and Bra
-dotu(x::AbstractVector{T},y::AbstractVector{T}) where {T<:Real} = dot(x,y)
-*(ψ::Bra,ϕ::Ket) = (dimsmatch(ψ,ϕ);dotu(ψ.data,ϕ.data))
-dot(ψ::Ket,ϕ::Ket) = (dimsmatch(ψ,ϕ);dot(ψ.data,ϕ.data))
 Ac_mul_B(ψ::Ket,ϕ::Ket) = dot(ψ,ϕ)
 A_mul_Bc(ψ::Ket,ϕ::Ket) = (dimsmatch(ψ,ϕ);Operator(A_mul_Bc(ψ.data,ϕ.data),ψ.dims))
 *(ψ::Ket,ϕ::Bra) = (dimsmatch(ψ,ϕ);Operator(A_mul_Bt(ψ.data,ϕ.data),ψ.dims))
+dotu(x::AbstractVector{T},y::AbstractVector{T}) where {T<:Real} = dot(x,y)
+*(ψ::Bra,ϕ::Ket) = (dimsmatch(ψ,ϕ);dotu(ψ.data,ϕ.data))
+dot(ψ::Ket,ϕ::Ket) = (dimsmatch(ψ,ϕ);dot(ψ.data,ϕ.data))
 
 # Rest is disallowed
 *(x::T1,y::T2) where {T1<:QuObject,T2<:QuObject} = throw(ArgumentError("cannot multiply $(tname(T1)) with $(tname(T2))"))

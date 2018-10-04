@@ -70,7 +70,7 @@ function calc_fprops!(U,X,D,V,u,δt,Hd,Hc,H,u_last)
     # Calculate forward propagators (cumulative product of U)
     copy!(X[1],U[1])
     for i = 2:n
-        A_mul_B!(X[i],U[i],X[i-1])
+        mul!(X[i],U[i],X[i-1])
     end
     # Save control amplitudes
     copy!(u_last,u)
@@ -99,9 +99,9 @@ function Jmat!(Jkj,Hck,cisDj,Dj,Vj,δt,A)
     # Jₖⱼ = Vⱼ*((Vⱼ'*Hₖ*Vⱼ).*Λⱼ)*Vⱼ'
     # Λⱼ[l,m] = λl≈λm ? -1im*δt*cis(λl) : -δt*(cis(λl)-cis(λm))/(λl-λm)
     Ac_mul_B!(A,Vj,Hck)
-    A_mul_B!(Jkj,A,Vj)
+    mul!(Jkj,A,Vj)
     _Jmathermprod!(Jkj,cisDj,Dj,δt)
-    A_mul_B!(A,Vj,Jkj)
+    mul!(A,Vj,Jkj)
     A_mul_Bc!(Jkj,A,Vj)
     return nothing
 end

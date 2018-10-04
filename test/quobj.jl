@@ -36,7 +36,7 @@ end
     @test dims(Operator([0 0 0;0 1 0;0 0 0])) == (3,)
     @test_throws ArgumentError Operator([0 0;0 0],(3,))
     @test_throws DimensionMismatch Operator([0 1 0;0 0 0])
-    @test (A=maxmixed(4); diag(A) == 0.25*ones(4)&&isdiag(A))
+    @test (A=maxmixed(4); diag(A) == fill(0.25,4) && isdiag(A))
     @test (A=thermal(10,0.45); diag(A)[1:2] ≈ [6.89660888E-1,2.14032689E-1] && isdiag(A))
     @test data(qzero(6,(2,3))) == zeros(6,6)
     @test data(qeye(6,(2,3))) == eye(6)

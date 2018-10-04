@@ -24,7 +24,7 @@ function infidelityprime!(fp,u,δt,Ut,Hd,Hc,H,A,U,X,D,V,P,u_last)
         cisDj .= cis.(D[j])
         for k = 1:m
             Jmat!(Jkj,Hc[k],cisDj,D[j],V[j],δt,A)
-            j==1 ? copy!(A,Jkj) : A_mul_B!(A,Jkj,X[j-1])
+            j==1 ? copy!(A,Jkj) : mul!(A,Jkj,X[j-1])
             fp[(k-1)*n+j] = -2*real(inner(P[j],A)*a)/N²
         end
     end
@@ -42,7 +42,7 @@ function infidelityprimeapprox!(fp,u,δt,Ut,Hd,Hc,H,A,U,X,D,V,P,u_last)
     #          ≈ 2*Re(⟨Pⱼ,iδt*Hₖ*Xⱼ⟩⟨Uf,Ut⟩)/N²
     a = inner(X[end],Ut)
     for j = 1:n, k = 1:m
-        A_mul_B!(A,Hc[k],X[j])
+        mul!(A,Hc[k],X[j])
         fp[(k-1)*n+j] = -2δt*imag(inner(P[j],A)*a)/N²
     end
     return fp
