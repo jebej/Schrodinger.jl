@@ -1,7 +1,7 @@
 # Julia Base math definitions translation
-import Base: +, -, *, /, ^, real, imag, abs, abs2, round
+import Base: +, -, *, /, ^, real, imag, abs, abs2, round, sqrt, exp, log
 import Compat.LinearAlgebra: A_mul_Bc, Ac_mul_B, Ac_mul_Bc, A_mul_Bt, kron, dot,
-    transpose, conj, BLAS.dotu, sqrtm, expm, logm
+    transpose, conj, BLAS.dotu
 
 # Additive identity and inverse
 +(A::T) where {T<:QuObject} = A
@@ -94,9 +94,9 @@ transpose(ρ::Operator) = Operator(transpose(ρ.data),ρ.dims)
 conj(A::T) where {T<:QuObject} = T(conj.(A.data),A.dims)
 
 # Math
-sqrtm(ρ::Operator) = Operator(sqrtm(Matrix(ρ.data)),ρ.dims)
-expm(ρ::Operator) = Operator(expm(Matrix(ρ.data)),ρ.dims)
-logm(ρ::Operator) = Operator(logm(Matrix(ρ.data)),ρ.dims)
+sqrt(ρ::Operator) = Operator(sqrt(Matrix(ρ.data)),ρ.dims)
+exp(ρ::Operator) = Operator(exp(Matrix(ρ.data)),ρ.dims)
+log(ρ::Operator) = Operator(log(Matrix(ρ.data)),ρ.dims)
 # TODO: julia is missing trig functions on matrices, we can do them via diagonalization
 
 # Misc

@@ -27,9 +27,8 @@ if VERSION < v"0.7.0-"
 end
 if VERSION > v"0.7.0-"
     import Base: BitSet
-    import LinearAlgebra: adjoint, exp, expm, tr
+    import LinearAlgebra: adjoint, exp, exp!, tr
     trace(A::AbstractMatrix) = tr(A)
-    expm(A::AbstractMatrix) = exp(A)
 end
 
 include("quobj/types.jl")

@@ -132,7 +132,7 @@ julia> displacementop(3,0.5im)
 """
 function displacementop(N::Integer, α::Number)
     a = full(destroy(N))
-    return Operator(expm(α.*a' .- α'.*a),(N,),false)
+    return Operator(exp(α.*a' .- α'.*a),(N,),false)
 end
 
 """
@@ -155,7 +155,7 @@ julia> squeezeop(3,0.5im)
 """
 function squeezeop(N::Integer, z::Number)
     a = full(destroy(N))
-    return Operator(expm(0.5.*(z'.*a^2 .- z.*a'^2)),(N,),false)
+    return Operator(exp(0.5.*(z'.*a^2 .- z.*a'^2)),(N,),false)
 end
 
 """
