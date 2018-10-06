@@ -1,11 +1,16 @@
-import Base: kron, promote_rule, randn, vec, dot, vecdot, IntSet
-import Base.LinAlg: trace, ctranspose
+import Base: kron, randn, vec, dot, vecdot, IntSet, exp, log, sqrt
+import Base.LinAlg: trace, ctranspose, expm!
 export sincos
 
 const ComplexF64 = Complex128
 const ComplexF32 = Complex64
 const adjoint = ctranspose
 const qr! = qrfact!
+
+exp(A::AbstractMatrix) = expm(A)
+exp!(A::AbstractMatrix) = expm!(A)
+log(A::AbstractMatrix) = logm(A)
+sqrt(A::AbstractMatrix) = sqrtm(A)
 
 mul!(C::AbstractVecOrMat,A::AbstractVecOrMat,B::AbstractVecOrMat) = A_mul_B!(C,A,B)
 mul!(C::AbstractVecOrMat,A::AbstractSparseArray,B::AbstractVecOrMat,a::Number,b::Number) = A_mul_B!(a,A,B,b,C)

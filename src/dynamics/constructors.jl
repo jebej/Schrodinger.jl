@@ -92,7 +92,7 @@ function LindbladProp(H₀::Operator, Cₘ::Tuple{Vararg{Operator}}, Δt::Real)
     # Add constant collapse operator terms
     L₀Δt .+= sum_collapse(Cₘ,Id,Δt)
     # Build constant propagator
-    U = Compat.LinearAlgebra.expm!(L₀Δt)
+    U = exp!(L₀Δt)
     return Propagator(U,Δt,dims(H₀))
 end
 LindbladProp(H₀::Operator, Hₙ::Tuple, Cₘ::Operator, tspan, steps::Integer) = LindbladProp(H₀,(Hₙ,),(Cₘ,),tspan,steps)
@@ -108,7 +108,7 @@ function LindbladProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, Cₘ::Tuple{Va
     # Unpack constant and time dep operators
     H0, Hn = full(H₀), unpack_operators(1,full,Hₙ)
     # Build constant collapse propagator part
-    U₀ = Compat.LinearAlgebra.expm!(sum_collapse(Cₘ,Id,dt))
+    U₀ = exp!(sum_collapse(Cₘ,Id,dt))
     # Multiply sampled propagators together to generate total evolution
     U = Matrix{Complex{F}}(I, size(U₀))
     H = Hermitian(zeros(compute_H_type(H0,Hn),size(H0)...))

@@ -96,7 +96,7 @@ See also [`fidelity2`](@ref), which is the square of the state fidelity.
 function fidelity(ρ::Operator,σ::Operator)
     dimsmatch(ρ,σ)
     ishermitian(ρ)&&ishermitian(σ) || throw(ArgumentError("the operators must be Hermitian"))
-    sqrtρ = sqrtm(Hermitian(full(ρ)))
+    sqrtρ = sqrt(Hermitian(full(ρ)))
     A = sqrtρ*data(σ)*sqrtρ
     D = eigvals(A)
     res = 0.0

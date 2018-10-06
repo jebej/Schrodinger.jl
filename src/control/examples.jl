@@ -7,7 +7,7 @@ function opt_pihalfx(n)
     t = 1
     #ui = rand(n,1) .- 0.5
     ui = zeros(n,2)
-    Ut = expm(-1im*π*σx/4)
+    Ut = exp(-1im*π*σx/4)
     # Create objective function type
     O = NormPSU(Ut,Hd,Hc,t,n)
     grape(O,ui)
