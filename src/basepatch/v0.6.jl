@@ -1,11 +1,12 @@
 import Base: kron, randn, vec, dot, vecdot, IntSet, exp, log, sqrt
-import Base.LinAlg: trace, ctranspose, expm!
-export sincos
+import Base.LinAlg: trace, ctranspose, expm!, eigs
+export sincos, eigen
 
 const ComplexF64 = Complex128
 const ComplexF32 = Complex64
 const adjoint = ctranspose
 const qr! = qrfact!
+const eigen = eig
 
 exp(A::AbstractMatrix) = expm(A)
 exp!(A::AbstractMatrix) = expm!(A)
