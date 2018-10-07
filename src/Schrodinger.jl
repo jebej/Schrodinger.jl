@@ -16,7 +16,8 @@ export Operator, Ket, Bra,
     Propagator, SchrodingerProp, LindbladProp,
     sesolve, mesolve, lsolve, psolve, psteady,
     grape, NormPSU, CoherentSubspaces,
-    expim, gaussian, inner
+    expim, gaussian, inner,
+    eigen
 
 # VERSION-conditional definitions
 if VERSION < v"1.1.0-"
@@ -27,7 +28,9 @@ if VERSION < v"0.7.0-"
 end
 if VERSION > v"0.7.0-"
     import Base: BitSet
-    import LinearAlgebra: adjoint, exp, exp!, tr
+    import LinearAlgebra: adjoint, exp, exp!, tr, eigen
+    import Arpack: eigs
+    export eigs, trace
     trace(A::AbstractMatrix) = tr(A)
 end
 

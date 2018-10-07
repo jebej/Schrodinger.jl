@@ -158,4 +158,23 @@ end
     end
 end
 
+@testset "Eigen" begin
+    E = 3.3; Δ = 0.25
+    O = dense(E*σz+Δ*σx)
+    @test eigvals(O) == [-√(E^2+Δ^2), √(E^2+Δ^2)]
+    @test eigen(O)[2][1] ≈ normalize!(Ket([-(E-√(E^2+Δ^2))/Δ,-1]))
+    a = destroy(20) ⊗ qeye(2)
+    s = qeye(20) ⊗ σ₋
+    fc = 5; fa = 6; g = 0.025;
+    H = fc*(a'a+0.5) + fa*(s's-0.5) + g*(a's + a*s')
+    function En(l)
+        n,q,Δ = (l-1)÷2, 1-2*(l%2), fa-fc
+        return l==0 ? -Δ/2 : (n+1)*fc + 0.5q*√(4g^2*(n+1)+Δ^2)
+    end
+    θ(n) = 0.5*atan(2g*√(n+1)/(fa-fc))
+    D,V = eigs(H,nev=10)
+    @test D ≈ En.(0:9)
+    @test abs(inner(V[6], cos(θ(2))*ket((3,0),(20,2)) - sin(θ(2))*ket((2,1),(20,2)))) ≈ 1
+end
+
 end
