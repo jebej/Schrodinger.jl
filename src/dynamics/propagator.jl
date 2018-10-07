@@ -1,4 +1,4 @@
-struct Propagator{T,D}
+struct Propagator{T,D} <: AbstractParameterizedFunction{false}
     U::Matrix{Complex{T}}
     Δt::T
     dims::Dims{D}

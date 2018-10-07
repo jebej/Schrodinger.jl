@@ -1,13 +1,15 @@
-struct Liouvillian{N,F,D}
+struct Liouvillian{N,F,D} <: AbstractParameterizedFunction{true}
     L₀::SparseMatrixCSC{ComplexF64,Int}
     Lₙ::NTuple{N,SparseMatrixCSC{ComplexF64,Int}}
     fₙ::F
     pₙ::NTuple{N,Vector{Float64}}
     dims::Dims{D}
+    mass_matrix::UniformScaling{Bool}
+    analytic::Nothing
 end
 
 Liouvillian(dims::Dims{D},L₀,Lₙ=(),fₙ=(),pₙ=()) where {D} =
-    Liouvillian{length(Lₙ),typeof(fₙ),D}(L₀,Lₙ,fₙ,pₙ,dims)
+    Liouvillian{length(Lₙ),typeof(fₙ),D}(L₀,Lₙ,fₙ,pₙ,dims,UniformScaling{Bool}(true),nothing)
 
 dims(L::Liouvillian) = L.dims
 

@@ -3,6 +3,7 @@ using Compat
 using Compat.LinearAlgebra, Compat.SparseArrays, Compat.Statistics, Compat.Printf
 using Base: tail, front, product, promote_eltype
 using OrdinaryDiffEq, Optim
+using OrdinaryDiffEq.DiffEqBase: AbstractParameterizedFunction
 
 export Operator, Ket, Bra,
     data, dims, isnormalized, dimsmatch, dense, braket, isapproxhermitian,
