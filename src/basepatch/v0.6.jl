@@ -23,6 +23,8 @@ sincos(x::Number) = (sin(x),cos(x))
 
 Base.@irrational SQRT_HALF 0.70710678118654752  sqrt(big(0.5))
 
+print_array(io::IO, A::AbstractArray) = Base.showarray(io, A, false, header=false)
+
 randn(rng::AbstractRNG,::Type{Complex{T}}) where {T<:AbstractFloat} = Complex{T}(SQRT_HALF*randn(rng,T), SQRT_HALF*randn(rng,T))
 
 function vecdot(A::SparseMatrixCSC{T1,S1},B::SparseMatrixCSC{T2,S2}) where {T1,T2,S1,S2}

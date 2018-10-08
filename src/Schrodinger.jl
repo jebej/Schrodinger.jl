@@ -28,7 +28,7 @@ if VERSION < v"0.7.0-"
     include("basepatch/v0.6.jl")
 end
 if VERSION > v"0.7.0-"
-    import Base: BitSet
+    import Base: BitSet, print_array
     import LinearAlgebra: adjoint, exp, exp!, tr, eigen
     import Arpack: eigs
     export eigs, trace

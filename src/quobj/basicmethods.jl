@@ -72,9 +72,8 @@ function show(io::IO, A::T) where T<:QuMatrix
     print(io, "$n×$n $T with dimensions ", join(A.dims,'⊗'))
 end
 function show(io::IO, ::MIME"text/plain", A::T) where T<:QuMatrix
-    n = size(A,1)
-    println(io, "$n×$n $T with dimensions ", join(A.dims,'⊗'))
-    Base.showarray(io, A.data, false, header=false)
+    show(io, A)
+    println(io); print_array(io, A.data); println(io)
 end
 show(io::IO, ψ::QuVector) = print(io, braket(ψ))
 function show(io::IO, ::MIME"text/plain", ψ::T) where T<:QuVector
