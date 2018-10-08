@@ -1,5 +1,4 @@
 julia 0.6
 Compat
-Arpack
-OrdinaryDiffEq 3.0.0
 Optim
+OrdinaryDiffEq 3.0.0

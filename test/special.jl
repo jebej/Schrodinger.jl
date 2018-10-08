@@ -2,6 +2,9 @@
 using Schrodinger
 using Schrodinger: ComplexF64
 using Compat.Test, Compat.LinearAlgebra, Compat.SparseArrays
+if VERSION > v"0.7.0-"
+    using Compat.Statistics: mean
+end
 
 @testset "Quantum Information" begin
 # Build a few different variable for testing
@@ -71,7 +74,7 @@ TWOQUBIT = Ket.(N!.(Vector{ComplexF64}[
     @test fidelity2(Operator(coherentαhalf),basis(N,3)) ≈ abs2(coherentαhalf[4])
     @test fidelity2(basis(N,3),Operator(coherentα)) ≈ abs2(coherentα[4])
     @test fidelity2(Operator(coherentαhalf),Operator(basis(N,3))) ≈ abs2(coherentαhalf[4]) atol=1E-10
-    @test fidelity2(Operator(coherent(N,α,true)),Operator(basis(N,3))) ≈ abs2(coherent(N,α,true)[4]) atol=1E-9
+    @test fidelity2(Operator(coherent(N,α,true)),Operator(basis(N,3))) ≈ abs2(coherent(N,α,true)[4]) atol=2E-9
     @test fidelity2(Operator(basis(N,2)),Operator(coherent(N,1))) ≈ abs2(coherent(N,1)[3])
     # entanglement and average gate fidelity
     U1, V1 = rand_unitary(5), rand_unitary(5)
