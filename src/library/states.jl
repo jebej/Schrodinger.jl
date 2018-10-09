@@ -188,6 +188,6 @@ See also: [`ket`](@ref), for generating arbitrary states.
 macro qb_str(state::AbstractString)
     quote
         dims = $(ntuple(_->2,length(state)))
-        Ket(SparseVector(prod(dims),[$(parse(Int,state,2)+1)],[1.0]),dims)
+        Ket(SparseVector(prod(dims),[$(parseb2(state)+1)],[1.0]),dims)
     end
 end

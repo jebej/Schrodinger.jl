@@ -1,7 +1,9 @@
 # Julia Base math definitions translation
 import Base: +, -, *, /, ^, real, imag, abs, abs2, round, sqrt, exp, log
-import Compat.LinearAlgebra: A_mul_Bc, Ac_mul_B, Ac_mul_Bc, A_mul_Bt, kron, dot,
-    transpose, conj, BLAS.dotu
+import Compat.LinearAlgebra: kron, dot, transpose, conj, BLAS.dotu
+if VERSION < v"0.7.0-"
+    import Compat.LinearAlgebra: A_mul_Bc, Ac_mul_B, Ac_mul_Bc, A_mul_Bt
+end
 
 # Additive identity and inverse
 +(A::T) where {T<:QuObject} = A
@@ -38,7 +40,7 @@ import Compat.LinearAlgebra: A_mul_Bc, Ac_mul_B, Ac_mul_Bc, A_mul_Bt, kron, dot,
 
 /(b::Number,x::T) where {T<:QuObject} = throw(ArgumentError("cannot divide number by $(tname(T))"))
 
-# QuObject/QuObject Algebra
+# QuObject/QuObject Arithmetic
 +(x::Ket,y::Ket) = (dimsmatch(x,y);Ket(x.data+y.data,x.dims))
 -(x::Ket,y::Ket) = (dimsmatch(x,y);Ket(x.data-y.data,x.dims))
 +(x::Bra,y::Bra) = (dimsmatch(x,y);Bra(x.data+y.data,x.dims))
@@ -48,33 +50,34 @@ import Compat.LinearAlgebra: A_mul_Bc, Ac_mul_B, Ac_mul_Bc, A_mul_Bt, kron, dot,
 +(x::T1,y::T2) where {T1<:QuObject,T2<:QuObject} = throw(ArgumentError("cannot add $(tname(T1)) to $(tname(T2))"))
 -(x::T1,y::T2) where {T1<:QuObject,T2<:QuObject} = throw(ArgumentError("cannot subtract $(tname(T2)) from $(tname(T1))"))
 
-# Operator/Operator
+# QuObject/QuObject Linear Algebra
 *(ρ::Operator,σ::Operator) = (dimsmatch(ρ,σ);Operator(*(ρ.data,σ.data),ρ.dims))
-A_mul_Bc(ρ::Operator,σ::Operator) = (dimsmatch(ρ,σ);Operator(A_mul_Bc(ρ.data,σ.data),ρ.dims))
-Ac_mul_B(ρ::Operator,σ::Operator) = (dimsmatch(ρ,σ);Operator(Ac_mul_B(ρ.data,σ.data),ρ.dims))
-Ac_mul_Bc(ρ::Operator,σ::Operator) = (dimsmatch(ρ,σ);Operator(Ac_mul_Bc(ρ.data,σ.data),ρ.dims))
-dot(ρ::Operator,σ::Operator) = (dimsmatch(ρ,σ);dot(ρ.data,σ.data))
-
-# Operator/Ket
 *(σ::Operator,ψ::Ket) = (dimsmatch(σ,ψ);Ket(*(σ.data,ψ.data),ψ.dims))
-Ac_mul_B(σ::Operator,ψ::Ket) = (dimsmatch(σ,ψ);Ket(Ac_mul_B(σ.data,ψ.data),ψ.dims))
-Ac_mul_B(ψ::Ket,σ::Operator) = (dimsmatch(σ,ψ);Bra(vec(Ac_mul_B(ψ.data,σ.data)),ψ.dims))
-Ac_mul_Bc(ψ::Ket,σ::Operator) = (dimsmatch(σ,ψ);Bra(vec(Ac_mul_Bc(ψ.data,σ.data)),ψ.dims))
-
-# Bra/Operator
-# remember that bras are actually stored as regular vectors (not row vectors)
-*(ψ::Bra,σ::Operator) = (dimsmatch(σ,ψ);Bra(At_mul_B(σ.data,ψ.data),ψ.dims))
-A_mul_Bc(ψ::Bra,σ::Operator) = (dimsmatch(σ,ψ);Bra(*(conj.(σ.data),ψ.data),ψ.dims))
-A_mul_Bc(σ::Operator,ψ::Bra) = (dimsmatch(σ,ψ);Ket(*(σ.data,conj.(ψ.data)),ψ.dims))
-Ac_mul_Bc(σ::Operator,ψ::Bra) = (dimsmatch(σ,ψ);Ket(Ac_mul_B(σ.data,conj.(ψ.data)),ψ.dims))
-
-# Ket/Ket and Bra
-Ac_mul_B(ψ::Ket,ϕ::Ket) = dot(ψ,ϕ)
-A_mul_Bc(ψ::Ket,ϕ::Ket) = (dimsmatch(ψ,ϕ);Operator(A_mul_Bc(ψ.data,ϕ.data),ψ.dims))
-*(ψ::Ket,ϕ::Bra) = (dimsmatch(ψ,ϕ);Operator(A_mul_Bt(ψ.data,ϕ.data),ψ.dims))
-dotu(x::AbstractVector{T},y::AbstractVector{T}) where {T<:Real} = dot(x,y)
 *(ψ::Bra,ϕ::Ket) = (dimsmatch(ψ,ϕ);dotu(ψ.data,ϕ.data))
+dot(ρ::Operator,σ::Operator) = (dimsmatch(ρ,σ);dot(ρ.data,σ.data))
 dot(ψ::Ket,ϕ::Ket) = (dimsmatch(ψ,ϕ);dot(ψ.data,ϕ.data))
+
+dotu(x::AbstractVector{T},y::AbstractVector{T}) where {T<:Real} = dot(x,y)
+
+# remember that bras are actually stored as regular vectors (not RowVectors)
+if VERSION > v"0.7.0-"
+    *(ψ::Bra,σ::Operator) = (dimsmatch(σ,ψ);Bra(*(transpose(σ.data),ψ.data),ψ.dims))
+    *(ψ::Ket,ϕ::Bra) = (dimsmatch(ψ,ϕ);Operator(*(ψ.data,transpose(ϕ.data)),ψ.dims))
+else
+    A_mul_Bc(ρ::Operator,σ::Operator) = (dimsmatch(ρ,σ);Operator(A_mul_Bc(ρ.data,σ.data),ρ.dims))
+    Ac_mul_B(ρ::Operator,σ::Operator) = (dimsmatch(ρ,σ);Operator(Ac_mul_B(ρ.data,σ.data),ρ.dims))
+    Ac_mul_Bc(ρ::Operator,σ::Operator) = (dimsmatch(ρ,σ);Operator(Ac_mul_Bc(ρ.data,σ.data),ρ.dims))
+    Ac_mul_B(σ::Operator,ψ::Ket) = (dimsmatch(σ,ψ);Ket(Ac_mul_B(σ.data,ψ.data),ψ.dims))
+    Ac_mul_B(ψ::Ket,σ::Operator) = (dimsmatch(σ,ψ);Bra(vec(Ac_mul_B(ψ.data,σ.data)),ψ.dims))
+    Ac_mul_Bc(ψ::Ket,σ::Operator) = (dimsmatch(σ,ψ);Bra(vec(Ac_mul_Bc(ψ.data,σ.data)),ψ.dims))
+    *(ψ::Bra,σ::Operator) = (dimsmatch(σ,ψ);Bra(At_mul_B(σ.data,ψ.data),ψ.dims))
+    A_mul_Bc(ψ::Bra,σ::Operator) = (dimsmatch(σ,ψ);Bra(*(conj.(σ.data),ψ.data),ψ.dims))
+    A_mul_Bc(σ::Operator,ψ::Bra) = (dimsmatch(σ,ψ);Ket(*(σ.data,conj.(ψ.data)),ψ.dims))
+    Ac_mul_Bc(σ::Operator,ψ::Bra) = (dimsmatch(σ,ψ);Ket(Ac_mul_B(σ.data,conj.(ψ.data)),ψ.dims))
+    Ac_mul_B(ψ::Ket,ϕ::Ket) = dot(ψ,ϕ)
+    A_mul_Bc(ψ::Ket,ϕ::Ket) = (dimsmatch(ψ,ϕ);Operator(A_mul_Bc(ψ.data,ϕ.data),ψ.dims))
+    *(ψ::Ket,ϕ::Bra) = (dimsmatch(ψ,ϕ);Operator(A_mul_Bt(ψ.data,ϕ.data),ψ.dims))
+end
 
 # Rest is disallowed
 *(x::T1,y::T2) where {T1<:QuObject,T2<:QuObject} = throw(ArgumentError("cannot multiply $(tname(T1)) with $(tname(T2))"))

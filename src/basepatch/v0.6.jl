@@ -1,11 +1,12 @@
 import Base: kron, randn, vec, dot, vecdot, IntSet, exp, log, sqrt
-import Base.LinAlg: trace, ctranspose, expm!, eigs
+import Base.LinAlg: trace, ctranspose, expm!, eigs, scale!
 export sincos, eigen
 
 const ComplexF64 = Complex128
 const ComplexF32 = Complex64
 const adjoint = ctranspose
 const qr! = qrfact!
+const luf = lufact
 const eigen = eig
 
 exp(A::AbstractMatrix) = expm(A)
@@ -16,16 +17,19 @@ sqrt(A::AbstractMatrix) = sqrtm(A)
 mul!(C::AbstractVecOrMat,A::AbstractVecOrMat,B::AbstractVecOrMat) = A_mul_B!(C,A,B)
 mul!(C::AbstractVecOrMat,A::AbstractSparseArray,B::AbstractVecOrMat,a::Number,b::Number) = A_mul_B!(a,A,B,b,C)
 dot(A::AbstractMatrix,B::AbstractMatrix) = vecdot(A,B)
+rmul!(A::AbstractArray,b::Number) = scale!(A,b)
 
 vec(x::RowVector) = x.vec
 
 sincos(x::Number) = (sin(x),cos(x))
 
-Base.@irrational SQRT_HALF 0.70710678118654752  sqrt(big(0.5))
+parseb2(s::AbstractString) = Base.parse(Int,s,2)
 
 print_array(io::IO, A::AbstractArray) = Base.showarray(io, A, false, header=false)
 
 randn(rng::AbstractRNG,::Type{Complex{T}}) where {T<:AbstractFloat} = Complex{T}(SQRT_HALF*randn(rng,T), SQRT_HALF*randn(rng,T))
+
+Base.@irrational SQRT_HALF 0.70710678118654752  sqrt(big(0.5))
 
 function vecdot(A::SparseMatrixCSC{T1,S1},B::SparseMatrixCSC{T2,S2}) where {T1,T2,S1,S2}
     m, n = size(A)
