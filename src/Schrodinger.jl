@@ -17,7 +17,7 @@ export Operator, Ket, Bra,
     Propagator, SchrodingerProp, LindbladProp,
     sesolve, mesolve, lsolve, psolve, psteady,
     grape, NormPSU, CoherentSubspaces,
-    expim, gaussian, inner,
+    expim, gaussian, inner, scale, scale!, full,
     eigen
 
 # VERSION-conditional definitions
@@ -33,6 +33,8 @@ if VERSION > v"0.7.0-"
     import Arpack: eigs
     export eigs, trace
     trace(A::AbstractMatrix) = tr(A)
+    parseb2(s::AbstractString) = Base.tryparse_internal(Int,s,firstindex(s),lastindex(s),2,true)
+    const luf = lu
 end
 
 include("quobj/types.jl")

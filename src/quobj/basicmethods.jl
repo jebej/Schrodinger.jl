@@ -1,8 +1,10 @@
 import Base: length, size, eltype, getindex, setindex!, similar, copy, hash,
-    isequal, ==, convert, promote_rule, isapprox, show, full
+    isequal, ==, convert, promote_rule, isapprox, show
 import Compat.LinearAlgebra: checksquare, diag, complex, norm, rank,
-    normalize!, normalize, scale!, ishermitian, issymmetric, isdiag, triu, tril
-
+    normalize!, normalize, ishermitian, issymmetric, isdiag, triu, tril
+if VERSION < v"1.0.0-"
+    import Base: full
+end
 # Special QuObject methods
 data(A::QuObject) = A.data
 dims(A::QuObject) = A.dims
@@ -39,9 +41,9 @@ norm(x::QuVector,n::Integer=2) = norm(x.data,n)
 trace(A::QuMatrix) = trace(A.data)
 rank(A::QuMatrix) = rank(A.data)
 normalize!(x::QuVector) = (normalize!(x.data,2);x)
-normalize!(A::QuMatrix) = (scale!(A.data,1/trace(A.data));A)
+normalize!(A::QuMatrix) = (rmul!(A.data,1/trace(A.data));A)
 normalize(x::QuObject) = normalize!(copy(x))
-scale!(A::QuObject,b::Number) = (scale!(A.data,b);A)
+scale!(A::QuObject,b::Number) = (rmul!(A.data,b);A)
 scale(A::QuObject,b::Number) = scale!(copy(A))
 ishermitian(A::Operator) = A.herm
 isapproxhermitian(A::Operator) = A.herm
