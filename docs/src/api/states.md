@@ -1,6 +1,6 @@
 ```@meta
-DocTestSetup  = quote
-    using Schrodinger
+DocTestSetup = quote
+    using Schrodinger, Compat.SparseArrays
 end
 ```
 # State Library
