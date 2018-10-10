@@ -1,6 +1,6 @@
 ```@meta
 DocTestSetup = quote
-    using Schrodinger
+    using Schrodinger, Compat.SparseArrays
 end
 ```
 # Operator Library

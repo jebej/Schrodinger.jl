@@ -31,7 +31,7 @@ if VERSION > v"0.7.0-"
     import Base: BitSet, print_array
     import LinearAlgebra: adjoint, exp, exp!, tr, eigen
     import Arpack: eigs
-    export eigs, trace
+    export eigs, trace, normalize, normalize!
     trace(A::AbstractMatrix) = tr(A)
     parseb2(s::AbstractString) = Base.tryparse_internal(Int,s,firstindex(s),lastindex(s),2,true)
     const luf = lu

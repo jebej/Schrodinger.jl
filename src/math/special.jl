@@ -62,22 +62,22 @@ function levelprobs(states::Vector{Ket{T,M}},S::Union{Integer,AbstractVector}) w
     D = dims(states[1])
     probs = map(S) do s
         s > M && throw(ArgumentError("System index $s is larger than the number of systems, $M."))
-        P = Matrix{Float64}(undef,D[s],N)
+        P = Matrix{Float64}(undef,N,D[s])
         for n = 1:N
-            P[:,n] = levelprobs(states[n],s)
+            P[n,:] = levelprobs(states[n],s)
         end
-        return transpose(P)
+        return P
     end
     return probs
 end
 
 function levelprobs(states::Vector{Ket{T,M}}) where {T,M}
     N = length(states)
-    P = Matrix{Float64}(undef,prod(dims(states[1])),N)
+    P = Matrix{Float64}(undef,N,prod(dims(states[1])))
     for n = 1:N
-        P[:,n] = levelprobs(states[n])
+        P[n,:] = levelprobs(states[n])
     end
-    return transpose(P)
+    return P
 end
 
 """

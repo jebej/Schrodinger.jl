@@ -1,6 +1,6 @@
 ```@meta
-DocTestSetup  = quote
-    using Schrodinger, PyPlot
+DocTestSetup = quote
+    using Schrodinger, PyPlot, Compat.SparseArrays
 end
 ```
 
@@ -173,7 +173,7 @@ c₁(t,γ,Δω) = (Ω = √(γ^2+(Δω/2)^2); γ/Ω * cis(-Δω/2*t) * sin(Ω*t)
 
 Δω = ωd-ω
 c1 = c₁.(r1.times,γ,Δω) # compute data for c₁
-analytic = [1-abs2.(c1) abs2.(c1)] # 1-|c₁|² and |c₁|²
+analytic = [1 .- abs2.(c1) abs2.(c1)] # 1-|c₁|² and |c₁|²
 
 plot(r1.times,analytic)
 legend(["|g⟩", "|e⟩", "|g⟩ (analytic)", "|e⟩ (analytic)"]);
@@ -225,8 +225,8 @@ A cool experiment that can be done with qubits is to verify that the TLS dynamic
 figure()
 ```
 ```@example driven_TLS
-t = linspace(0,12,101)
-ωd_ratio = tranpose(linspace(0.6,1.4,101)
+t = 0:0.1:12
+ωd_ratio = transpose(0.6:0.01:1.4)
 chev = abs2.(c₁.(t,γ,ω.*ωd_ratio.-ω))
 imshow(chev,origin="lower",extent=[0.6,1.4,0,12],aspect=1/15)
 xlabel("\$ω_d/ω\$"); ylabel("Time");

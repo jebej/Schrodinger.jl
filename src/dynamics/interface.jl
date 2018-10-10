@@ -41,7 +41,7 @@ end
 
 function psolve(U::Propagator,ψ₀::Ket,steps,e_ops)
     dimsmatch(U,ψ₀)
-    states = Vector{Ket{Vector{Complex{Float64}},length(dims(ψ₀))}}(steps+1)
+    states = Vector{Ket{Vector{Complex{Float64}},length(dims(ψ₀))}}(undef,steps+1)
     states[1] = complex(dense(ψ₀))
     for s = 2:steps+1
         states[s] = U(states[s-1])
@@ -54,7 +54,7 @@ end
 
 function psolve(U::Propagator,ρ₀::Operator,steps,e_ops)
     dimsmatch(U,ρ₀)
-    states = Vector{Operator{Matrix{Complex{Float64}},length(dims(ρ₀))}}(steps+1)
+    states = Vector{Operator{Matrix{Complex{Float64}},length(dims(ρ₀))}}(undef,steps+1)
     states[1] = complex(dense(ρ₀))
     for s = 2:steps+1
         states[s] = U(states[s-1])
@@ -67,7 +67,7 @@ end
 
 function psteady(U::Propagator,ρ₀::Operator,steps,e_ops)
     dimsmatch(U,ρ₀)
-    states = Vector{Operator{Matrix{Complex{Float64}},length(dims(ρ₀))}}(2)
+    states = Vector{Operator{Matrix{Complex{Float64}},length(dims(ρ₀))}}(undef,2)
     states[1] = complex(dense(ρ₀))
     states[2] = U(states[1],steps)
     evals  = calc_expvals(e_ops,states)
@@ -77,7 +77,7 @@ end
 
 calc_expvals(o::Operator,states) = calc_expvals((o,),states)
 function calc_expvals(e_ops,states)
-    isempty(e_ops) && return Matrix{ComplexF64}(0,0)
+    isempty(e_ops) && return Matrix{ComplexF64}(undef,0,0)
     M = length(e_ops); N = length(states)
     expvals = Matrix{ComplexF64}(undef,N,M)
     for (j,σ) in enumerate(e_ops)
