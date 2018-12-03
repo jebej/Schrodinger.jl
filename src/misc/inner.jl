@@ -31,7 +31,7 @@ function _inner_cs_1(A::AbstractMatrix{T},B::AbstractMatrix{S},s::BitSet) where 
     m, n = size(A)
     size(B) == (m,n) || throw(DimensionMismatch("matrices must have the same dimensions"))
     x = zero(promote_type(T,S))
-    y = Vector{typeof(x)}(n-length(s))
+    y = Vector{typeof(x)}(undef,n-length(s))
     t = 1
     @inbounds for j = 1:n
         a = zero(x)

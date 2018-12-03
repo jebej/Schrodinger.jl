@@ -17,7 +17,7 @@ function randomsmooth(n::Integer,m::Integer)
 end
 
 function randomsmooth(n::Integer)
-    x = transpose(linspace(0,1,n))
+    x = transpose(0:1/(n-1):1)
     N = rand(4:7) # number of sines to use
     f = 2.0 .+ 10 .* rand(N) # frequencies
     A = normalize!((rand(N).-0.5)./f,2) # amplitudes

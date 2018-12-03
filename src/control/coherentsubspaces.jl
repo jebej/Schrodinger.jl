@@ -35,17 +35,17 @@ function CoherentSubspaces(Ut::NTuple{M,<:Operator},s::IntCol,Hd::Operator,Hc::V
     u_last = fill(NaN64,m*n)
     # Generate cache for various objects
     H = Hermitian(zeros(promote_eltype(typeof(Hd_d),eltype(Hc_d)),N,N))
-    A = Matrix{ComplexF64}(N,N)
-    U = [Matrix{ComplexF64}(N,N) for i=1:n]
-    X = [Matrix{ComplexF64}(N,N) for i=1:n]
+    A = Matrix{ComplexF64}(undef,N,N)
+    U = [Matrix{ComplexF64}(undef,N,N) for i=1:n]
+    X = [Matrix{ComplexF64}(undef,N,N) for i=1:n]
     P = [similar.(Ut_d) for i=1:n]
-    for i=1:M; copy!(P[end][i],Ut_d[i]); end
+    for i=1:M; copyto!(P[end][i],Ut_d[i]); end
     # For the exact derivative we need to store eigenvectors and eigenvalues
-    D = [Vector{Float64}(N) for i=1:n] # eigenvalues are always real
+    D = [Vector{Float64}(undef,N) for i=1:n] # eigenvalues are always real
     V = [similar(H.data) for i=1:n]
     # More temporary storage
-    Jkj = Matrix{ComplexF64}(N,N)
-    cisDj = Vector{ComplexF64}(N)
+    Jkj = Matrix{ComplexF64}(undef,N,N)
+    cisDj = Vector{ComplexF64}(undef,N)
     return CoherentSubspaces(dims(Hd),t/n,Ut_d,s,Ne,Hd_d,Hc_d,u_last,U,X,P,D,V,H,A,Jkj,cisDj)
 end
 
@@ -54,24 +54,24 @@ function CoherentSubspaces(Ut::Operator,s::IntCol,Hd::Operator,Hc::Vector{<:Oper
     N = prod(dims(Hd))
     m = length(Hc)
     # Make sure we pass dense operators
-    Ut_d = complex.(full.(Ut))
+    Ut_d = complex(full(Ut))
     Hd_d = full(Hd)
     Hc_d = full.(Hc)
     # Storage for last control ampitudes, NaN for first run
     u_last = fill(NaN64,m*n)
     # Generate cache for various objects
     H = Hermitian(zeros(promote_eltype(typeof(Hd_d),eltype(Hc_d)),N,N))
-    A = Matrix{ComplexF64}(N,N)
-    U = [Matrix{ComplexF64}(N,N) for i=1:n]
-    X = [Matrix{ComplexF64}(N,N) for i=1:n]
-    P = [Matrix{ComplexF64}(N,N) for i=1:n]
-    copy!(P[end],Ut_d)
+    A = Matrix{ComplexF64}(undef,N,N)
+    U = [Matrix{ComplexF64}(undef,N,N) for i=1:n]
+    X = [Matrix{ComplexF64}(undef,N,N) for i=1:n]
+    P = [Matrix{ComplexF64}(undef,N,N) for i=1:n]
+    copyto!(P[end],Ut_d)
     # For the exact derivative we need to store eigenvectors and eigenvalues
-    D = [Vector{Float64}(N) for i=1:n] # eigenvalues are always real
+    D = [Vector{Float64}(undef,N) for i=1:n] # eigenvalues are always real
     V = [similar(H.data) for i=1:n]
     # More temporary storage
-    Jkj = Matrix{ComplexF64}(N,N)
-    cisDj = Vector{ComplexF64}(N)
+    Jkj = Matrix{ComplexF64}(undef,N,N)
+    cisDj = Vector{ComplexF64}(undef,N)
     return CoherentSubspaces(dims(Hd),t/n,Ut_d,s,Ne,Hd_d,Hc_d,u_last,U,X,P,D,V,H,A,Jkj,cisDj)
 end
 
@@ -96,7 +96,7 @@ function gradient!(O::CoherentSubspaces,fp,u)
         O.cisDj .= cis.(O.D[j])
         for k = 1:m
             Jmat!(O.Jkj,O.Hc[k],O.cisDj,O.D[j],O.V[j],O.δt,O.A)
-            j==1 ? copy!(O.A,O.Jkj) : mul!(O.A,O.Jkj,O.X[j-1])
+            j==1 ? copyto!(O.A,O.Jkj) : mul!(O.A,O.Jkj,O.X[j-1])
             fp[(k-1)*n+j] = -inner_cs_grad(O.P[j],O.A,x,y,O.s)/O.Ne
         end
     end
