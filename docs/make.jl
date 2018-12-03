@@ -1,4 +1,4 @@
-using Documenter, Schrodinger, PyPlot
+using Documenter, Schrodinger, SparseArrays, PyPlot
 
 makedocs(
     sitename = "Schrodinger.jl",
@@ -31,7 +31,7 @@ makedocs(
 
 deploydocs(
     repo = "github.com/jebej/Schrodinger.jl.git",
-    julia = "0.6",
+    julia = "1.0",
     target = "build",
     deps = nothing,
     make = nothing,

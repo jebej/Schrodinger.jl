@@ -75,7 +75,7 @@ function show(io::IO, A::T) where T<:QuMatrix
 end
 function show(io::IO, ::MIME"text/plain", A::T) where T<:QuMatrix
     show(io, A)
-    println(io); print_array(io, A.data); println(io)
+    println(io); print_array(IOContext(io,:compact=>true), A.data); println(io)
 end
 show(io::IO, ψ::QuVector) = print(io, braket(ψ))
 function show(io::IO, ::MIME"text/plain", ψ::T) where T<:QuVector

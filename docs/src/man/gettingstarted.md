@@ -1,6 +1,6 @@
 ```@meta
 DocTestSetup = quote
-    using Schrodinger, Compat.SparseArrays
+    using Schrodinger, SparseArrays
 end
 ```
 
@@ -24,7 +24,7 @@ Kets (and their dual, bras) are therefore finite-, or infinite-dimensional vecto
 
 ```jldoctest gettingstarted
 julia> g = Ket([1,0])
-2-d Schrodinger.Ket{Array{Float64,1},1} with dimensions 2
+2-d Ket{Array{Float64,1},1} with dimensions 2
 1.00∠0°|0⟩
 ```
 
@@ -51,7 +51,7 @@ Arbitrary operators can of course be created, but let's take a look at one that 
 
 ```jldoctest
 julia> σx
-2×2 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 2
+2×2 Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 2
  0.0  1.0
  1.0  0.0
 ```
@@ -62,7 +62,7 @@ The state `g` that we created in the previous section is a ground state with the
 
 ```jldoctest gettingstarted
 julia> σx*g
-2-d Schrodinger.Ket{Array{Float64,1},1} with dimensions 2
+2-d Ket{Array{Float64,1},1} with dimensions 2
 1.00∠0°|1⟩
 ```
 
@@ -70,7 +70,7 @@ As expected, the output is a `Ket`, but notice the state is now $$|1⟩$$! By ac
 
 ```jldoctest gettingstarted
 julia> σx*σx*g
-2-d Schrodinger.Ket{Array{Float64,1},1} with dimensions 2
+2-d Ket{Array{Float64,1},1} with dimensions 2
 1.00∠0°|0⟩
 ```
 
@@ -86,7 +86,7 @@ H = ω/2*σx # Hamiltonian
 t = (0.0,2.0) # timespan
 O = -σz # observable
 # output
-2×2 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 2
+2×2 Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 2
  -1.0  0.0
   0.0  1.0
 ```

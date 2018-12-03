@@ -1,6 +1,6 @@
 ```@meta
 DocTestSetup = quote
-    using Schrodinger, Compat.SparseArrays
+    using Schrodinger, SparseArrays
 end
 ```
 
@@ -33,7 +33,7 @@ Let us create a `Ket` for a three-level atom in the first excited `e1` state, wh
 
 ```jldoctest threelevel
 julia> e1 = basis(3,1)
-3-d Schrodinger.Ket{SparseVector{Float64,Int64},1} with dimensions 3
+3-d Ket{SparseVector{Float64,Int64},1} with dimensions 3
 1.00∠0°|1⟩
 ```
 
@@ -43,7 +43,7 @@ A quantum harmonic oscillator can be in what is called a [coherent state](https:
 julia> α = 1.5+1im;
 
 julia> Φ = coherent(10,α)
-10-d Schrodinger.Ket{Array{Complex{Float64},1},1} with dimensions 10
+10-d Ket{Array{Complex{Float64},1},1} with dimensions 10
 0.47∠101°|3⟩ + 0.45∠67°|2⟩ + 0.42∠135°|4⟩ + 0.35∠34°|1⟩ + 0.34∠168°|5⟩ +…
 ```
 
@@ -52,23 +52,23 @@ A coherent state is a superposition of number states, which is evident when disp
 ```jldoctest coherexample
 julia> full(Φ)
 10-element Array{Complex{Float64},1}:
-     0.196912+1.38778e-16im
-     0.295368+0.196912im
-     0.174045+0.417707im
-   -0.0904438+0.462268im
-    -0.298846+0.301357im
-    -0.335859+0.0686346im
-    -0.231869-0.094343im
-   -0.0987909-0.145533im
- -0.000832521-0.0994845im
-    0.0472052-0.0721079im
+     0.1969115853703145 + 1.3877787807814457e-16im
+     0.2953682773152671 + 0.1969121848768447im
+    0.17404455782964393 + 0.41770693879114607im
+   -0.09044382705530486 + 0.46226844939378026im
+   -0.29884571990977016 + 0.30135702848044027im
+   -0.33585925021170104 + 0.06863455364460214im
+   -0.23186949330792767 - 0.09434296828450334im
+   -0.09879088215342646 - 0.14553280324422513im
+ -0.0008325212541629972 - 0.09948454819622193im
+   0.047205161874622995 - 0.07210790803315013im
 ```
 
 A *mixed* state is a probabilistic mixture of *pure* states, and it is important to understand the difference between the two. For example, we can create a superposition between two state of a three-level atom by adding kets together:
 
 ```jldoctest threelevel
 julia> ψ = e1 + basis(3,0)
-3-d Schrodinger.Ket{SparseVector{Float64,Int64},1} with dimensions 3
+3-d Ket{SparseVector{Float64,Int64},1} with dimensions 3
 1.00∠0°|0⟩ + 1.00∠0°|1⟩
 ```
 
@@ -79,7 +79,7 @@ Let's make sure that this state is normalized:
 
 ```jldoctest threelevel
 julia> normalize!(ψ)
-3-d Schrodinger.Ket{SparseVector{Float64,Int64},1} with dimensions 3
+3-d Ket{SparseVector{Float64,Int64},1} with dimensions 3
 0.71∠0°|0⟩ + 0.71∠0°|1⟩
 ```
 
@@ -93,7 +93,7 @@ In bra-ket notation, the a pure state can be transformed in a density matrix by 
 
 ```jldoctest threelevel
 julia> ρ = 1/3 * ψ*ψ' + 2/3 * e1*e1'
-3×3 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 3
+3×3 Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 3
  0.166667  0.166667  0.0
  0.166667  0.833333  0.0
  0.0       0.0       0.0
@@ -105,13 +105,13 @@ Density matrices can be created directly from a matrix or from a ket with the [`
 
 ```jldoctest threelevel
 julia> ρ += Operator(basis(3,2))
-3×3 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 3
+3×3 Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 3
  0.166667  0.166667  0.0
  0.166667  0.833333  0.0
  0.0       0.0       1.0
 
 julia> normalize!(ρ)
-3×3 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 3
+3×3 Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 3
  0.0833333  0.0833333  0.0
  0.0833333  0.416667   0.0
  0.0        0.0        0.5
@@ -140,7 +140,7 @@ New operators can be constructed from existing ones by adding them or multiplyin
 
 ```jldoctest
 julia> a = destroy(5)
-5×5 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 5
+5×5 Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 5
  0.0  1.0  0.0      0.0      0.0
  0.0  0.0  1.41421  0.0      0.0
  0.0  0.0  0.0      1.73205  0.0
@@ -148,7 +148,7 @@ julia> a = destroy(5)
  0.0  0.0  0.0      0.0      0.0
 
 julia> a'*a + 1/2
-5×5 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 5
+5×5 Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 5
  0.5  0.0  0.0  0.0  0.0
  0.0  1.5  0.0  0.0  0.0
  0.0  0.0  2.5  0.0  0.0
@@ -156,7 +156,7 @@ julia> a'*a + 1/2
  0.0  0.0  0.0  0.0  4.5
 
 julia> a' + a
-5×5 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 5
+5×5 Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 5
  0.0  1.0      0.0      0.0      0.0
  1.0  0.0      1.41421  0.0      0.0
  0.0  1.41421  0.0      1.73205  0.0
@@ -177,33 +177,33 @@ All basic algebra functions work as expected:
 
 ```jldoctest
 julia> basis(2,0) + basis(2,1)
-2-d Schrodinger.Ket{SparseVector{Float64,Int64},1} with dimensions 2
+2-d Ket{SparseVector{Float64,Int64},1} with dimensions 2
 1.00∠0°|0⟩ + 1.00∠0°|1⟩
 
 julia> basis(3,0) + 1
-3-d Schrodinger.Ket{SparseVector{Float64,Int64},1} with dimensions 3
+3-d Ket{SparseVector{Float64,Int64},1} with dimensions 3
 2.00∠0°|0⟩ + 1.00∠0°|1⟩ + 1.00∠0°|2⟩
 
 julia> 2.5im*basis(2,0)
-2-d Schrodinger.Ket{SparseVector{Complex{Float64},Int64},1} with dimensions 2
+2-d Ket{SparseVector{Complex{Float64},Int64},1} with dimensions 2
 2.50∠90°|0⟩
 
 julia> thermal(4,0.3)/2 + Operator(coherent(4,1))/2
-4×4 Schrodinger.Operator{Array{Float64,2},1} with dimensions 4
+4×4 Operator{Array{Float64,2},1} with dimensions 4
  0.569363   0.184874   0.124977   0.0911074
  0.184874   0.275112   0.125807   0.0917127
  0.124977   0.125807   0.105588   0.0619989
  0.0911074  0.0917127  0.0619989  0.049937
 
 julia> numberop(4) + 1/2
-4×4 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 4
+4×4 Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 4
  0.5  0.0  0.0  0.0
  0.0  1.5  0.0  0.0
  0.0  0.0  2.5  0.0
  0.0  0.0  0.0  3.5
 
 julia> create(4)^2
-4×4 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 4
+4×4 Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 4
  0.0      0.0      0.0  0.0
  0.0      0.0      0.0  0.0
  1.41421  0.0      0.0  0.0

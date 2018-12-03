@@ -6,7 +6,7 @@ Generate a zero operator for a Hilbert space of size `N`. It is possible to spec
 # Example
 ```jldoctest
 julia> qzero(4,(2,2))
-4×4 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},2} with dimensions 2⊗2
+4×4 Operator{SparseMatrixCSC{Float64,Int64},2} with dimensions 2⊗2
  0.0  0.0  0.0  0.0
  0.0  0.0  0.0  0.0
  0.0  0.0  0.0  0.0
@@ -30,7 +30,7 @@ Generate an identity operator for a Hilbert space of size `N`. It is possible to
 # Example
 ```jldoctest
 julia> qeye(4,(2,2))
-4×4 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},2} with dimensions 2⊗2
+4×4 Operator{SparseMatrixCSC{Float64,Int64},2} with dimensions 2⊗2
  1.0  0.0  0.0  0.0
  0.0  1.0  0.0  0.0
  0.0  0.0  1.0  0.0
@@ -53,7 +53,7 @@ Generate a quantum harmonic oscillator lowering (annihilation) operator \$\\hat{
 # Example
 ```jldoctest
 julia> destroy(4)
-4×4 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 4
+4×4 Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 4
  0.0  1.0  0.0      0.0
  0.0  0.0  1.41421  0.0
  0.0  0.0  0.0      1.73205
@@ -75,7 +75,7 @@ Generate a quantum harmonic oscillator raising (creation) operator \$\\hat{a}^�
 # Example
 ```jldoctest
 julia> create(4)
-4×4 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 4
+4×4 Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 4
  0.0  0.0      0.0      0.0
  1.0  0.0      0.0      0.0
  0.0  1.41421  0.0      0.0
@@ -97,7 +97,7 @@ Generate a number operator \$\\hat{n}\$ in a Hilbert space of size `N`. Returns 
 # Example
 ```jldoctest
 julia> numberop(4)
-4×4 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 4
+4×4 Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 4
  0.0  0.0  0.0  0.0
  0.0  1.0  0.0  0.0
  0.0  0.0  2.0  0.0
@@ -124,7 +124,7 @@ Generate a quantum harmonic oscillator displacement operator \$\\hat{D}(α)\$ in
 # Example
 ```jldoctest
 julia> displacementop(3,0.5im)
-3×3 Schrodinger.Operator{Array{Complex{Float64},2},1} with dimensions 3
+3×3 Operator{Array{Complex{Float64},2},1} with dimensions 3
    0.88262+0.0im            0.0+0.439802im  -0.166001+0.0im
        0.0+0.439802im  0.647859+0.0im             0.0+0.621974im
  -0.166001+0.0im            0.0+0.621974im    0.76524+0.0im
@@ -147,7 +147,7 @@ Generate a quantum harmonic oscillator squeeze operator \$\\hat{S}(z)\$ in a tru
 # Example
 ```jldoctest
 julia> squeezeop(3,0.5im)
-3×3 Schrodinger.Operator{Array{Complex{Float64},2},1} with dimensions 3
+3×3 Operator{Array{Complex{Float64},2},1} with dimensions 3
  0.938148+0.0im       0.0+0.0im       0.0-0.346234im
       0.0+0.0im       1.0+0.0im       0.0+0.0im
       0.0-0.346234im  0.0+0.0im  0.938148+0.0im
@@ -170,7 +170,7 @@ P = \\sum_{i∈S} |i⟩⟨i|.
 # Example
 ```jldoctest
 julia> projectorop(5,[1,3])
-5×5 Schrodinger.Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 5
+5×5 Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 5
  0.0  0.0  0.0  0.0  0.0
  0.0  1.0  0.0  0.0  0.0
  0.0  0.0  0.0  0.0  0.0

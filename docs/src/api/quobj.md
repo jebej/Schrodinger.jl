@@ -1,6 +1,6 @@
 ```@meta
 DocTestSetup = quote
-    using Schrodinger, Compat.SparseArrays
+    using Schrodinger, SparseArrays
 end
 ```
 # Quantum Object Types
