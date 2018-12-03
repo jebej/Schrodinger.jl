@@ -32,17 +32,17 @@ function NormPSU(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},t::Real,n::Int
     u_last = fill(NaN64,m*n)
     # Generate cache for various objects
     H = Hermitian(zeros(promote_eltype(typeof(Hd_d),eltype(Hc_d)),N,N))
-    A = Matrix{ComplexF64}(N,N)
-    U = [Matrix{ComplexF64}(N,N) for i=1:n]
-    X = [Matrix{ComplexF64}(N,N) for i=1:n]
-    P = [Matrix{ComplexF64}(N,N) for i=1:n]
-    copy!(P[end],Ut_d)
+    A = Matrix{ComplexF64}(undef,N,N)
+    U = [Matrix{ComplexF64}(undef,N,N) for i=1:n]
+    X = [Matrix{ComplexF64}(undef,N,N) for i=1:n]
+    P = [Matrix{ComplexF64}(undef,N,N) for i=1:n]
+    copyto!(P[end],Ut_d)
     # For the exact derivative we need to store eigenvectors and eigenvalues
-    D = [Vector{Float64}(N) for i=1:n] # eigenvalues are always real
+    D = [Vector{Float64}(undef,N) for i=1:n] # eigenvalues are always real
     V = [similar(H.data) for i=1:n]
     # More temporary storage
-    Jkj = Matrix{ComplexF64}(N,N)
-    cisDj = Vector{ComplexF64}(N)
+    Jkj = Matrix{ComplexF64}(undef,N,N)
+    cisDj = Vector{ComplexF64}(undef,N)
     return NormPSU(dims(Hd),t/n,Ut_d,Hd_d,Hc_d,u_last,U,X,P,D,V,H,A,Jkj,cisDj)
 end
 
@@ -68,7 +68,7 @@ function gradient!(O::NormPSU,fp,u)
         O.cisDj .= cis.(O.D[j])
         for k = 1:m
             Jmat!(O.Jkj,O.Hc[k],O.cisDj,O.D[j],O.V[j],O.δt,O.A)
-            j==1 ? copy!(O.A,O.Jkj) : mul!(O.A,O.Jkj,O.X[j-1])
+            j==1 ? copyto!(O.A,O.Jkj) : mul!(O.A,O.Jkj,O.X[j-1])
             fp[(k-1)*n+j] = -real(inner(O.P[j],O.A)*a)/N
         end
     end

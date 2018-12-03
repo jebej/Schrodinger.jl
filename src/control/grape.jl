@@ -68,12 +68,12 @@ function calc_fprops!(U,X,D,V,u,δt,Hd,Hc,H,u_last)
         expim!(U[j],H,D[j],V[j],X[1])
     end
     # Calculate forward propagators (cumulative product of U)
-    copy!(X[1],U[1])
+    copyto!(X[1],U[1])
     for i = 2:n
         mul!(X[i],U[i],X[i-1])
     end
     # Save control amplitudes
-    copy!(u_last,u)
+    copyto!(u_last,u)
     return nothing
 end
 
@@ -82,7 +82,7 @@ calc_bprops!(O) = calc_bprops!(O.P,O.U,O.Ut)
 function calc_bprops!(P::Vector{<:AbstractMatrix},U,Ut)
     # Calculate backward propagators
     for i = length(P)-1:-1:1
-        Ac_mul_B!(P[i],U[i+1],P[i+1])
+        mul!(P[i],adjoint(U[i+1]),P[i+1])
     end
     return nothing
 end
@@ -90,7 +90,7 @@ end
 function calc_bprops!(P::Vector{<:NTuple{M,AbstractMatrix}},U,Ut) where M
     # Calculate backward propagators
     for i = length(P)-1:-1:1, m = 1:M
-        Ac_mul_B!(P[i][m],U[i+1],P[i+1][m])
+        mul!(P[i][m],adjoint(U[i+1]),P[i+1][m])
     end
     return nothing
 end
@@ -98,11 +98,11 @@ end
 function Jmat!(Jkj,Hck,cisDj,Dj,Vj,δt,A)
     # Jₖⱼ = Vⱼ*((Vⱼ'*Hₖ*Vⱼ).*Λⱼ)*Vⱼ'
     # Λⱼ[l,m] = λl≈λm ? -1im*δt*cis(λl) : -δt*(cis(λl)-cis(λm))/(λl-λm)
-    Ac_mul_B!(A,Vj,Hck)
+    mul!(A,adjoint(Vj),Hck)
     mul!(Jkj,A,Vj)
     _Jmathermprod!(Jkj,cisDj,Dj,δt)
     mul!(A,Vj,Jkj)
-    A_mul_Bc!(Jkj,A,Vj)
+    mul!(Jkj,A,adjoint(Vj))
     return nothing
 end
 
@@ -123,24 +123,6 @@ end
 function target_propagator(O)
     # Return the target propagator
     return Operator(O.Ut isa NTuple ? sum(O.Ut) : copy(O.Ut),O.dims)
-end
-
-function plotgrape(res::GrapeResult)
-    if :PyPlot ∉ names(Main)
-        error("Make sure PyPlot is loaded!")
-    else
-        plt = Main.PyPlot
-    end
-    ui = res.ui
-    uf = res.uf
-    t = linspace(0,res.t,size(uf,1)+1)
-    plt.figure()
-    plt.step(t,[uf[1:1,:]; uf])
-    plt.gca()[:set_prop_cycle](nothing)
-    plt.step(t,[ui[1:1,:]; ui],linestyle="dashed")
-    plt.legend(["Control $i" for i in 1:size(uf,2)])
-    plt.tight_layout(true)
-    plt.grid(true)
 end
 
 function step_sample(fun,params,tspan,steps)
