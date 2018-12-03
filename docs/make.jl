@@ -31,7 +31,6 @@ makedocs(
 
 deploydocs(
     repo = "github.com/jebej/Schrodinger.jl.git",
-    julia = "1.0",
     target = "build",
     deps = nothing,
     make = nothing,
