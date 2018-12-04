@@ -9,7 +9,7 @@ addons:
     packages:
       - python3-pip
 julia:
-  - 0.6
+  - 0.7
   - 1.0
   - 1.3
   - nightly
@@ -30,7 +30,7 @@ jobs:
         - julia --project=docs/ -e 'include(joinpath("docs", "make.jl"))' --color=yes
       after_success: skip
 after_success:
-  # push coverage results to Coveralls and Codecov
-  - julia -e 'using Compat.Pkg; Pkg.add("Coverage"); using Coverage'
+# push coverage results to Coveralls and Codecov
+  - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage'
   - julia -e 'using Coverage; Coveralls.submit(Coveralls.process_folder())'
   - julia -e 'using Coverage; Codecov.submit(Codecov.process_folder())'

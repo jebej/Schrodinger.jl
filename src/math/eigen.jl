@@ -1,4 +1,4 @@
-import Compat.LinearAlgebra: eigvals
+import LinearAlgebra: eigvals
 
 eigvals(A::QuMatrix, args...; kwargs...) =
     eigvals(A.data, args...; kwargs...)

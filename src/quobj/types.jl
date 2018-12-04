@@ -1,7 +1,7 @@
 # Type aliases
 const SFloat{T<:AbstractFloat} = Union{T, Complex{T}}
-const SMatrix{T<:SFloat} = Union{SparseMatrixCSC{T,Int}, Diagonal{T}, Symmetric{T}, Hermitian{T}, Matrix{T}}
-const SVector{T<:SFloat} = Union{SparseVector{T,Int}, Vector{T}}
+const SMatrix{T<:SFloat} = AbstractMatrix{T}
+const SVector{T<:SFloat} = AbstractVector{T}
 
 const AbstractVecOrTuple{T} = Union{AbstractVector{<:T},NTuple{N,T} where N}
 

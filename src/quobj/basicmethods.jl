@@ -1,11 +1,8 @@
 import Base: length, size, eltype, getindex, setindex!, similar, copy, hash,
     isequal, ==, convert, promote_rule, isapprox, show, @propagate_inbounds
-import Compat.LinearAlgebra: checksquare, diag, complex, rank, normalize!,
-    normalize, ishermitian, issymmetric, isdiag, triu, tril
-import Compat: norm, opnorm
-if VERSION < v"1.0.0-"
-    import Base: full
-end
+import LinearAlgebra: Hermitian, Symmetric, checksquare, diag, complex, norm, opnorm,
+	rank, normalize!, normalize, ishermitian, issymmetric, isdiag, triu, tril
+
 # Special QuObject methods
 data(A::QuObject) = A.data
 dims(A::QuObject) = A.dims
@@ -91,7 +88,6 @@ promote_rule(::Type{Bra{T,D}},::Type{Bra{S,D}}) where {T,S,D} = Bra{promote_type
 promote_rule(::Type{Operator{T,D}},::Type{Operator{S,D}}) where {T,S,D} = Operator{promote_type(T,S),D}
 
 # Misc. conversions
-import Compat.LinearAlgebra: Hermitian, Symmetric
 Hermitian(A::Operator) = error("Use the `hermitian` function to make an Operator Hermitian")
 hermitian(A::Operator) = Operator(Hermitian(A.data),A.dims)
 Symmetric(A::Operator) = error("Use the `symmetric` function to make an Operator Symmetric")

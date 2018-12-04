@@ -1,4 +1,4 @@
-import Compat.LinearAlgebra: RealHermSymComplexHerm, normalize
+import LinearAlgebra: RealHermSymComplexHerm, normalize
 import Base: reverse
 
 convert(::Type{BitSet},r::IntCol) = BitSet(r)
