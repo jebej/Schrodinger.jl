@@ -1,6 +1,5 @@
 module Schrodinger
-using Compat
-using Compat.LinearAlgebra, Compat.SparseArrays, Compat.Printf
+using LinearAlgebra, SparseArrays, Printf
 using Base: tail, front, product, promote_eltype
 using OrdinaryDiffEq, Optim
 using OrdinaryDiffEq.DiffEqBase: AbstractParameterizedFunction
@@ -27,23 +26,16 @@ export Operator, Ket, Bra,
     eigen
 
 # VERSION-conditional definitions
-if VERSION < v"2.0.0-"
-    include("basepatch/v1.0.jl")
-end
-if VERSION < v"0.7.0-"
-    include("basepatch/v0.6.jl")
-end
-if VERSION > v"0.7.0-"
-    import Base: BitSet, print_array, sum
-    import LinearAlgebra: adjoint, exp, exp!, tr, eigen
-    import Arpack: eigs
-    import SpecialFunctions: erf
-    export eigs, eigvals, trace, normalize, normalize!
-    trace(A::AbstractMatrix) = tr(A)
-    sum(A::AbstractArray,i::Integer) = Base._sum(A,i)
-    parseb2(s::AbstractString) = Base.tryparse_internal(Int,s,firstindex(s),lastindex(s),2,true)
-    const luf = lu
-end
+include("basepatch/v1.0.jl")
+import Base: BitSet, print_array, sum
+import LinearAlgebra: adjoint, exp, exp!, tr, eigen
+import Arpack: eigs
+import SpecialFunctions: erf
+export eigs, eigvals, trace, normalize, normalize!
+trace(A::AbstractMatrix) = tr(A)
+sum(A::AbstractArray,i::Integer) = Base._sum(A,i)
+parseb2(s::AbstractString) = Base.tryparse_internal(Int,s,firstindex(s),lastindex(s),2,true)
+const luf = lu
 
 include("quobj/types.jl")
 include("quobj/basicmethods.jl")

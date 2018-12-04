@@ -115,7 +115,7 @@ function LindbladProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, Cₘ::Tuple{Va
     for i = 1:steps
         step_hamiltonian!(H.data,H0,Hn,(t₁,dt,i))
         expim!(A,H,Λ,C,D) # A = exp(-1im*H*dt)
-        invA = Compat.LinearAlgebra.inv!(luf(A))
+        invA = LinearAlgebra.inv!(luf(A))
         mul!(B,U₀,U) # use the Lie product formula here for better results
         @static if VERSION < v"0.7.0-"
             At_mul_B!(U,invA⊗Id,B)

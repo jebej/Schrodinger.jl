@@ -8,7 +8,7 @@ end
 
 ## First Steps
 
-The first step to using Schrodinger.jl is to install it. This is easy to do with Julia's package manager. Type `Pkg.clone("https://github.com/jebej/Schrodinger.jl.git")` at the Julia `REPL` to download the package to your computer. From there, the package can be used or imported like any other Julia package:
+The first step to using Schrodinger.jl is to install it. This is easy to do with Julia's package manager. Type `using Pkg; Pkg.clone("https://github.com/jebej/Schrodinger.jl.git")` at the Julia `REPL` to download the package to your computer. From there, the package can be used or imported like any other Julia package:
 
 ```julia
 using Schrodinger

@@ -1,4 +1,4 @@
-using Compat.SparseArrays: nonzeroinds, _spdot
+using SparseArrays: nonzeroinds, _spdot
 
 function A_mul_Bf(x::SparseVector{Tv,Ti},y::SparseVector{Tv,Ti},f::Function) where {Tv,Ti}
     nnzx = nnz(x)
