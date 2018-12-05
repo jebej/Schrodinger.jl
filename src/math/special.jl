@@ -16,6 +16,8 @@ expect(ψ::Ket,σ::Operator) = expect(σ,ψ)
 expect(σ::Operator,ρ::Operator) = (dimsmatch(σ,ρ); trace(data(σ)*data(ρ)))
 
 # Faster expectation value methods when passing in many inputs
+expect(σ::Operator,states::Vector{<:QuObject}) = expect!(Vector{ComplexF64}(undef,length(states)),σ,states)
+
 function expect!(res,σ::Operator,states::Vector{Ket{T,D}}) where {T,D}
     dimsmatch(σ,states[1])
     tmp = Vector{ComplexF64}(undef,prod(dims(σ)))
@@ -28,13 +30,14 @@ end
 
 function expect!(res,σ::Operator,states::Vector{Operator{T,D}}) where {T,D}
     dimsmatch(σ,states[1])
+    checkbounds(res,length(states))
     superσ = super(data(σ))
-    tmp = Vector{ComplexF64}(undef,prod(dims(σ))^2)
+    tmp = Vector{ComplexF64}(undef,size(superσ,1))
     N = length(tmp); sqrtNp1 = isqrt(N)+1
-    fill!(res, zero(eltype(tmp)))
     for (i,ρ) in enumerate(states)
         mul!(tmp,superσ,vec(data(ρ)))
-        for n = 1:sqrtNp1:N
+        res[i] = 0
+        @inbounds for n = 1:sqrtNp1:N
             res[i] += tmp[n]
         end
     end
