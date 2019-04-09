@@ -30,8 +30,8 @@ function opt_RF_3lvlNOT(n)
     Hd = Δ*Operator(basis(3,2)) # drift Hamiltonian
     Hc = [create(3)/2+destroy(3)/2, im*create(3)/2-im*destroy(3)/2]
     t = 3 # (ns)
-    tvec = -t/2 : t/(n-1) : t/2
-    ui = [-Δ*gaussianpulse.(tvec,[[t/2,t,0,0,pi]]) -Δ/2:Δ/(n-1):Δ/2]
+    tvec = LinRange(-t/2,t/2,n)
+    ui = [-Δ*gaussianpulse.(tvec,[[t/2,t,0,0,pi]]) LinRange(-Δ/2,Δ/2,n)]
     Ut = Operator([0 1 0; 1 0 0; 0 0 1]) # 3lvl NOT gate
     # Create objective function type
     O = CoherentSubspaces(Ut,1:2,Hd,Hc,t,n) # care only about computational subspace
@@ -44,9 +44,9 @@ function opt_3lvlNOT(n)
     Hd = ω*Operator(basis(3,1))+(2ω+Δ)*Operator(basis(3,2)) # drift Hamiltonian
     Hc = [create(3)+destroy(3)]
     t = 3 # (ns)
-    tvec = -t/2 : t/(n-1) : t/2
+    tvec = LinRange(-t/2,t/2,n)
     ui = gaussianpulse.(tvec,[[t/2,t,ω,0,pi]])
-    #ui = 2.*cos.(ω.*tvec)
+    #ui = 2 .* cos.(ω.*tvec)
     #Ut = Operator([0 1 0; 1 0 0; 0 0 1]) # 3lvl NOT gate
     Ut = (Operator([0 1 0; 1 0 0; 0 0 0]),Operator([0 0 0; 0 0 0; 0 0 -1]))
     # Create objective function type

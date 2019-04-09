@@ -48,7 +48,7 @@ function psolve(U::Propagator,ψ₀::Ket,steps,e_ops)
     end
     evals  = calc_expvals(e_ops,states)
     #probs  = levelprobs(states)
-    t = collect(linspace(0,steps*U.Δt,steps+1))
+    t = collect(LinRange(0,steps*U.Δt,steps+1))
     return Result(t,states,evals,:SchrodingerPropSolver)
 end
 
@@ -61,7 +61,7 @@ function psolve(U::Propagator,ρ₀::Operator,steps,e_ops)
     end
     evals  = calc_expvals(e_ops,states)
     #probs  = levelprobs(states)
-    t = collect(linspace(0,steps*U.Δt,steps+1))
+    t = collect(LinRange(0,steps*U.Δt,steps+1))
     return Result(t,states,evals,:SchrodingerPropSolver)
 end
 
