@@ -19,8 +19,8 @@ function basic_mle_tomo(M,Nm)
     # ρ = [t₁²+t₃²+t₄²  t₂*(t₃-it₄)    /
     #      t₂*(t₃+it₄)       t₂²   ] /   (t₁²+t₂²+t₃²+t₄²)
     # assuming gaussian noise, we can minimize the loglikehood function
-    f = t -> loglikehood_gaussian(M,t[1],t[2],t[3],t[4],Nm)
-    return optimize(f,rand(4))
+    f = T -> loglikehood_gaussian(M,T,Nm)
+    return optimize(f,[0.5,0.5,0.5,0.5])
 end
 
 function reconstruct_ρ(t₁,t₂,t₃,t₄)
@@ -32,10 +32,11 @@ function reconstruct_ρ(t₁,t₂,t₃,t₄)
     return Operator(ρ,(2,),true)
 end
 
-function loglikehood_gaussian(M,t₁,t₂,t₃,t₄,Nm)
+function loglikehood_gaussian(M,T,Nm)
     # calculate the log-likelhood of measuring M, a vector of 6 expectation
     # values, given a t-parameterized density matrix
     # we assume Gaussian statistics for the measurement count probability
+    @inbounds t₁,t₂,t₃,t₄ = T
     X = t_expectation_values(t₁,t₂,t₃,t₄)
     return sum((Nm*px-nm)^2/(2*Nm*px) for (px,nm) in zip(X,M))
 end
@@ -43,10 +44,11 @@ end
 binomlogpdf(n::Real, p::Real, k::Real) =
     -log1p(n) - lbeta(n - k + 1, k + 1) + k * log(p) + (n - k) * log1p(-p)
 
-function loglikehood_binomial(M,t₁,t₂,t₃,t₄,Nm)
+function loglikehood_binomial(M,T,Nm)
     # calculate the log-likelhood of measuring M, a vector of 6 expectation
     # values, given a t-parameterized density matrix
-    # we assume Gaussian statistics for the measurement count probability
+    # we assume Binomial statistics for the measurement count probability
+    @inbounds t₁,t₂,t₃,t₄ = T
     X = t_expectation_values(t₁,t₂,t₃,t₄)
     return sum(-binomlogpdf(Nm,px,nm) for (px,nm) in zip(X,M))
 end
@@ -65,5 +67,3 @@ function t_expectation_values(t₁,t₂,t₃,t₄)
     Zp, Zm = t₂²/N, (t₁²+t₃²+t₄²)/N
     return Xp,Xm,Yp,Ym,Zp,Zm
 end
-
-function
