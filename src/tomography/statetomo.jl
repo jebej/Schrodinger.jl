@@ -1,4 +1,3 @@
-using SpecialFunctions
 
 function super_basic_tomo(mx,my,mz)
     # here, the inputs are measurements in the Pauli basis
@@ -8,23 +7,18 @@ function super_basic_tomo(mx,my,mz)
     return Operator(ρ,(2,))
 end
 
-
-function basic_mle_tomo(M,Nm)
-    # here, the inputs are e count values for |+⟩,|-⟩,|+i⟩,|-i⟩,|1⟩,|0⟩
-    # meansurements, e.g. M[1] = Nm*⟨+|ρ|+⟩
-    # a physical density matrix can be represented by 4 free parameters:
-    # T = [  t₁    0
-    #      t₃+it₄  t₂]
-    # then, ρ = T†*T/trace(T†*T)
-    # ρ = [t₁²+t₃²+t₄²  t₂*(t₃-it₄)    /
-    #      t₂*(t₃+it₄)       t₂²   ] /   (t₁²+t₂²+t₃²+t₄²)
-    # assuming gaussian noise, we can minimize the loglikehood function
-    f = T -> loglikehood_gaussian(M,T,Nm)
-    return optimize(f,[0.5,0.5,0.5,0.5])
+function basic_mle_tomo(M,Nm::Integer)
+    # here, the inputs are count values for |+⟩,|-⟩,|+i⟩,|-i⟩,|1⟩,|0⟩
+    # measurements, e.g. M[1] = Nm*⟨+|ρ|+⟩
+    # a physical density matrix can be represented by 4 parameters; assuming
+    # some measurement statistics, we minimize the loglikehood function
+    length(M)==6 || throw(ArgumentError("measurement array must contain 6 values!"))
+    f = T -> loglikehood_binomial(M,T,Nm)
+    return optimize(f,[1/√2,1/√2,0,0])
 end
 
-function reconstruct_ρ(t₁,t₂,t₃,t₄)
-    # reconstruct the density matrix from the T parameters
+function reconstruct_density(t₁,t₂,t₃,t₄)
+    # reconstruct the density matrix from the t-parameters
     t₁²,t₂²,t₃²,t₄² = t₁^2,t₂^2,t₃^2,t₄^2
     N = t₁²+t₂²+t₃²+t₄²
     ρ = 1/N*[  t₁²+t₃²+t₄²   t₂*(t₃-1im*t₄)
@@ -33,37 +27,33 @@ function reconstruct_ρ(t₁,t₂,t₃,t₄)
 end
 
 function loglikehood_gaussian(M,T,Nm)
-    # calculate the log-likelhood of measuring M, a vector of 6 expectation
-    # values, given a t-parameterized density matrix
-    # we assume Gaussian statistics for the measurement count probability
-    @inbounds t₁,t₂,t₃,t₄ = T
-    X = t_expectation_values(t₁,t₂,t₃,t₄)
-    return sum((Nm*px-nm)^2/(2*Nm*px) for (px,nm) in zip(X,M))
+    # Gaussian statistics for the measurement count probability
+    X = t_expectation_values(T)
+    return sum((Nm*p-m)^2/(2*Nm*p) for (p,m) in zip(X,M))
 end
-
-binomlogpdf(n::Real, p::Real, k::Real) =
-    -log1p(n) - lbeta(n - k + 1, k + 1) + k * log(p) + (n - k) * log1p(-p)
 
 function loglikehood_binomial(M,T,Nm)
-    # calculate the log-likelhood of measuring M, a vector of 6 expectation
-    # values, given a t-parameterized density matrix
-    # we assume Binomial statistics for the measurement count probability
-    @inbounds t₁,t₂,t₃,t₄ = T
-    X = t_expectation_values(t₁,t₂,t₃,t₄)
-    return sum(-binomlogpdf(Nm,px,nm) for (px,nm) in zip(X,M))
+    # Binomial statistics for the measurement count probability, up to some irrelevant constant
+    X = t_expectation_values(T)
+    return sum(-m*log(p) for (p,m) in zip(X,M))
 end
+
+t_expectation_values(T) = (@inbounds t₁,t₂,t₃,t₄=T; t_expectation_values(t₁,t₂,t₃,t₄))
 
 function t_expectation_values(t₁,t₂,t₃,t₄)
     # Calculate the expectation values for |+⟩,|-⟩,|+i⟩,|-i⟩,|1⟩,|0⟩ with the
-    # t-parameterized density matrix ρ(t) = T†*T/trace(T†*T)
-    # formulas calculated in Mathematica
+    # t-parameterized density matrix ρ(t) = T†*T/trace(T†*T), where
+    # T = [  t₁    0
+    #      t₃+it₄  t₂]
     t₁²,t₂²,t₃²,t₄² = t₁^2,t₂^2,t₃^2,t₄^2
     N = t₁²+t₂²+t₃²+t₄²
-    # |+⟩,|-⟩
+    # ⟨+|ρ|+⟩, ⟨-|ρ|-⟩
     Xp, Xm = 1/2 + t₂*t₃/N, 1/2 - t₂*t₃/N
-    # |+i⟩,|-i⟩
+    # ⟨+i|ρ|+i⟩, ⟨-i|ρ|-i⟩
     Yp, Ym = 1/2 + t₂*t₄/N, 1/2 - t₂*t₄/N
-    # |1⟩,|0⟩
+    # ⟨1|ρ|1⟩, ⟨0|ρ|0⟩
     Zp, Zm = t₂²/N, (t₁²+t₃²+t₄²)/N
     return Xp,Xm,Yp,Ym,Zp,Zm
 end
+
+M = [103, 633, 621, 115, 354, 377]
