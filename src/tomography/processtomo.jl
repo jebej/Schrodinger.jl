@@ -59,6 +59,8 @@ end
 function project_CPTP(C)
     # generate helper objects
     Mdagvec𝕀,MdagM = TP_helper_matrices(C)
+    D = Vector{real(eltype(C))}(undef,size(C,1))
+    V = Matrix{eltype(C)}(undef,size(C))
     x₁ = copy(vec(C)); y₁ = zero(x₁);
     x₂ = copy(y₁); y₂ = copy(y₁)
     p = copy(y₁); q = copy(y₁)
@@ -68,7 +70,7 @@ function project_CPTP(C)
         y₂ = project_TP(x₁+p,Mdagvec𝕀,MdagM)
         p_diff = norm(x₁-y₂,2)
         @. p = x₁ - y₂ + p
-        x₂ = project_CP(y₂+q)
+        x₂ = project_CP(y₂+q,D,V)
         q_diff = norm(y₂-x₂,2)
         @. q = y₂ - x₂ + q
         x₁, x₂ = x₂, x₁
@@ -77,12 +79,12 @@ function project_CPTP(C)
     return unvec(x₁)
 end
 
-function project_CP(vecC)
+function project_CP(vecC,D,V)
     # Project the process onto the completely positive subspace by making the
     # Choi matrix positive semidefinite
     # We do this by taking the eigendecomposition, setting any negative
     # eigenvalues to 0, and reconstructing the Choi matrix
-    D,V = eigen(Hermitian(unvec(vecC)))
+    hermfact!(D,V,Hermitian(unvec(vecC)))
     D .= max.(D,0)
     return vec(V*Diagonal(D)*V')
 end
