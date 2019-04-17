@@ -1,19 +1,9 @@
-using Schrodinger, LinearAlgebra, BenchmarkTools
-
-# real data for a 180° Z rotation
-M = [ 47   736   395   358   421   383
-     710   107   323   468   423   315
-     338   428   128   646   429   338
-     440   359   731    46   407   408
-     403   340   349   400   753    36
-     400   391   384   408    10   755]./(6*3*786) # normalize
-
 function gen_likelihood_model_1Q()
     # Generate the A matrix used to calculate likelihoods
     # The A matrix depends on the input states and measurement operators
     # We choose the 6 axial Bloch states as our inputs and measurements
     # |+⟩,|-⟩,|+i⟩,|-i⟩,|1⟩,|0⟩
-    ρ = normalize!.(Operator.(Ket.([[1,1],[1,-1],[1,1im],[1,-1im],[0,1],[1,0]])))
+    ρ = normalize!.(Operator.(Ket.([[1,1],[1,-1],[1,1im],[1,-1im],[1,0],[0,1]])))
     E = ρ ./ 3
     return mapreduce(transpose,vcat,[vec(full(transpose(ρ)⊗E)) for ρ ∈ ρ, E ∈ E])
 end
@@ -21,7 +11,7 @@ end
 apply_process(C::Operator,ψ::Ket) = apply_process(C,Operator(ψ))
 apply_process(C::Operator,ρ::Operator) = ptrace((transpose(ρ)⊗qeye(size(ρ,1)))*C,1)
 
-# below is the actual algorithm from Knee, et al.
+# below is the actual projected gradient descent algorithm from Knee, et al.
 # Quantum process tomography via completely positive and trace-preserving
 # projection. Phys. Rev. A 98, 062336 (2018).
 
@@ -60,12 +50,11 @@ function loglikelihood(M,C,A)
     P = A*vec(C)
     return -real(transpose(vec(M))*log.(P))
 end
+
 function loglikelihood_gradient(M,C,A)
     P = A*vec(C)
     return unvec(-A'*(vec(M)./P))
 end
-
-unvec(vecC) = (d=isqrt(length(vecC)); reshape(vecC,(d,d)))
 
 function project_CPTP(C)
     # generate helper objects

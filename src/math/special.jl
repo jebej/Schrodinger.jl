@@ -190,8 +190,10 @@ function gate_fidelity(U::Operator,V::Operator,d::Integer=prod(dims(U)))
     return (abs2(inner(U,V)) + d)/(d^2 + d)
 end
 
-function oper(vecA::AbstractVector,N=isqrt(length(vecA)))
-    return reshape(vecA,(N,N))
+function unvec(vecA::AbstractVector)
+    # unvectorize a vector into a square matrix
+    d = isqrt(length(vecA))
+    return reshape(vecA,(d,d))
 end
 
 function super(A::AbstractMatrix,B::AbstractMatrix=data(qeye(size(A,1))))
