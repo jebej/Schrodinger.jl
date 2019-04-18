@@ -21,6 +21,10 @@ getindex(A::QuVector,t::Tuple) =
     (i=tensored_sub2ind(dims(A),t); getindex(A.data,i))
 getindex(A::QuMatrix,ti::Tuple,tj::Tuple) =
     (i=tensored_sub2ind(dims(A),ti); j=tensored_sub2ind(dims(A),tj); getindex(A.data,i,j))
+setindex!(A::QuVector,v,t::Tuple) =
+    (i=tensored_sub2ind(dims(A),t); setindex!(A.data,v,i))
+setindex!(A::QuMatrix,v,ti::Tuple,tj::Tuple) =
+    (i=tensored_sub2ind(dims(A),ti); j=tensored_sub2ind(dims(A),tj); setindex!(A.data,v,i,j))
 
 # Translate basic Base array methods to QuObjects
 length(A::QuObject) = length(A.data)

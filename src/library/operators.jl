@@ -13,14 +13,15 @@ julia> qzero(4,(2,2))
  0.0  0.0  0.0  0.0
 ```
 """
-function qzero(N::Integer, dims::Dims=(N,))
+function qzero(::Type{T},N::Integer, dims::Dims=(N,)) where {T<:Number}
     rowval = Vector{Int}(undef,0)
     colptr = ones(Int,N+1)
-    nzval  = Vector{Float64}(undef,0)
+    nzval  = Vector{T}(undef,0)
     return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),dims,true)
 end
-qzero(dims::Dims) = qzero(prod(dims),dims)
-
+qzero(::Type{T},dims::Dims) where {T<:Number} = qzero(T,prod(dims),dims)
+qzero(N::Integer, dims::Dims=(N,)) = qzero(Float64,N,dims)
+qzero(dims::Dims) = qzero(Float64,dims)
 
 """
     qeye(N, dims=(N,))
