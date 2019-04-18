@@ -23,25 +23,26 @@ function pdg_process_tomo(M,A,info=false)
     # infer space dimensions from A matrix
     d = isqrt(isqrt(size(A,2)))
     # initial Choi matrix guess, the identity map
-    C = Matrix{ComplexF64}(I,d^2,d^2)/d
+    C = Matrix{ComplexF64}(I/d,d^2,d^2)
     # objective and gradient functions setup
     f = C -> loglikelihood(M,C,A)
     ∇f = C -> loglikelihood_gradient(M,C,A)
     # metaparameters & initial cost calculation
     μ = 3/2d^2; γ = 0.3
     c₁ = 1E6; c₂ = f(C)
-    info && println("starting cost = $c₂")
+    info && println("start cost = $c₂")
     # iterate through projected gradient descent steps, with backtracking
+    h = CPTP_helpers(C)
     while c₁ - c₂ > 1E-10
         c₁, ∇c = c₂, ∇f(C)
-        D = project_CPTP(C .- 1/μ .* ∇c) - C
+        D = project_CPTP(C .- 1/μ .* ∇c,h) - C
         α = 1.0; Π = γ*real(D⋅∇c)
         while (c₂ = f(C.+α.*D)) > c₁ + α*Π
             α = α/2 # backtrack
         end
         @. C = C + α*D
     end
-    info && println("final cost = $c₂")
+    info && println("final cost = $c₂, |Δc| = $(c₁-c₂)")
     return C
 end
 
@@ -56,15 +57,13 @@ function loglikelihood_gradient(M,C,A)
     return unvec(-A'*(vec(M)./P))
 end
 
-function project_CPTP(C)
-    # generate helper objects
-    Mdagvec𝕀,MdagM = TP_helper_matrices(C)
-    D = Vector{real(eltype(C))}(undef,size(C,1))
-    V = Matrix{eltype(C)}(undef,size(C))
+function project_CPTP(C,h)
+    # generate storage objects
     x₁ = copy(vec(C)); y₁ = zero(x₁);
     x₂ = copy(y₁); y₂ = copy(y₁)
     p = copy(y₁); q = copy(y₁)
     p_diff = 1.0; q_diff = 1.0
+    D,V,Mdagvec𝕀,MdagM = h
     # iterate through TP & CP projections
     while p_diff^2 + q_diff^2 + 2*abs(p⋅(x₂-x₁)) + 2*abs(q⋅(y₂-y₁)) > 1E-4
         y₂ = project_TP(x₁+p,Mdagvec𝕀,MdagM)
@@ -95,10 +94,17 @@ function project_TP(vecC,Mdagvec𝕀,MdagM)
     return vecC .- d⁻¹.*MdagM*vecC .+ d⁻¹.*Mdagvec𝕀
 end
 
+function CPTP_helpers(C)
+    D = Vector{real(eltype(C))}(undef,size(C,1))
+    V = Matrix{eltype(C)}(undef,size(C))
+    Mdagvec𝕀,MdagM = TP_helper_matrices(C)
+    return D,V,Mdagvec𝕀,MdagM
+end
+
 function TP_helper_matrices(C)
     d = isqrt(size(C,1))
     𝕀 = Matrix{Int8}(I,d,d); k = zeros(Int8,1,d)
     # this can be done more efficiently, but prob doesn't matter
     M = sum((@inbounds k[i],k[mod1(i-1,d)] = 1,0; 𝕀 ⊗ k ⊗ 𝕀 ⊗ k) for i=1:d)
-    return M'*vec(𝕀), M'M
+    return M'*vec(𝕀), M'*M
 end
