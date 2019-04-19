@@ -8,19 +8,6 @@ function gen_likelihood_model_1Q()
     return mapreduce(transpose,vcat,[vec(full(transpose(ρ)⊗E)) for ρ ∈ ρ, E ∈ E])
 end
 
-apply_process(C::Operator,ψ::Ket) = apply_process(C,Operator(ψ))
-apply_process(C::Operator,ρ::Operator) = ptrace((transpose(ρ)⊗qeye(size(ρ,1)))*C,1)
-
-function operator_to_choi(O::Operator)
-    length(dims(O)) == 1 || throw(ArgumentError("multi-space operators not supported yet!"))
-    d = dims(O)[1]
-    C = dense(qzero(eltype(O),d^2,(d,d)))
-    for i=1:d, j=1:d, i′=1:d, j′=1:d
-        @inbounds C[(i-1,i′-1),(j-1,j′-1)] = O[i,i′]*O[j,j′]'
-    end
-    return C
-end
-
 # below is the actual projected gradient descent algorithm from Knee, et al.
 # Quantum process tomography via completely positive and trace-preserving
 # projection. Phys. Rev. A 98, 062336 (2018).
