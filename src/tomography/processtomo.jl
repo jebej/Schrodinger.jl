@@ -32,25 +32,27 @@ function pdg_process_tomo(M,A,info=false)
     h = CPTP_helpers(C)
     while c₁ - c₂ > 1E-10
         c₁, ∇c = c₂, ∇f(C)
-        D = project_CPTP(C .- 1/μ .* ∇c,h) - C
+        D = project_CPTP(C.-1/μ.*∇c, h) - C
         α = 1.0; Π = γ*real(D⋅∇c)
         while (c₂ = f(C.+α.*D)) > c₁ + α*Π
             α = α/2 # backtrack
         end
         @. C = C + α*D
     end
-    info && println("final cost = $c₂, |Δc| = $(c₁-c₂)")
+    info && println("final cost = $c₂, Δc = $(c₁-c₂)")
     return C
 end
 
 function loglikelihood(M,C,A)
     # Binomial statistics for the measurement count probability, up to some irrelevant constant
-    P = A*vec(C)
+    P = real.(A*vec(C))
+    P .= max.(P,1E-16)
     return -real(transpose(vec(M))*log.(P))
 end
 
 function loglikelihood_gradient(M,C,A)
-    P = A*vec(C)
+    P = real.(A*vec(C))
+    P .= max.(P,1E-16)
     return unvec(-A'*(vec(M)./P))
 end
 
