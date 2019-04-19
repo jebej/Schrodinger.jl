@@ -20,7 +20,7 @@ function lsolve(L::Liouvillian,ρ₀::Operator,tspan,e_ops,alg;kwargs...)
     dimsmatch(L,ρ₀)
     prob = ODEProblem(L,vec(complex(full(ρ₀))),tspan)
     sol  = solve(prob,alg;dense=false,abstol=1E-10,reltol=1E-8,kwargs...)
-    states = Operator.(oper.(sol.u),[dims(ρ₀)])
+    states = Operator.(unvec.(sol.u),[dims(ρ₀)])
     evals  = calc_expvals(e_ops,states)
     return Result(sol.t,states,evals,sol.alg)
 end
