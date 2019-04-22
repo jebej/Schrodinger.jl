@@ -1,5 +1,5 @@
 import Base: length, size, eltype, getindex, setindex!, similar, copy, hash,
-    isequal, ==, convert, promote_rule, isapprox, show
+    isequal, ==, convert, promote_rule, isapprox, show, @propagate_inbounds
 import Compat.LinearAlgebra: checksquare, diag, complex, norm, rank,
     normalize!, normalize, ishermitian, issymmetric, isdiag, triu, tril
 if VERSION < v"1.0.0-"
@@ -17,14 +17,14 @@ dimsmatch(A::QuObject,B::QuObject) =
     A.dims==B.dims || throw(DimensionMismatch("subspace dimensions do not match"))
 
 # Tensored indexing methods
-getindex(A::QuVector,t::Tuple) =
-    (i=tensored_sub2ind(dims(A),t); getindex(A.data,i))
-getindex(A::QuMatrix,ti::Tuple,tj::Tuple) =
-    (i=tensored_sub2ind(dims(A),ti); j=tensored_sub2ind(dims(A),tj); getindex(A.data,i,j))
-setindex!(A::QuVector,v,t::Tuple) =
-    (i=tensored_sub2ind(dims(A),t); setindex!(A.data,v,i))
-setindex!(A::QuMatrix,v,ti::Tuple,tj::Tuple) =
-    (i=tensored_sub2ind(dims(A),ti); j=tensored_sub2ind(dims(A),tj); setindex!(A.data,v,i,j))
+@propagate_inbounds getindex(A::QuVector,t::Tuple) =
+    getindex(A.data,tensored_sub2ind(dims(A),t))
+@propagate_inbounds getindex(A::QuMatrix,ti::Tuple,tj::Tuple) =
+    getindex(A.data,tensored_sub2ind(dims(A),ti),tensored_sub2ind(dims(A),tj))
+@propagate_inbounds setindex!(A::QuVector,v,t::Tuple) =
+    setindex!(A.data,v,tensored_sub2ind(dims(A),t))
+@propagate_inbounds setindex!(A::QuMatrix,v,ti::Tuple,tj::Tuple) =
+    setindex!(A.data,v,tensored_sub2ind(dims(A),ti),tensored_sub2ind(dims(A),tj))
 
 # Translate basic Base array methods to QuObjects
 length(A::QuObject) = length(A.data)
