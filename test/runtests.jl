@@ -9,5 +9,6 @@ include("quobj.jl")
 include("math.jl")
 include("special.jl")
 include("dynamics.jl")
+include("tomography.jl")
 include("misc.jl")
 end
