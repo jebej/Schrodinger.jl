@@ -2,6 +2,7 @@
 using Schrodinger
 using Schrodinger: ComplexF64
 using Compat.Test, Compat.LinearAlgebra, Compat.SparseArrays
+println("Testing Dynamics...")
 
 @testset "Time Dynamics" begin
 N = 5 # cavity levels for tests

@@ -5,6 +5,7 @@ using Compat.Test, Compat.LinearAlgebra, Compat.SparseArrays
 if VERSION > v"0.7.0-"
     using Compat.Statistics: mean
 end
+println("Testing Quantum Info Functions...")
 
 @testset "Quantum Information" begin
 # Build a few different variable for testing

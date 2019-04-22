@@ -3,6 +3,7 @@ using Schrodinger
 using Schrodinger: ComplexF64
 using Compat.Test, Compat.LinearAlgebra, Compat.SparseArrays
 include("reffuns.jl")
+println("Testing Misc. Functions...")
 
 @testset "Misc. Tests" begin
 
