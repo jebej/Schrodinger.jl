@@ -11,7 +11,36 @@ function operator_to_choi(O::Operator)
     return C
 end
 
-gate_fidelity(C) = (d=dims(C)[1]; (sum(@inbounds C[(i,i),(j,j)] for i=0:1,j=0:1)/d+1)/(d+1))
+function gate_fidelity_choi(C::Operator,U::Operator)
+    # calculate the average gate fidelity given a Choi matrix and a unitary gate
+    length(dims(C)) == 2 && dims(C)[1]==dims(C)[2]==dims(U)[1] || throw(DimensionMismatch())
+    V = qeye(dims(U)[1]) ⊗ U
+    return gate_fidelity_choi(V'*C*V)
+end
+
+function gate_fidelity_choi(C::Operator)
+    # calculate the average gate fidelity given a Choi matrix
+    # Johnston, N. & Kribs, D. W. Quantum gate fidelity in terms of Choi
+    # matrices. J. Phys. A Math. Theor. 44, 495303 (2011).
+    D = dims(C)
+    length(D)==2 && D[1]==D[2] || throw(ArgumentError("not a Choi matrix!"))
+    d = D[1]
+    return (d + real(sum(C[(i,i),(j,j)] for i=0:d-1,j=0:d-1)))/(d^2 + d)
+end
+
+function gate_fidelity_kraus(As::Vector{<:Operator})
+    # calculate the average gate fidelity given a list of Kraus operators
+    d = dims(As[1])[1]
+    return (d + sum(abs2∘trace,As))/(d^2 + d)
+end
+
+function gate_fidelity_kraus(As::Vector{<:Operator},U::Operator)
+    # calculate the average gate fidelity given a list of Kraus operators and
+    # a unitary gate
+    dimsmatch(As[1],U)
+    d = dims(U)[1]
+    return (d + sum(abs2∘inner,Base.product(As,(U,))))/(d^2 + d)
+end
 
 function choi_to_kraus(C)
     D,V = eigen(Hermitian(data(C)),1E-8,Inf)
