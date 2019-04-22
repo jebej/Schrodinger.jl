@@ -6,7 +6,7 @@ using Compat.Test, Compat.LinearAlgebra, Compat.Random
 if VERSION > v"0.7.0-"
     using Compat.Statistics: mean
 end
-
+println("Testing Process Tomography...")
 
 @testset "Process Tomography" begin
 # Build a few different variable for testing

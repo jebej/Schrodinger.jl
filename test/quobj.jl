@@ -2,6 +2,7 @@
 using Schrodinger
 using Schrodinger: ComplexF64
 using Compat.Test, Compat.LinearAlgebra, Compat.SparseArrays
+println("Testing QuObject Basics...")
 
 @testset "QuObject Basics" begin
 
