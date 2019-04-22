@@ -1,4 +1,4 @@
-using Compat: dropdims, sum
+using Compat: dropdims
 
 function ptrace_ref(A::Matrix, out, sysdims::NTuple)
     # Function adapted from a [MATLAB function](http://www.dr-qubit.org/Matlab_code.html) by Toby Cubitt and licensed under GPL2.
@@ -18,7 +18,7 @@ function ptrace_ref(A::Matrix, out, sysdims::NTuple)
     # for traced subsystems
     C = reshape(B,dimskeep,dimskeep,dimstrace^2)
     # Sum third index over "diagonal" entries
-    return dropdims(sum(C[:,:,1:dimstrace+1:dimstrace^2],dims=3),dims=3), sysdims[keep]
+    return dropdims(sum(C[:,:,1:dimstrace+1:dimstrace^2],3),dims=3), sysdims[keep]
 end
 
 function ptrace_ref(x::Vector, out::NTuple{no,Int}, sysdims::NTuple{ns,Int}) where {no,ns}

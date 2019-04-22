@@ -64,7 +64,7 @@ function project_CPTP(C,h)
     p_diff = 1.0; q_diff = 1.0
     D,V,Mdagvec𝕀,MdagM = h
     # iterate through TP & CP projections
-    while p_diff^2 + q_diff^2 + 2*abs(p⋅(x₂-x₁)) + 2*abs(q⋅(y₂-y₁)) > 1E-4
+    while p_diff^2 + q_diff^2 + 2*abs(p⋅(x₂-x₁)) + 2*abs(q⋅(y₂-y₁)) > 1E-6
         y₂ = project_TP(x₁+p,Mdagvec𝕀,MdagM)
         p_diff = norm(x₁-y₂,2)
         @. p = x₁ - y₂ + p
@@ -82,7 +82,13 @@ function project_CP(vecC,D,V)
     # Choi matrix positive semidefinite
     # We do this by taking the eigendecomposition, setting any negative
     # eigenvalues to 0, and reconstructing the Choi matrix
-    hermfact!(D,V,Hermitian(unvec(vecC)))
+    @static if VERSION < v"0.7.0-"
+        H = unvec(vecC)
+        @inbounds for i = 1:size(H,1); H[i,i] = real(H[i,i]); end
+        hermfact!(D,V,Hermitian(H))
+    else
+        hermfact!(D,V,Hermitian(unvec(vecC)))
+    end
     D .= max.(D,0)
     return vec(V*Diagonal(D)*V')
 end
