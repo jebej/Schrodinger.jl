@@ -2,7 +2,9 @@ const ManyMatrices = Union{Vector{<:AbstractMatrix},Tuple{Vararg{AbstractMatrix}
 
 @inline inner(A,B) = dot(A,B)
 
-inner(A::Tuple{Vararg{Operator}},B::Operator) = inner_cs(data.(A),data(B))
+@inline inner(A::NTuple{2,Operator}) = @inbounds inner(A[1],A[2])
+
+@inline inner(A::Tuple{Vararg{Operator}},B::Operator) = inner_cs(data.(A),data(B))
 
 function inner_cs(A,B::AbstractMatrix,s::BitSet=BitSet())
     # calculate |trace(A'*B)|cs (coherent subspaces)
