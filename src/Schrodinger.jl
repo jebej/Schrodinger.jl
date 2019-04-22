@@ -21,7 +21,7 @@ export Operator, Ket, Bra,
     eigen
 
 # VERSION-conditional definitions
-if VERSION < v"1.1.0-"
+if VERSION < v"2.0.0-"
     include("basepatch/v1.0.jl")
 end
 if VERSION < v"0.7.0-"
@@ -45,6 +45,7 @@ include("math/basemath.jl")
 include("math/eigen.jl")
 include("math/special.jl")
 include("math/superoperators.jl")
+include("math/norms.jl")
 include("math/ptrace.jl")
 include("dynamics/liouvillian.jl")
 include("dynamics/propagator.jl")
