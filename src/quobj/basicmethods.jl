@@ -15,6 +15,11 @@ dense(x::Bra) = Bra(Vector(x.data),x.dims)
 dense(A::Operator) = Operator(Matrix(A.data),A.dims)
 dimsmatch(A::QuObject,B::QuObject) =
     A.dims==B.dims || throw(DimensionMismatch("subspace dimensions do not match"))
+function dimsmatch(As::AbstractVecOrTuple{<:QuObject},Bs::AbstractVecOrTuple{<:QuObject})
+    for A ∈ As, B ∈ Bs; dimsmatch(A,B); end
+end
+dimsmatch(As::AbstractVecOrTuple{<:QuObject},B::QuObject) = dimsmatch(As,(B,))
+dimsmatch(A::QuObject,Bs::AbstractVecOrTuple{<:QuObject}) = dimsmatch((A,),Bs)
 
 # Tensored indexing methods
 @propagate_inbounds getindex(A::QuVector,t::Tuple) =

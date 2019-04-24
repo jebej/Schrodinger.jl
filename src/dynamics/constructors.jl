@@ -5,7 +5,7 @@ function SchrodingerEvo(H₀::Operator)
     return Liouvillian(dims(H₀),L₀)
 end
 function SchrodingerEvo(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}})
-    for Hᵢ in Hₙ; dimsmatch(H₀,first(Hᵢ)); end
+    dimsmatch(H₀,first.(Hₙ))
     # Constant Hamiltonian term
     L₀ = -1im*data(H₀)
     # Time-dependent Hamiltonian terms
@@ -23,7 +23,7 @@ SchrodingerEvo(::Any) = throw(ArgumentError("invalid Hamiltonian specification")
 
 # Lindblad form master equation
 function LindbladEvo(H₀::Operator, Cₘ::Tuple{Vararg{Operator}})
-    for Cᵢ in Cₘ; dimsmatch(H₀,Cᵢ); end
+    dimsmatch(H₀,Cₘ)
     Id = data(qeye(dims(H₀)))
     # Constant Hamiltonian term
     L₀ = -1im*(Id⊗data(H₀) - transpose(data(H₀))⊗Id)
@@ -32,8 +32,7 @@ function LindbladEvo(H₀::Operator, Cₘ::Tuple{Vararg{Operator}})
     return Liouvillian(dims(H₀),L₀)
 end
 function LindbladEvo(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, Cₘ::Tuple{Vararg{Operator}})
-    for Hᵢ in Hₙ; dimsmatch(H₀,first(Hᵢ)); end
-    for Cᵢ in Cₘ; dimsmatch(H₀,Cᵢ); end
+    dimsmatch(H₀,first.(Hₙ)); dimsmatch(H₀,Cₘ)
     Id = data(qeye(dims(H₀)))
     # Constant Hamiltonian term
     L₀ = -1im*(Id⊗data(H₀) - transpose(data(H₀))⊗Id)
@@ -58,7 +57,7 @@ function SchrodingerProp(H₀::Operator, Δt::Real)
 end
 SchrodingerProp(H₀::Operator, Hₙ::Tuple, tspan, steps::Integer) = SchrodingerProp(H₀,(Hₙ,),tspan,steps)
 function SchrodingerProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, tspan, steps::Integer)
-    for Hᵢ in Hₙ; dimsmatch(H₀,first(Hᵢ)); end
+    dimsmatch(H₀,first.(Hₙ))
     F = real(eltype(H₀))
     # Sampling times and spacing dt
     t₁, t₂ = tspan; dt = (t₂-t₁)/steps
@@ -84,7 +83,7 @@ SchrodingerProp(H) = throw(ArgumentError("invalid Propagator specification"))
 LindbladProp(H₀::Operator, Cₘ::Operator, tspan) = LindbladProp(H₀,(Cₘ,),tspan)
 LindbladProp(H₀::Operator, Cₘ::Tuple{Vararg{Operator}}, tspan) = LindbladProp(H₀,Cₘ,tspan[2]-tspan[1])
 function LindbladProp(H₀::Operator, Cₘ::Tuple{Vararg{Operator}}, Δt::Real)
-    for Cᵢ in Cₘ; dimsmatch(H₀,Cᵢ); end
+    dimsmatch(H₀,Cₘ)
     F = real(eltype(H₀)); d = prod(dims(H₀))
     Id = Matrix{F}(I, d, d)
     # Constant Hamiltonian term
@@ -99,8 +98,7 @@ LindbladProp(H₀::Operator, Hₙ::Tuple, Cₘ::Operator, tspan, steps::Integer)
 LindbladProp(H₀::Operator, Hₙ::Tuple, Cₘ::Tuple{Vararg{Operator}}, tspan, steps::Integer) = LindbladProp(H₀,(Hₙ,),Cₘ,tspan,steps)
 LindbladProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, Cₘ::Operator, tspan, steps::Integer) = LindbladProp(H₀,Hₙ,(Cₘ,),tspan,steps)
 function LindbladProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, Cₘ::Tuple{Vararg{Operator}}, tspan, steps::Integer)
-    for Hᵢ in Hₙ; dimsmatch(H₀,first(Hᵢ)); end
-    for Cᵢ in Cₘ; dimsmatch(H₀,Cᵢ); end
+    dimsmatch(H₀,first.(Hₙ)); dimsmatch(H₀,Cₘ)
     F = real(eltype(H₀)); d = prod(dims(H₀))
     Id = Matrix{F}(I, d, d)
     # Sampling times and spacing dt
