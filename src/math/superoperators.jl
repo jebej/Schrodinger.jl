@@ -37,7 +37,7 @@ end
 function gate_fidelity_kraus(As::Vector{<:Operator},U::Operator)
     # calculate the average gate fidelity given a list of Kraus operators and
     # a unitary gate
-    dimsmatch(As[1],U)
+    dimsmatch(As,U)
     d = dims(U)[1]
     return (d + sum(abs2∘inner,Base.product(As,(U,))))/(d^2 + d)
 end

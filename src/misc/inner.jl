@@ -1,4 +1,4 @@
-const ManyMatrices = Union{Vector{<:AbstractMatrix},Tuple{Vararg{AbstractMatrix}}}
+const ManyMatrices = AbstractVecOrTuple{T} where T<:AbstractMatrix
 
 @inline inner(A,B) = dot(A,B)
 
