@@ -1,11 +1,11 @@
-function gen_likelihood_model_1Q()
+function process_likelihood_model(ρ_list,Eₘ_list)
     # Generate the A matrix used to calculate likelihoods
     # The A matrix depends on the input states and measurement operators
-    # We choose the 6 axial Bloch states as our inputs and measurements
-    # |+⟩,|-⟩,|+i⟩,|-i⟩,|1⟩,|0⟩
-    ρ = normalize!.(Operator.(Ket.([[1,1],[1,-1],[1,1im],[1,-1im],[1,0],[0,1]])))
-    E = ρ ./ 3
-    return mapreduce(transpose,vcat,[vec(full(transpose(ρ)⊗E)) for ρ ∈ ρ, E ∈ E])
+    dimsmatch(ρ_list,Eₘ_list)
+    sum(abs,data(sum(Eₘ_list))-I)<1E-15 ||
+        throw(ArgumentError("Eₘ operators do not form a valid POVM!"))
+    sup = x -> (@inbounds ρ,Eₘ = x; full(ρ⊗transpose(Eₘ)))
+    return transpose(mapreduce(vec∘sup,hcat,product(ρ_list,Eₘ_list))::Matrix{ComplexF64})
 end
 
 # below is the actual projected gradient descent algorithm from Knee, et al.
