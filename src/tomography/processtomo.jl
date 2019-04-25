@@ -5,7 +5,7 @@ function process_likelihood_model(ρ_list,Eₘ_list)
     sum(abs,data(sum(Eₘ_list))-I)<1E-15 ||
         throw(ArgumentError("Eₘ operators do not form a valid POVM!"))
     sup = x -> (@inbounds ρ,Eₘ = x; full(ρ⊗transpose(Eₘ)))
-    return transpose(mapreduce(vec∘sup,hcat,product(ρ_list,Eₘ_list))::Matrix{ComplexF64})
+    return copy(transpose(mapreduce(vec∘sup,hcat,product(ρ_list,Eₘ_list))::Matrix{ComplexF64}))
 end
 
 # below is the actual projected gradient descent algorithm from Knee, et al.
