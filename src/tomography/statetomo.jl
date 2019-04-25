@@ -5,7 +5,7 @@ function state_likelihood_model(Eₘ_list)
     # The A matrix depends on the measurement operators
     sum(abs,data(sum(Eₘ_list))-I)<1E-14 ||
         throw(ArgumentError("Eₘ operators do not form a valid POVM!"))
-    return transpose(mapreduce(vec∘full,hcat,Eₘ_list)::Matrix{ComplexF64})
+    return copy(transpose(mapreduce(vec∘full,hcat,Eₘ_list)::Matrix{ComplexF64}))
 end
 
 function mle_state_tomo(M,A)
