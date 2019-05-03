@@ -7,7 +7,7 @@ using OrdinaryDiffEq.DiffEqBase: AbstractParameterizedFunction
 
 export Operator, Ket, Bra,
     data, dims, isnormalized, dimsmatch, dense, braket, isapproxhermitian,
-    isunitary, isapproxunitary, tensor, ptrace, expect, levelprobs,
+    isunitary, isapproxunitary, tensor, ptrace, expect, levelprobs, findstate,
     fidelity, fidelity2, entanglement_fidelity, gate_fidelity,
     fock, basis, coherent, thermal, maxentangled, maxmixed, ket, @qb_str,
     qzero, qeye, create, destroy, numberop, projectorop,
@@ -58,6 +58,7 @@ include("control/amplitudelimiter.jl")
 include("tomography/statetomo.jl")
 include("tomography/processtomo.jl")
 include("misc/utils.jl")
+include("misc/indexing.jl")
 include("misc/tupletools.jl")
 include("misc/inner.jl")
 include("misc/kron.jl")
