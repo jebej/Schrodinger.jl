@@ -142,6 +142,8 @@ end
 unpack_operators(x::Number,f::Function,t::Tuple{}) = (), (), ()
 
 function sum_collapse(Cₘ,Id,dt)
+    # sum the Lindblad superoperators corresponding to the action of
+    # D[Cᵢ](ρ) = CᵢρCᵢ† - 1/2 * (Cᵢ†Cᵢρ + ρCᵢ†Cᵢ)
     mapreduce(+,Cₘ) do Cᵢ
         C = full(Cᵢ); CdC = C'*C
         dt*(conj(C)⊗C - 0.5*(Id⊗CdC + transpose(CdC)⊗Id))
