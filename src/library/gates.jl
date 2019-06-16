@@ -1,5 +1,6 @@
 module Gate
 using ..Schrodinger
+using Compat.SparseArrays
 
 """
     rotation(θ,n=(1,0,0))
@@ -10,7 +11,7 @@ Generate a qubit rotation operator about an axis defined by the vector \$\\vec{n
 ```
 """
 function rotation(θ::Real,n::NTuple{3,Real}=(1,0,0))
-    R = Matrix{Complex128}(2,2)
+    R = Matrix{ComplexF64}(undef,2,2)
     a = 1/√(n[1]^2+n[2]^2+n[3]^2)
     nx,ny,nz = a*n[1],a*n[2],a*n[3]
     c = cos(θ/2); s = sin(θ/2)
@@ -21,9 +22,51 @@ function rotation(θ::Real,n::NTuple{3,Real}=(1,0,0))
     return Operator(R,(2,))
 end
 
+"""
+    H
+
+The Hadamard gate:
+```math
+H = \\frac{1}{\\sqrt 2}
+\\begin{pmatrix}
+1 & 1 \\\\
+1 & -1
+\\end{pmatrix}
+```
+"""
 const H = Operator(Float64[1/√2 1/√2; 1/√2 -1/√2],(2,),true)
-const S = Operator(sparse(Complex128[1 0; 0 1im]),(2,),false)
-const T = Operator(sparse(Complex128[1 0; 0 Complex(1/√2,1/√2)]),(2,),false)
+
+"""
+    S
+
+The phase gate:
+```math
+S =
+\\begin{pmatrix}
+1 & 0 \\\\
+0 & i
+\\end{pmatrix}
+```
+
+The phase gate is the square of the T gate: ``S = T^2``.
+"""
+const S = Operator(sparse(ComplexF64[1 0; 0 1im]),(2,),false)
+
+"""
+    T
+
+The T gate:
+```math
+T =
+\\begin{pmatrix}
+1 & 0 \\\\
+0 & \\exp(i\\pi/4)
+\\end{pmatrix}
+```
+
+The phase gate is the square of the T gate: ``S = T^2``.
+"""
+const T = Operator(sparse(ComplexF64[1 0; 0 Complex(1/√2,1/√2)]),(2,),false)
 
 const cNOT = Operator(sparse(Float64[1 0 0 0;0 1 0 0;0 0 0 1;0 0 1 0]),(2,2),true)
 const rcNOT = Operator(sparse(Float64[0 1 0 0;1 0 0 0;0 0 1 0;0 0 0 1]),(2,2),true)
