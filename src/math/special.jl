@@ -48,7 +48,7 @@ Compute the level occupation probabilities. For a `Ket`, this simply corresponds
 
 A system index, or vector of indices, can be passed as a second argument. In that case, the full system will first be partial traced to keep only the desired index. Level occupation probabilities are then calculated from the resulting reduced density matrix. If a vector of indices is passed, occupation probabilities are calculated for a fully reduced density matrix for each index.
 
-A specialized method exists for vector of `Ket` or `Operator` inputs.
+Specialized methods exists for vectors of `Ket` or `Operator` inputs.
 """
 levelprobs(ψ::Ket{T,N}) where {T,N} = abs2(ψ)
 levelprobs(ψ::Ket{T,N},s::Integer) where {T,N} = real(diag(ptrace(ψ,ntuple_sans_m(s,Val(N)))))
@@ -57,11 +57,11 @@ levelprobs(ρ::Operator{T,N},s::Integer) where {T,N} = real(diag(ptrace(ρ,ntupl
 levelprobs(ψ::QuObject,S::AbstractVector) = map(s->levelprobs(ψ,s),S)
 
 # Faster levelprobs methods when passing in many inputs
-function levelprobs(states::Vector{Ket{T,M}},S::Union{Integer,AbstractVector}) where {T,M}
+function levelprobs(states::Vector{<:QuObject},S::Union{Integer,AbstractVector})
     N = length(states)
     D = dims(states[1])
     probs = map(S) do s
-        s > M && throw(ArgumentError("System index $s is larger than the number of systems, $M."))
+        s > length(D) && throw(ArgumentError("System index $s is larger than the number of systems, $M."))
         P = Matrix{Float64}(undef,N,D[s])
         for n = 1:N
             P[n,:] = levelprobs(states[n],s)
@@ -71,7 +71,7 @@ function levelprobs(states::Vector{Ket{T,M}},S::Union{Integer,AbstractVector}) w
     return probs
 end
 
-function levelprobs(states::Vector{Ket{T,M}}) where {T,M}
+function levelprobs(states::Vector{<:QuObject})
     N = length(states)
     P = Matrix{Float64}(undef,N,prod(dims(states[1])))
     for n = 1:N
