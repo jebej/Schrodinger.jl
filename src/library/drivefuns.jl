@@ -10,6 +10,17 @@ function gaussianpulse(t::Real,p::Vector)
     return Ɛπ*cos(ω10*t+ϕ)
 end
 
+function cosinepulse(t::Real,p::Vector)
+    # Cosine pulse centered on t=0
+    σ   = p[1] # not used
+    tg  = p[2] # total gate time
+    ω10 = p[3] # qubit 0-1 transition angular freq
+    ϕ   = p[4] # phase
+    A   = p[5] # amplitude, (π for π-pulse, etc...)
+    Ɛπ = A/tg*(cos(2π*t/tg)+1)
+    return Ɛπ*cos(ω10*t+ϕ)
+end
+
 function dragpulse(t::Real,p::Vector)
     # 2nd order DRAG-enhanced Gaussian pulse (Y-only correction) centered on t=0
     # 10.1103/PhysRevA.83.012308
