@@ -44,7 +44,7 @@ tspan = (-tg/2,tg/2) # pulse centered at t=0
 res1 = sesolve((qzero(2),(H,rotgaussianpulse,[tg,σ,π])),g,tspan,saveat=tg/200)
 
 using PyPlot
-figure(figsize=(8,4.5), dpi=100);
+figure(); # hide
 plot(res1.times*1e9,levelprobs(res1.states)); grid();
 xlabel("Time (ns)"); ylabel("Level Probabilities");
 legend(["Ground State", "Excited State"]);
@@ -67,7 +67,7 @@ Hd = create(3)/2 + destroy(3)/2 # affected by Ɛˣ
 g = basis(3,0)
 
 res2 = sesolve((Hc,(Hd,rotgaussianpulse,[tg,σ,π])),g,tspan,saveat=tg/200)
-figure(figsize=(8,4.5), dpi=100);
+figure(); # hide
 plot(res2.times*1e9,levelprobs(res2.states)); grid()
 xlabel("Time (ns)"); ylabel("Level Probabilities");
 legend(["Ground State", "1st Excited State", "2nd Excited State"]);
@@ -119,7 +119,7 @@ Hdx = create(3)/2 + destroy(3)/2 # affected by Ɛˣ
 Hdy = im*create(3)/2 - im*destroy(3)/2 # affected by Ɛʸ
 
 res3 = sesolve((Hc,(Hdet,dydet,[tg,σ,π,Δ,λ]),(Hdx,DRAGx,[tg,σ,π,Δ,λ]),(Hdy,DRAGy,[tg,σ,π,Δ,λ])),g,tspan,saveat=tg/200)
-figure(figsize=(8,4.5), dpi=100);
+figure(); # hide
 plot(res3.times*1e9,levelprobs(res3.states)); grid()
 xlabel("Time (ns)"); ylabel("Level Probabilities");
 legend(["Ground State", "1st Excited State", "2nd Excited State"]);
@@ -162,7 +162,7 @@ for (i,tg) in enumerate(tgs)
     Fg_res[i,:] = [sum1/6 sum2/6] # take average
 end
 
-figure(figsize=(8,4.5), dpi=100);
+figure(); # hide
 plot(tgs*1E9, 1 .- Fg_res); ylim([10E-8,1]); grid()
 title("Average gate fidelity averaging over all input states");
 yscale("log"); xlabel("Gate Time (ns)"); ylabel("Gate Error 1-Fg");

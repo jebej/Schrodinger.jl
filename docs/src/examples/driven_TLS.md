@@ -51,6 +51,7 @@ fd = (t,p) -> p[2]*cis(p[1]*t)
 # note the negative frequency for circular polarization
 r1 = sesolve((ω*n, (σ₋,fd,[ωd,γ]), (σ₊,fd,[-ωd,γ])), g, (0.0,3.0), saveat=0.01)
 
+figure(); # hide
 plot(r1.times,levelprobs(r1.states)); grid();
 xlabel("Time"); ylabel("Level Probabilities");
 legend(["|g⟩", "|e⟩"]);
@@ -175,9 +176,10 @@ c₁(t,γ,Δω) = (Ω = √(γ^2+(Δω/2)^2); γ/Ω * cis(-Δω/2*t) * sin(Ω*t)
 c1 = c₁.(r1.times,γ,Δω) # compute data for c₁
 analytic = [1 .- abs2.(c1) abs2.(c1)] # 1-|c₁|² and |c₁|²
 
+figure(); # hide
 plot(r1.times,analytic)
 legend(["|g⟩", "|e⟩", "|g⟩ (analytic)", "|e⟩ (analytic)"]);
-savefig(joinpath("img","driven_TLS_2.svg")); # hide
+tight_layout(true); savefig(joinpath("img","driven_TLS_2.svg")); # hide
 ```
 ![driven_TLS_2](img/driven_TLS_2.svg)
 
@@ -203,10 +205,8 @@ c1 ≈ 1im.*getindex.(r2.states,2)
 
 Visually, this can be understood by plotting the phase of the state as a function of time:
 
-```@setup driven_TLS
-figure()
-```
 ```@example driven_TLS
+figure(); # hide
 plot(r1.times, 180/π.*angle.(1im.*getindex.(r1.states,2)))
 plot(r2.times, 180/π.*angle.(1im.*getindex.(r2.states,2)))
 xlabel("Time"); ylabel("∠c₁ (°)"); grid()
@@ -221,10 +221,8 @@ The phase is changing much more rapidly in the Schrödinger picture than in the 
 
 A cool experiment that can be done with qubits is to verify that the TLS dynamics hold over a range of driving frequencies. We drive a qubit at various frequencies and measure the excited state probability over time. This leads to a very nice "chevron pattern" plot:
 
-```@setup driven_TLS
-figure()
-```
 ```@example driven_TLS
+figure(); # hide
 t = 0:0.1:12
 ωd_ratio = transpose(0.6:0.01:1.4)
 chev = abs2.(c₁.(t,γ,ω.*ωd_ratio.-ω))

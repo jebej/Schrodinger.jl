@@ -1,8 +1,3 @@
-```@meta
-DocTestSetup = quote
-    using Schrodinger, SparseArrays
-end
-```
 # Operator Library
 
 ```@autodocs

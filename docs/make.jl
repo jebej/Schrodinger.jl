@@ -1,5 +1,7 @@
 using Documenter, Schrodinger, SparseArrays, PyPlot
 
+DocMeta.setdocmeta!(Schrodinger, :DocTestSetup, :(using Schrodinger); recursive=true)
+
 makedocs(
     sitename = "Schrodinger.jl",
     authors = "Jérémy Béjanin.",
