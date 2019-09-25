@@ -88,6 +88,16 @@ TWOQUBIT = Ket.(N!.(Vector{ComplexF64}[
     @test gate_fidelity(U3,V3) ≈ (4*entanglement_fidelity(U3,V3)+1)/(4+1)
 end
 
+@testset "Purity" begin
+    U = rand_unitary(N)
+    ρ = N!(Operator(coherentαhalf)+numop)
+    @test purity(g) == purity(e1) == 1
+    @test purity(coherentα) == purity(coherentαhalf) == 1
+    @test purity(ρ) ≈ inner(ρ,ρ)
+    @test purity(U*ρ*U') ≈ purity(ρ)
+    @test purity(maxmixed(4)) == 1/4
+end
+
 @testset "Level Probabilities" begin
     # Test calculation of level probabilities
     @test levelprobs(g) == [1,0]

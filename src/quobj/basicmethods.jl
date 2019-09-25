@@ -1,7 +1,8 @@
 import Base: length, size, eltype, getindex, setindex!, similar, copy, hash,
     isequal, ==, convert, promote_rule, isapprox, show, @propagate_inbounds
-import Compat.LinearAlgebra: checksquare, diag, complex, norm, rank,
-    normalize!, normalize, ishermitian, issymmetric, isdiag, triu, tril
+import Compat.LinearAlgebra: checksquare, diag, complex, rank, normalize!,
+    normalize, ishermitian, issymmetric, isdiag, triu, tril
+import Compat: norm, opnorm
 if VERSION < v"1.0.0-"
     import Base: full
 end
@@ -15,11 +16,11 @@ dense(x::Bra) = Bra(Vector(x.data),x.dims)
 dense(A::Operator) = Operator(Matrix(A.data),A.dims)
 dimsmatch(A::QuObject,B::QuObject) =
     A.dims==B.dims || throw(DimensionMismatch("subspace dimensions do not match"))
-function dimsmatch(As::AbstractVecOrTuple{<:QuObject},Bs::AbstractVecOrTuple{<:QuObject})
+function dimsmatch(As::AbstractVecOrTuple{QuObject},Bs::AbstractVecOrTuple{QuObject})
     for A ∈ As, B ∈ Bs; dimsmatch(A,B); end
 end
-dimsmatch(As::AbstractVecOrTuple{<:QuObject},B::QuObject) = dimsmatch(As,(B,))
-dimsmatch(A::QuObject,Bs::AbstractVecOrTuple{<:QuObject}) = dimsmatch((A,),Bs)
+dimsmatch(As::AbstractVecOrTuple{QuObject},B::QuObject) = dimsmatch(As,(B,))
+dimsmatch(A::QuObject,Bs::AbstractVecOrTuple{QuObject}) = dimsmatch((A,),Bs)
 
 # Tensored indexing methods
 @propagate_inbounds getindex(A::QuVector,t::Tuple) =
@@ -46,7 +47,9 @@ full(A::QuObject) = Array(A.data)
 complex(x::Ket) = Ket(complex(x.data),x.dims)
 complex(x::Bra) = Bra(complex(x.data),x.dims)
 complex(A::Operator) = Operator(complex(A.data),A.dims)
-norm(x::QuVector,n::Integer=2) = norm(x.data,n)
+norm(x::QuVector,p::Integer=2) = norm(x.data,p)
+norm(A::QuMatrix,p::Integer=2) = norm(A.data,p)
+opnorm(A::QuMatrix,p::Integer=2) = opnorm(A.data,p)
 trace(A::QuMatrix) = trace(A.data)
 rank(A::QuMatrix) = rank(A.data)
 normalize!(x::QuVector) = (normalize!(x.data,2);x)

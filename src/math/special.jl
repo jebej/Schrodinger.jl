@@ -81,6 +81,29 @@ function levelprobs(states::Vector{<:QuObject})
 end
 
 """
+    purity(ρ)
+
+Compute the purity of a quantum state `ρ`, defined by
+```math
+\\begin{align*}
+γ = \\textrm{tr}(ρ^†ρ).
+\\end{align*}
+```
+This is the same as the square of the Frobenius norm of a matrix.
+
+The purity of a quantum state is bounded below by `1/d`, for a maximally mixed state, and above by `1`, for a pure state. Note that the purity of a `Ket` is `1` by definition.
+
+The purity is related to the linear entropy ``S_L`` by ``S_L = 1-γ``.
+"""
+function purity(ρ::Operator)
+    ishermitian(ρ) || throw(ArgumentError("ρ is not a valid quantum state!"))
+    return norm(ρ)^2
+end
+
+purity(ψ::QuVector) = real(one(eltype(ψ)))
+
+
+"""
     fidelity(ρ,σ), fidelity(ρ,ψ), fidelity(ψ,ϕ)
 
 Compute the fidelity between density matrices \$ρ\$ and \$σ\$, a density matrix \$ρ\$ and a ket \$|ψ⟩\$, or two kets \$|ψ⟩\$ and \$|ϕ⟩\$. The fidelity in those three cases is defined as

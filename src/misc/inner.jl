@@ -1,4 +1,4 @@
-const ManyMatrices = AbstractVecOrTuple{T} where T<:AbstractMatrix
+const ManyMatrices = AbstractVecOrTuple{AbstractMatrix}
 
 @inline inner(A,B) = dot(A,B)
 
