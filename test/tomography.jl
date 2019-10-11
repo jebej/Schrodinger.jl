@@ -33,29 +33,31 @@ end
 
 @testset "Process Tomography" begin
 # Input states and POVM operators for process tomo
-ρ_in = Operator.(ONEQUBIT[[3,5,1,2]])
-E_m  = [ρ_in; ([qeye(d)].-ρ_in)]./d^2
-@test sum(E_m) == qeye(d)
+ρ_in = Operator.(ONEQUBIT[[3,4,5,6,1,2]])
+E_m  = ρ_in./3
+@test sum(E_m) ≈ qeye(d)
 
 # Create the likelihood model matrix ("A-matrix")
 A = @inferred process_likelihood_model(ρ_in,E_m)
 
 # Test reconstruction with a couple of notable gates
+X½ = Operator([1 -im; -im 1]/√2)
+Y½ = Operator([1 -1; 1 1]/√2)
 T = Operator([1 0; 0 cis(π/4)])
 H = Operator([1 1; 1 -1]/√2)
-for G ∈ [σ0, σx, σy, σz, √σx, T, H]
+for G ∈ [σ0, σx, σy, σz, X½, Y½, T, H]
     # Simulate tomography measurement by calculating theoretical probabilities
     # and drawing from a multinomial distribution
-    #P = [real(expect(G*ρ*G',E)) for ρ ∈ ρ_in, E ∈ E_m]
+    #P = [real(expect(G*ρ*G',E)) for E ∈ E_m,ρ ∈ ρ_in]
     Strue = @inferred operator_to_choi(G)
-    P = reshape(real(A*vec(data(Strue))),d^2,2*d^2)
+    P = reshape(real(A*vec(data(Strue))),length(E_m),length(ρ_in))
     #M = mapslices(p->rand(Multinomial(N,p)),P,dims=2)./(d^2*N)
-    M = .-(abs.(1/d^2 .- abs.(P .+ randn(size(P))./2^12)) .- 1/d^2)./(d^2)
+    M = .-(abs.(size(P,1)/2 .- abs.(P .+ randn(size(P))./2^12)) .- size(P,1)/2)./size(P,2)
     # Reconstruct the Choi matrix from the measurements
-    Srec = Operator(@inferred(pdg_process_tomo(M,A,false)),(2,2))
+    Srec = Operator(@inferred(pdg_process_tomo(M,A,false)),(d,d))
     # Compare using the J distance, aka the trace norm of the difference
     @static if VERSION < v"1.0.0-"
-        @test (trace_norm(Strue-Srec))/2d < 0.004
+        @test trace_norm(Strue-Srec)/2d < 0.004
     else
         @test @inferred(trace_norm(Strue-Srec))/2d < 0.004
     end

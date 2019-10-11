@@ -6,7 +6,7 @@ function operator_to_choi(O::Operator)
     d = dims(O)[1]
     C = dense(qzero(eltype(O),d^2,(d,d)))
     for i=1:d, j=1:d, i′=1:d, j′=1:d
-        @inbounds C[(i-1,i′-1),(j-1,j′-1)] = O[i,i′]*O[j,j′]'
+        @inbounds C[(i′-1,i-1),(j′-1,j-1)] = O[i,i′]*O[j,j′]'
     end
     return C
 end
