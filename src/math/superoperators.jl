@@ -43,9 +43,29 @@ function gate_fidelity_kraus(As::Vector{<:Operator},U::Operator)
 end
 
 function choi_to_kraus(C)
+    length(dims(C)) == 2 || throw(ArgumentError("multi-space operators not supported yet!"))
     D,V = eigen(Hermitian(data(C)),1E-8,Inf)
-    return [Operator(unvec(√(D[i])*V[:,i])) for i = length(D):-1:1]
+    return [Operator(unvec(√(D[i])*V[:,i]),(dims(C)[1],)) for i = length(D):-1:1]
 end
+
+function choi_to_chi(C)
+    length(dims(C)) == 2 || throw(ArgumentError("multi-space operators not supported yet!"))
+    B = Operator(_choi2pauli_basis((dims(C)[1],)),dims(C),false)
+    return B*C*B'
+end
+
+function _choi2pauli_basis(D::NTuple{N,Int}) where N
+    all(d->d==2,D) || throw(ArgumentError("only valid with qubits!"))
+    B = Matrix{Float64}(undef,4^N,4^N)
+    Ps = ([1 0; 0 1], [0 1; 1 0], [0 -1; 1 0], [1 0; 0 -1])
+    for (i,ops) in enumerate(product(ntuple(_->Ps,N)...))
+        B[:,i] = vec(reduce(⊗,ops))
+    end
+    return B
+end
+
+Base.vec(O::Operator) = Ket(copy(vec(data(O))),dims(O).^2)
+unvec(v::Ket) = Operator(copy(unvec(data(O))),isqrt.(dims(v)))
 
 function unvec(vecA::AbstractVector)
     # unvectorize a vector into a square matrix
@@ -53,6 +73,8 @@ function unvec(vecA::AbstractVector)
     return reshape(vecA,(d,d))
 end
 
+
 function super(A::AbstractMatrix,B::AbstractMatrix=data(qeye(size(A,1))))
+    # represents the action A*ρ*B, on a vectorized version of ρ
     return transpose(B) ⊗ A
 end
