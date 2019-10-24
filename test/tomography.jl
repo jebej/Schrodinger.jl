@@ -3,6 +3,10 @@ using Schrodinger
 using Schrodinger: mle_state_tomo, build_density_matrix, pdg_process_tomo,
     apply_process, operator_to_choi, trace_norm, gate_fidelity_choi,
     state_likelihood_model, process_likelihood_model
+
+using Schrodinger: kraus_to_natural, natural_to_kraus, natural_to_choi,
+    choi_to_natural, kraus_to_choi, choi_to_kraus, choi_to_chi, chi_to_choi
+
 using Compat.Test, Compat.LinearAlgebra, Compat.Random
 if VERSION > v"0.7.0-"
     using Compat.Statistics: mean
@@ -49,23 +53,28 @@ for G ∈ [σ0, σx, σy, σz, X½, Y½, T, H]
     # Simulate tomography measurement by calculating theoretical probabilities
     # and drawing from a multinomial distribution
     #P = [real(expect(G*ρ*G',E)) for E ∈ E_m,ρ ∈ ρ_in]
-    Strue = @inferred operator_to_choi(G)
-    P = reshape(real(A*vec(data(Strue))),length(E_m),length(ρ_in))
+    Ctrue = @inferred operator_to_choi(G) # ideal Choi matrix
+    P = reshape(real(A*vec(data(Ctrue))),length(E_m),length(ρ_in))
     #M = mapslices(p->rand(Multinomial(N,p)),P,dims=2)./(d^2*N)
     M = .-(abs.(size(P,1)/2 .- abs.(P .+ randn(size(P))./2^12)) .- size(P,1)/2)./size(P,2)
     # Reconstruct the Choi matrix from the measurements
-    Srec = Operator(@inferred(pdg_process_tomo(M,A,false)),(d,d))
+    Crec = Operator(@inferred(pdg_process_tomo(M,A,false)),(d,d))
     # Compare using the J distance, aka the trace norm of the difference
     @static if VERSION < v"1.0.0-"
-        @test trace_norm(Strue-Srec)/2d < 0.004
+        @test trace_norm(Ctrue-Crec)/2d < 0.004
     else
-        @test @inferred(trace_norm(Strue-Srec))/2d < 0.004
+        @test @inferred(trace_norm(Ctrue-Crec))/2d < 0.004
     end
     # Compare with gate fidelity
-    F1 = @inferred gate_fidelity_choi(Srec,G)
-    F2 = mean(fidelity2(G*ψ,apply_process(Srec,ψ)) for ψ ∈ ONEQUBIT)
+    F1 = @inferred gate_fidelity_choi(Crec,G)
+    F2 = mean(fidelity2(G*ψ,apply_process(Crec,ψ)) for ψ ∈ ONEQUBIT)
     @test 1-F1 < 0.002
     @test F1 ≈ F2 atol=1E-6
+
+    # also test superoperator conversions (TODO: move somewhere else)
+    @test Crec ≈ (Crec |> choi_to_kraus |> kraus_to_natural |> natural_to_choi)
+    @test Crec ≈ (Crec |> choi_to_natural |> natural_to_kraus |> kraus_to_choi)
+    @test Crec ≈ (Crec |> choi_to_chi |> chi_to_choi)
 end
 end
 

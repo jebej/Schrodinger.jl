@@ -45,14 +45,12 @@ end
 
 function loglikelihood(M,C,A)
     # Binomial statistics for the measurement count probability, up to some irrelevant constant
-    P = real.(A*vec(C))
-    P .= max.(P,1E-16)
+    P = max.(real.(A*vec(C)), 1E-16)
     return -real(transpose(vec(M))*log.(P))
 end
 
 function loglikelihood_gradient(M,C,A)
-    P = real.(A*vec(C))
-    P .= max.(P,1E-16)
+    P = max.(real.(A*vec(C)), 1E-16)
     return unvec(-A'*(vec(M)./P))
 end
 
@@ -82,13 +80,11 @@ function project_CP(vecC,D,V)
     # Choi matrix positive semidefinite
     # We do this by taking the eigendecomposition, setting any negative
     # eigenvalues to 0, and reconstructing the Choi matrix
+    C = unvec(vecC)
     @static if VERSION < v"0.7.0-"
-        H = unvec(vecC)
-        @inbounds for i = 1:size(H,1); H[i,i] = real(H[i,i]); end
-        hermfact!(D,V,Hermitian(H))
-    else
-        hermfact!(D,V,Hermitian(unvec(vecC)))
+        @inbounds for i = 1:size(C,1); C[i,i] = real(C[i,i]); end
     end
+    hermfact!(D,V,Hermitian(C))
     D .= max.(D,0)
     return vec(V*Diagonal(D)*V')
 end

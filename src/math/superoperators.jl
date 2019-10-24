@@ -1,15 +1,8 @@
-apply_process(C::Operator,ψ::Ket) = apply_process(C,Operator(ψ))
-apply_process(C::Operator,ρ::Operator) = ptrace((transpose(ρ)⊗qeye(size(ρ,1)))*C,1)
-
-function operator_to_choi(O::Operator)
-    length(dims(O)) == 1 || throw(ArgumentError("multi-space operators not supported yet!"))
-    d = dims(O)[1]
-    C = dense(qzero(eltype(O),d^2,(d,d)))
-    for i=1:d, j=1:d, i′=1:d, j′=1:d
-        @inbounds C[(i′-1,i-1),(j′-1,j-1)] = O[i,i′]*O[j,j′]'
-    end
-    return C
-end
+apply_process(C,ψ::Ket) = apply_process(C,Operator(ψ))
+# assumes Choi matrix
+apply_process(C::Operator,ρ::Operator) = ptrace((transpose(ρ)⊗qeye(dims(ρ)))*C,1)
+# assumes Kraus operators
+apply_process(As::Vector{<:Operator},ρ::Operator) = sum(A->A*ρ*A',As)
 
 function gate_fidelity_choi(C::Operator,U::Operator)
     # calculate the average gate fidelity given a Choi matrix and a unitary gate
@@ -39,24 +32,71 @@ function gate_fidelity_kraus(As::Vector{<:Operator},U::Operator)
     # a unitary gate
     dimsmatch(As,U)
     d = dims(U)[1]
-    return (d + sum(abs2∘inner,Base.product(As,(U,))))/(d^2 + d)
+    return (d + sum(abs2∘inner,product(As,(U,))))/(d^2 + d)
 end
 
-function choi_to_kraus(C)
+# conversion functions
+
+function operator_to_choi(O::Operator)
+    length(dims(O)) == 1 || throw(ArgumentError("multi-space operators not supported yet!"))
+    d = dims(O)[1]
+    return Operator(vec(data(O))*vec(data(O))',(d,d))
+end
+
+function kraus_to_natural(As::Vector{<:Operator})
+    return sum(A->conj(A)⊗A,As)
+end
+
+function natural_to_kraus(K::Operator)
+    # we go through the Choi representation since the extra conversion step is
+    # basically free compared to the eigendecomposition
+    return choi_to_kraus(natural_to_choi(K))
+end
+
+function natural_to_choi(K::Operator)
+    # the conversion between the natural and Choi is a self-inverse
+    return choi_to_natural(K)
+end
+
+function choi_to_natural(C::Operator)
+    # the "natural" representation is the same as Choi with shuffled dimensions
     length(dims(C)) == 2 || throw(ArgumentError("multi-space operators not supported yet!"))
-    D,V = eigen(Hermitian(data(C)),1E-8,Inf)
+    d = dims(C)[1]
+    K = reshape(permutedims(reshape(data(C),(d,d,d,d)),[1,3,2,4]),(d^2,d^2))
+    return Operator(K,dims(C))
+end
+
+function choi_to_kraus(C::Operator)
+    length(dims(C)) == 2 || throw(ArgumentError("multi-space operators not supported yet!"))
+    @static if VERSION < v"0.7.0-"
+        @inbounds for i = 1:size(C,1); C[i,i] = real(C[i,i]); end
+    end
+    D,V = eigen(Hermitian(data(C)),1E-10,Inf)
     return [Operator(unvec(√(D[i])*V[:,i]),(dims(C)[1],)) for i = length(D):-1:1]
 end
 
-function choi_to_chi(C)
-    length(dims(C)) == 2 || throw(ArgumentError("multi-space operators not supported yet!"))
-    B = Operator(_choi2pauli_basis((dims(C)[1],)),dims(C),false)
-    return B*C*B'
+function kraus_to_choi(As::Vector{<:Operator})
+    length(dims(As[1])) == 1 || throw(ArgumentError("multi-space operators not supported yet!"))
+    d = dims(As[1])[1]
+    return Operator(sum(A->vec(data(A))*vec(data(A))',As),(d,d))
 end
 
-function _choi2pauli_basis(D::NTuple{N,Int}) where N
+function choi_to_chi(C::Operator)
+    length(dims(C)) == 2 || throw(ArgumentError("multi-space operators not supported yet!"))
+    B = Operator(_choi_to_pauli_basis((dims(C)[1],)),dims(C),false)
+    return (B*C*B')/2^1 # TODO: fix for multi-qubit
+end
+
+function chi_to_choi(χ::Operator)
+    length(dims(χ)) == 2 || throw(ArgumentError("multi-space operators not supported yet!"))
+    B = Operator(_choi_to_pauli_basis((dims(χ)[1],)),dims(χ),false)
+    return (B'*χ*B)/2^1 # TODO: fix for multi-qubit
+end
+
+function _choi_to_pauli_basis(D::NTuple{N,Int}) where N
     all(d->d==2,D) || throw(ArgumentError("only valid with qubits!"))
     B = Matrix{Float64}(undef,4^N,4^N)
+    # change to I,X,Y,Z basis (Y = -i*σy)
     Ps = ([1 0; 0 1], [0 1; 1 0], [0 -1; 1 0], [1 0; 0 -1])
     for (i,ops) in enumerate(product(ntuple(_->Ps,N)...))
         B[:,i] = vec(reduce(⊗,ops))
@@ -65,14 +105,17 @@ function _choi2pauli_basis(D::NTuple{N,Int}) where N
 end
 
 Base.vec(O::Operator) = Ket(copy(vec(data(O))),dims(O).^2)
+
 unvec(v::Ket) = Operator(copy(unvec(data(O))),isqrt.(dims(v)))
+
+super(A::Operator) = conj(A) ⊗ A
+super(A::Operator,B::Operator) = transpose(B) ⊗ A
 
 function unvec(vecA::AbstractVector)
     # unvectorize a vector into a square matrix
     d = isqrt(length(vecA))
     return reshape(vecA,(d,d))
 end
-
 
 function super(A::AbstractMatrix,B::AbstractMatrix=data(qeye(size(A,1))))
     # represents the action A*ρ*B, on a vectorized version of ρ
