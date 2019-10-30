@@ -1,5 +1,9 @@
 # The functions below check if a matrix is approximately Hermitian
+using Compat.LinearAlgebra: RealHermSymComplexHerm
+
 const ERR = 1E-13
+
+isapproxhermitian(A::RealHermSymComplexHerm) = true
 
 function isapproxhermitian(A::AbstractMatrix)
     m, n = size(A)

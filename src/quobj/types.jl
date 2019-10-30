@@ -76,21 +76,20 @@ julia> σ = Operator([0 -im ; im 0])
 struct Operator{T<:SMatrix,D} <: QuMatrix
     data::T
     dims::Dims{D}
-    herm::Bool
-    function Operator{T,D}(B::T,dims::Dims{D}=(size(B,1),),herm=isapproxhermitian(B)) where {T<:SMatrix,D}
+    function Operator{T,D}(B::T,dims::Dims{D}=(size(B,1),)) where {T<:SMatrix,D}
         N = checksquare(B)
         prod(dims)==N || throw(ArgumentError("subspace dimensions $dims are not consistent with a matrix of size $N"))
-        return new{T,D}(B, dims, herm)
+        return new{T,D}(B, dims)
     end
 end
-Operator(B::T,dims::Dims{D}=(size(B,1),),herm=isapproxhermitian(B)) where {T<:SMatrix,D} = Operator{T,D}(B,dims,herm)
-Operator(B::AbstractMatrix,dims::Dims=(size(B,1),),herm=isapproxhermitian(B)) = Operator(float.(B),dims,herm)
+Operator(B::T,dims::Dims{D}=(size(B,1),)) where {T<:SMatrix,D} = Operator{T,D}(B,dims)
+Operator(B::AbstractMatrix,dims::Dims=(size(B,1),)) = Operator(float.(B),dims)
 
 # Conversion between different QuObjects
 Bra(x::Ket) = Bra(conj(x.data),x.dims)
 Ket(x::Bra) = Ket(conj(x.data),x.dims)
-Operator(x::Ket) = Operator(x.data*x.data',x.dims,true)
-Operator(x::Bra) = Operator(conj(x.data)*tranpose(x.data),x.dims,true)
+Operator(x::Ket) = Operator(x.data*x.data',x.dims)
+Operator(x::Bra) = Operator(conj(x.data)*tranpose(x.data),x.dims)
 
 
 # Density type remnants
