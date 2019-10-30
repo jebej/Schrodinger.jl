@@ -103,7 +103,7 @@ log(ρ::Operator) = Operator(log(Matrix(ρ.data)),ρ.dims)
 # TODO: julia is missing trig functions on matrices, we can do them via diagonalization
 
 # Misc
-round(x::Operator,args...) = Operator(round.(x.data,args...),x.dims)
+round(x::Operator;args...) = Operator(round.(x.data;args...),x.dims)
 real(x::QuObject) = real.(x.data)
 imag(x::QuObject) = imag.(x.data)
 abs(x::QuObject) = abs.(x.data)

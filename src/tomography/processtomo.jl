@@ -31,10 +31,10 @@ function pdg_process_tomo(M,A,info=false)
     # iterate through projected gradient descent steps, with backtracking
     h = CPTP_helpers(C)
     while c₁ - c₂ > 1E-10
-        c₁, ∇c = c₂, ∇f(C)
-        D = project_CPTP(C.-1/μ.*∇c, h) - C
-        α = 1.0; Π = γ*real(D⋅∇c)
-        while (c₂ = f(C.+α.*D)) > c₁ + α*Π
+        c₁, ∇C = c₂, ∇f(C)
+        D = project_CPTP(C .- 1/μ.*∇C, h) - C
+        α = 1.0; Π = γ*real(D⋅∇C)
+        while (c₂ = f(C .+ α.*D)) > c₁ + α*Π
             α = α/2 # backtrack
         end
         @. C = C + α*D
@@ -62,7 +62,7 @@ function project_CPTP(C,h)
     p_diff = 1.0; q_diff = 1.0
     D,V,Mdagvec𝕀,MdagM = h
     # iterate through TP & CP projections
-    while p_diff^2 + q_diff^2 + 2*abs(p⋅(x₂-x₁)) + 2*abs(q⋅(y₂-y₁)) > 1E-6
+    while p_diff^2 + q_diff^2 + 2*abs(p⋅(x₂-x₁)) + 2*abs(q⋅(y₂-y₁)) > 1E-8
         y₂ = project_TP(x₁+p,Mdagvec𝕀,MdagM)
         p_diff = norm(x₁-y₂,2)
         @. p = x₁ - y₂ + p

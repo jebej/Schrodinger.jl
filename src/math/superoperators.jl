@@ -83,13 +83,13 @@ end
 
 function choi_to_chi(C::Operator)
     length(dims(C)) == 2 || throw(ArgumentError("multi-space operators not supported yet!"))
-    B = Operator(_choi_to_pauli_basis((dims(C)[1],)),dims(C),false)
+    B = Operator(_choi_to_pauli_basis((dims(C)[1],)),dims(C))
     return (B*C*B')/2^1 # TODO: fix for multi-qubit
 end
 
 function chi_to_choi(χ::Operator)
     length(dims(χ)) == 2 || throw(ArgumentError("multi-space operators not supported yet!"))
-    B = Operator(_choi_to_pauli_basis((dims(χ)[1],)),dims(χ),false)
+    B = Operator(_choi_to_pauli_basis((dims(χ)[1],)),dims(χ))
     return (B'*χ*B)/2^1 # TODO: fix for multi-qubit
 end
 
@@ -108,7 +108,7 @@ Base.vec(O::Operator) = Ket(copy(vec(data(O))),dims(O).^2)
 
 unvec(v::Ket) = Operator(copy(unvec(data(O))),isqrt.(dims(v)))
 
-super(A::Operator) = conj(A) ⊗ A
+super(A::Operator) = conj(A) ⊗ A # represents A*ρ*A†
 super(A::Operator,B::Operator) = transpose(B) ⊗ A
 
 function unvec(vecA::AbstractVector)
@@ -118,6 +118,6 @@ function unvec(vecA::AbstractVector)
 end
 
 function super(A::AbstractMatrix,B::AbstractMatrix=data(qeye(size(A,1))))
-    # represents the action A*ρ*B, on a vectorized version of ρ
+    # represents the action AρB, on a vectorized version of ρ
     return transpose(B) ⊗ A
 end

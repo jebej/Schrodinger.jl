@@ -14,15 +14,15 @@ const sqrtln16 = 1.66510922231539551 # Square root of ln(16)
 
 # Pauli matrices (spin-1/2 operators)
 const sigma0 = qeye(2)
-const sigmax = Operator(sparse([1,2],[2,1],[1.0,1.0],2,2),(2,),true)
-const sigmay = Operator(sparse([1,2],[2,1],[-1.0im,1.0im],2,2),(2,),true)
-const sigmaz = Operator(sparse([1,2],[1,2],[1.0,-1.0],2,2),(2,),true)
+const sigmax = Operator(sparse([1,2],[2,1],[1.0,1.0],2,2),(2,))
+const sigmay = Operator(sparse([1,2],[2,1],[-1.0im,1.0im],2,2),(2,))
+const sigmaz = Operator(sparse([1,2],[1,2],[1.0,-1.0],2,2),(2,))
 const σ0 = sigma0
 const σx = sigmax
 const σy = sigmay
 const σz = sigmaz
-const sigmaplus  = Operator(sparse([2],[1],[1.0],2,2),(2,),false) # σ₊*[1,0] = [0,1]
-const sigmaminus = Operator(sparse([1],[2],[1.0],2,2),(2,),false)
+const sigmaplus  = Operator(sparse([2],[1],[1.0],2,2),(2,)) # σ₊*[1,0] = [0,1]
+const sigmaminus = Operator(sparse([1],[2],[1.0],2,2),(2,))
 const σ₊ = sigmaplus
 const σ₋ = sigmaminus
 

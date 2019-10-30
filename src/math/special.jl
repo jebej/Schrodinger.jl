@@ -96,7 +96,7 @@ The purity of a quantum state is bounded below by `1/d`, for a maximally mixed s
 The purity is related to the linear entropy ``S_L`` by ``S_L = 1-γ``.
 """
 function purity(ρ::Operator)
-    ishermitian(ρ) || throw(ArgumentError("ρ is not a valid quantum state!"))
+    checkdensityop(ρ)
     return norm(ρ)^2
 end
 
@@ -118,7 +118,8 @@ See also [`fidelity2`](@ref), which is the square of the state fidelity.
 """
 function fidelity(ρ::Operator,σ::Operator)
     dimsmatch(ρ,σ)
-    ishermitian(ρ)&&ishermitian(σ) || throw(ArgumentError("the operators must be Hermitian"))
+    checkdensityop(ρ)
+    checkdensityop(σ)
     sqrtρ = sqrt(Hermitian(full(ρ)))
     A = sqrtρ*data(σ)*sqrtρ
     D = eigvals(A)
@@ -140,7 +141,7 @@ Compute the Uhlmann state fidelity between density matrices \$ρ\$ and \$σ\$, a
 """
 fidelity2(ρ::Operator,σ::Operator) = abs2(fidelity(ρ,σ))
 function fidelity2(ρ::Operator,ψ::Ket)
-    ishermitian(ρ) || throw(ArgumentError("the operator must be Hermitian"))
+    checkdensityop(ρ)
     return abs(expect(ρ,ψ))
 end
 fidelity2(ψ::Ket,ρ::Operator) = fidelity2(ρ,ψ)

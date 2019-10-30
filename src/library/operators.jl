@@ -14,7 +14,7 @@ julia> qzero(4,(2,2))
 ```
 """
 function qzero(::Type{T}, N::Integer, dims::Dims=(N,)) where {T<:Number}
-    return Operator(SparseMatrixCSC(N,N,ones(Int,N+1),Int[],T[]),dims,true)
+    return Operator(SparseMatrixCSC(N,N,ones(Int,N+1),Int[],T[]),dims)
 end
 qzero(::Type{T}, dims::Dims) where {T<:Number} = qzero(T,prod(dims),dims)
 qzero(N::Integer, dims::Dims=(N,)) = qzero(Float64,N,dims)
@@ -38,7 +38,7 @@ julia> qeye(4,(2,2))
 function qeye(::Type{T}, N::Integer, dims::Dims=(N,)) where {T<:Number}
     rowval = Vector{Int}(undef,N); for i=1:N; @inbounds rowval[i]=i; end
     colptr = Vector{Int}(undef,N+1); for i=1:N+1; @inbounds colptr[i]=i; end
-    return Operator(SparseMatrixCSC(N,N,colptr,rowval,ones(T,N)),dims,true)
+    return Operator(SparseMatrixCSC(N,N,colptr,rowval,ones(T,N)),dims)
 end
 qeye(::Type{T}, dims::Dims) where {T<:Number} = qeye(T,prod(dims),dims)
 qeye(N::Integer, dims::Dims=(N,)) = qeye(Float64,N,dims)
@@ -63,7 +63,7 @@ function destroy(::Type{T}, N::Integer) where {T<:Number}
     rowval = Vector{Int}(undef,N-1); for i=1:N-1; @inbounds rowval[i]=i; end
     colptr = Vector{Int}(undef,N+1); colptr[1]=1; for i=2:N+1; @inbounds colptr[i]=i-1; end
     nzval  = Vector{T}(undef,N-1); for i=1:N-1; @inbounds nzval[i]=√(T(i)); end
-    return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,),false)
+    return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,))
 end
 destroy(N::Integer) = destroy(Float64,N)
 
@@ -86,7 +86,7 @@ function create(::Type{T}, N::Integer) where {T<:Number}
     rowval = Vector{Int}(undef,N-1); for i=1:N-1; @inbounds rowval[i]=i+1; end
     colptr = Vector{Int}(undef,N+1); for i=1:N; @inbounds colptr[i]=i; end; colptr[N+1]=N;
     nzval  = Vector{T}(undef,N-1); for i=1:N-1; @inbounds nzval[i]=√(T(i)); end
-    return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,),false)
+    return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,))
 end
 create(N::Integer) = create(Float64,N)
 
@@ -110,7 +110,7 @@ function numberop(::Type{T}, N::Integer) where {T<:Number}
     rowval = Vector{Int}(undef,N); for i=1:N; @inbounds rowval[i]=i; end
     colptr = Vector{Int}(undef,N+1); for i=1:N+1; @inbounds colptr[i]=i; end
     nzval  = Vector{T}(undef,N+1); for i=0:N; @inbounds nzval[i+1]=i; end
-    return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,),true)
+    return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,))
 end
 numberop(N::Integer) = numberop(Float64,N)
 
@@ -134,7 +134,7 @@ julia> displacementop(3,0.5im)
 """
 function displacementop(N::Integer, α::Number)
     a = full(destroy(N))
-    return Operator(exp(α.*a' .- α'.*a),(N,),false)
+    return Operator(exp(α.*a' .- α'.*a),(N,))
 end
 
 """
@@ -157,7 +157,7 @@ julia> squeezeop(3,0.5im)
 """
 function squeezeop(N::Integer, z::Number)
     a = full(destroy(N))
-    return Operator(exp(0.5 .* (z'.*a^2 .- z.*a'^2)),(N,),false)
+    return Operator(exp(0.5 .* (z'.*a^2 .- z.*a'^2)),(N,))
 end
 
 """
@@ -184,7 +184,7 @@ function projectorop(N::Integer,S::AbstractVector{<:Integer})
     maximum(S)<N || throw(ArgumentError("a $N-d space cannot be projected on level $(maximum(S))"))
     I = S.+1
     V = ones(length(S))
-    return Operator(sparse(I,I,V,N,N),(N,),true)
+    return Operator(sparse(I,I,V,N,N),(N,))
 end
 projectorop(N::Integer,S::Integer) = projectorop(N,S:S)
 
@@ -199,7 +199,7 @@ function sylvesterop(N::Integer,k::Integer,j::Integer)
     rowval = [mod1(i+k,N) for i = 1:N]
     colptr = Vector{Int}(undef,N+1); colptr[1:N] = 1:N; colptr[end] = N+1
     nzval  = [ωʲ^m for m = 0:N-1]
-    return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,),false)
+    return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,))
 end
 
 """
@@ -211,7 +211,7 @@ function Sigma1(N)
     rowval = circshift(1:N,-1)
     colptr = Vector{Int}(undef,N+1); colptr[1:N] = 1:N; colptr[end] = N+1
     nzval  = ones(N)
-    return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,),false)
+    return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,))
 end
 
 """
@@ -224,5 +224,5 @@ function Sigma3(N)
     rowval = collect(1:N)
     colptr = Vector{undef,Int}(N+1); colptr[1:N] = 1:N; colptr[end] = N+1
     nzval  = [ω^m for m = 0:N-1]
-    return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,),false)
+    return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,))
 end

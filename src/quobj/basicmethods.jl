@@ -11,6 +11,16 @@ data(A::QuObject) = A.data
 dims(A::QuObject) = A.dims
 isnormalized(A::QuVector) = norm(A) ≈ 1
 isnormalized(A::QuMatrix) = trace(A) ≈ 1
+isdensityop(A::QuMatrix) = isapproxhermitian(A) && isnormalized(A)
+function checkdensityop(A::QuMatrix)
+    herm = isapproxhermitian(A); norm = isnormalized(A)
+    if !herm || !norm
+        a = !herm ? "is not Hermitian" : ""
+        b = !herm && !norm ? " and " : ""
+        c = !norm ? "does not have unity trace (trace: $(real(trace(A))))" : ""
+        throw(ArgumentError(string("not a density operator, matrix ",a,b,c)))
+    end
+end
 dense(x::Ket) = Ket(Vector(x.data),x.dims)
 dense(x::Bra) = Bra(Vector(x.data),x.dims)
 dense(A::Operator) = Operator(Matrix(A.data),A.dims)
@@ -57,8 +67,8 @@ normalize!(A::QuMatrix) = (rmul!(A.data,1/trace(A.data));A)
 normalize(x::QuObject) = normalize!(copy(x))
 scale!(A::QuObject,b::Number) = (rmul!(A.data,b);A)
 scale(A::QuObject,b::Number) = scale!(copy(A))
-ishermitian(A::Operator) = A.herm
-isapproxhermitian(A::Operator) = A.herm
+ishermitian(A::Operator) = ishermitian(A.data)
+isapproxhermitian(A::Operator) = isapproxhermitian(A.data)
 issymmetric(A::QuMatrix) = issymmetric(A.data)
 isunitary(A::QuMatrix) = isunitary(A.data)
 isapproxunitary(A::QuMatrix) = isapproxunitary(A.data)
@@ -75,7 +85,7 @@ isapprox(A::QuObject,B::QuObject;kwargs...) = isequal(A.dims,B.dims)&&isapprox(A
 # Conversion and promotion rules
 convert(::Type{Ket{T,D}},x::Ket) where {T,D} = Ket(convert(T,x.data),x.dims)
 convert(::Type{Bra{T,D}},x::Bra) where {T,D} = Bra(convert(T,x.data),x.dims)
-convert(::Type{Operator{T,D}},A::Operator) where {T,D} = Operator(convert(T,A.data),A.dims,A.herm)
+convert(::Type{Operator{T,D}},A::Operator) where {T,D} = Operator(convert(T,A.data),A.dims)
 promote_rule(::Type{Ket{T,D}},::Type{Ket{S,D}}) where {T,S,D} = Ket{promote_type(T,S),D}
 promote_rule(::Type{Bra{T,D}},::Type{Bra{S,D}}) where {T,S,D} = Bra{promote_type(T,S),D}
 promote_rule(::Type{Operator{T,D}},::Type{Operator{S,D}}) where {T,S,D} = Operator{promote_type(T,S),D}

@@ -1,7 +1,7 @@
 using BenchmarkTools, Schrodinger
 n = 10
-A = Operator(rand(n,n),(n,),true);
-B = Operator(rand(n,n),(n,),true);
+A = Operator(rand(n,n),(n,));
+B = Operator(rand(n,n),(n,));
 A*B;
 A.data*B.data;
 @time for i=1:300000;A*B;end
@@ -9,8 +9,8 @@ A.data*B.data;
 
 function test_Operator()
     for n in [10,16,30]
-        A = Operator(rand(n,n),(n,),true)
-        B = Operator(rand(n,n),(n,),true)
+        A = Operator(rand(n,n),(n,))
+        B = Operator(rand(n,n),(n,))
         @show @benchmark $A*$B
         @show @benchmark $A.data*$B.data
     end
