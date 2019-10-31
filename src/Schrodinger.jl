@@ -8,6 +8,7 @@ using OrdinaryDiffEq.DiffEqBase: AbstractParameterizedFunction
 export Operator, Ket, Bra,
     data, dims, isnormalized, dimsmatch, dense, braket, isapproxhermitian,
     isunitary, isapproxunitary, isdensityop, checkdensityop,
+    hermitian, symmetric,
     tensor, ptrace, expect, levelprobs, findstate,
     purity, fidelity, fidelity2, entanglement_fidelity, gate_fidelity,
     fock, basis, coherent, thermal, maxentangled, maxmixed, ket, @qb_str,

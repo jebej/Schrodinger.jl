@@ -10,7 +10,7 @@ println("Testing QuObject Basics...")
     # Test ket generation from arrays and functions
     @test data(Ket([0,0])) == [0.0,0.0]
     @test dims(Ket([0,1,0])) == (3,)
-    @test_throws ArgumentError Ket([0,1],(3,))
+    @test_throws DimensionMismatch Ket([0,1],(3,))
     @test_throws ArgumentError basis(2,2)
     @test Ket(sparse([0,1/√2,1im/√2,0]),(2,2)) == 1/√2*(basis(2,0)⊗basis(2,1) + 1im*basis(2,1)⊗basis(2,0))
     @test Ket([0,1,0,0,0,0],(3,2)) == (basis(3,0)⊗basis(2,1))
@@ -27,7 +27,7 @@ end
     # Test bra generation from arrays and functions
     @test data(Bra([0,0])) == [0.0,0.0]
     @test dims(Bra([0,1,0])) == (3,)
-    @test_throws ArgumentError Bra([0,1],(3,))
+    @test_throws DimensionMismatch Bra([0,1],(3,))
     @test Bra(sparse([0,1/√2,1im/√2,0]),(2,2)) == 1/√2*(basis(2,0)⊗basis(2,1) - 1im*basis(2,1)⊗basis(2,0))'
     α = 1.31+0.11im
     @test Bra(coherent(30,α))[6] ≈ exp(-0.5*abs2(α))*conj(α)^5/sqrt(factorial(5))
@@ -37,7 +37,7 @@ end
     # Test operator generation from arrays and functions
     @test data(Operator([0 0;0 0])) == zeros(2,2)
     @test dims(Operator([0 0 0;0 1 0;0 0 0])) == (3,)
-    @test_throws ArgumentError Operator([0 0;0 0],(3,))
+    @test_throws DimensionMismatch Operator([0 0;0 0],(3,))
     @test_throws DimensionMismatch Operator([0 1 0;0 0 0])
     @test (A=maxmixed(4); diag(A) == fill(0.25,4) && isdiag(A))
     @test (A=thermal(10,0.45); diag(A)[1:2] ≈ [6.89660888E-1,2.14032689E-1] && isdiag(A))

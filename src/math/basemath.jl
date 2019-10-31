@@ -7,7 +7,9 @@ end
 
 # Additive identity and inverse
 +(A::T) where {T<:QuObject} = A
--(A::T) where {T<:QuObject} = T(-A.data,A.dims)
+-(A::Ket) = Ket(-A.data,A.dims)
+-(A::Bra) = Bra(-A.data,A.dims)
+-(A::Operator) = Operator(-A.data,A.dims)
 
 # QuVector / Number algebra
 +(x::Ket,b::Number) = Ket(x.data.+b,x.dims)
@@ -94,7 +96,9 @@ adjoint(ψ::Ket) = Bra(ψ)
 adjoint(ψ::Bra) = Ket(ψ)
 adjoint(ρ::Operator) = Operator(adjoint(ρ.data),ρ.dims)
 transpose(ρ::Operator) = Operator(transpose(ρ.data),ρ.dims)
-conj(A::T) where {T<:QuObject} = T(conj.(A.data),A.dims)
+conj(A::Ket) = Ket(conj.(A.data),A.dims)
+conj(A::Bra) = Bra(conj.(A.data),A.dims)
+conj(A::Operator) = Operator(conj.(A.data),A.dims)
 
 # Math
 sqrt(ρ::Operator) = Operator(sqrt(Matrix(ρ.data)),ρ.dims)
