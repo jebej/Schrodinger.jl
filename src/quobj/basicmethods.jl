@@ -83,12 +83,19 @@ isequal(A::T,B::T) where {T<:QuObject} = isequal(A.dims,B.dims)&&isequal(A.data,
 isapprox(A::QuObject,B::QuObject;kwargs...) = isequal(A.dims,B.dims)&&isapprox(A.data,B.data;kwargs...)
 
 # Conversion and promotion rules
-convert(::Type{Ket{T,D}},x::Ket) where {T,D} = Ket(convert(T,x.data),x.dims)
-convert(::Type{Bra{T,D}},x::Bra) where {T,D} = Bra(convert(T,x.data),x.dims)
-convert(::Type{Operator{T,D}},A::Operator) where {T,D} = Operator(convert(T,A.data),A.dims)
+convert(::Type{Ket{T,D}},x::Ket{S,D}) where {T,S,D} = Ket(convert(T,x.data),x.dims)
+convert(::Type{Bra{T,D}},x::Bra{S,D}) where {T,S,D} = Bra(convert(T,x.data),x.dims)
+convert(::Type{Operator{T,D}},A::Operator{S,D}) where {T,S,D} = Operator(convert(T,A.data),A.dims)
 promote_rule(::Type{Ket{T,D}},::Type{Ket{S,D}}) where {T,S,D} = Ket{promote_type(T,S),D}
 promote_rule(::Type{Bra{T,D}},::Type{Bra{S,D}}) where {T,S,D} = Bra{promote_type(T,S),D}
 promote_rule(::Type{Operator{T,D}},::Type{Operator{S,D}}) where {T,S,D} = Operator{promote_type(T,S),D}
+
+# Misc. conversions
+import Compat.LinearAlgebra: Hermitian, Symmetric
+Hermitian(A::Operator) = error("Use the `hermitian` function to make an Operator Hermitian")
+hermitian(A::Operator) = Operator(Hermitian(A.data),A.dims)
+Symmetric(A::Operator) = error("Use the `symmetric` function to make an Operator Symmetric")
+symmetric(A::Operator) = Operator(Symmetric(A.data),A.dims)
 
 # Show methods
 function show(io::IO, A::T) where T<:QuMatrix
