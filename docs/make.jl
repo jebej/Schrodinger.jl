@@ -6,23 +6,22 @@ makedocs(
     sitename = "Schrodinger.jl",
     authors = "Jérémy Béjanin.",
     modules = [Schrodinger],
+    format = Documenter.HTML(prettyurls = false),
     linkcheck = true,
     clean = false,
-    format = :html,
-    html_prettyurls = false,
-    pages = Any[
+    pages = [
         "Home" => "index.md",
-        "Manual" => Any[
+        "Manual" => [
             "man/gettingstarted.md",
             "man/quantumobjects.md",
             "man/working.md",
             "man/dynamics.md",
         ],
-        "Examples" => Any[
+        "Examples" => [
             "examples/driven_TLS.md",
             "examples/DRAG.md",
         ],
-        "API" => Any[
+        "API" => [
             "api/quobj.md",
             "api/states.md",
             "api/operators.md",
