@@ -47,21 +47,21 @@ julia> Φ = coherent(10,α)
 0.47∠101°|3⟩ + 0.45∠67°|2⟩ + 0.42∠135°|4⟩ + 0.35∠34°|1⟩ + 0.34∠168°|5⟩ +…
 ```
 
-A coherent state is a superposition of number states, which is evident when displayed in the number basis. Note the three dots at the end of the line: Schrodinger.jl only displays the 5 largest components of a `Ket` vector. You can see the full vector with the [`full`](@ref) function:
+A coherent state is a superposition of number states, which is evident when displayed in the number basis. Note the three dots at the end of the line: Schrodinger.jl only displays the 5 largest components of a `Ket` vector. You can extract the full vector with the [`full`](@ref) function:
 
 ```jldoctest coherexample
 julia> full(Φ)
 10-element Array{Complex{Float64},1}:
-     0.1969115853703145 + 1.3877787807814457e-16im
-     0.2953682773152671 + 0.1969121848768447im
-    0.17404455782964393 + 0.41770693879114607im
-   -0.09044382705530486 + 0.46226844939378026im
-   -0.29884571990977016 + 0.30135702848044027im
-   -0.33585925021170104 + 0.06863455364460214im
-   -0.23186949330792767 - 0.09434296828450334im
-   -0.09879088215342646 - 0.14553280324422513im
- -0.0008325212541629972 - 0.09948454819622193im
-   0.047205161874622995 - 0.07210790803315013im
+    0.19691158537031458 + 1.3877787807814457e-17im
+    0.29536827731526694 + 0.19691218487684475im
+    0.17404455782964412 + 0.417706938791146im
+   -0.09044382705530482 + 0.46226844939378026im
+    -0.2988457199097701 + 0.3013570284804403im
+   -0.33585925021170093 + 0.06863455364460225im
+   -0.23186949330792772 - 0.09434296828450331im
+   -0.09879088215342655 - 0.14553280324422507im
+ -0.0008325212541630354 - 0.09948454819622193im
+    0.04720516187462298 - 0.0721079080331502im
 ```
 
 A *mixed* state is a probabilistic mixture of *pure* states, and it is important to understand the difference between the two. For example, we can create a superposition between two state of a three-level atom by adding kets together:

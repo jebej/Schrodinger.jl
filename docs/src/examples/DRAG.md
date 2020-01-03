@@ -1,6 +1,6 @@
 ```@meta
 DocTestSetup = quote
-    using Schrodinger, Compat.SparseArrays, Compat
+    using Schrodinger, SparseArrays
 end
 ```
 
@@ -18,7 +18,7 @@ This example shows how to implement a NOT gate on a qubit using a Gaussian pulse
 First, we will apply a simple NOT gate to a qubit in the ground state. The Hamiltonian for our qubit in the lab frame can be written as $$ħ(ω|1⟩⟨1|+ℇ(t)σ_x)$$ where $$ħω$$ is the transition energy, $$σ_x$$ is the Pauli-X operator, and $$ℇ(t)=ℇ^x(t)\cos(ω_dt)$$ represents our control of the system using a drive frequency $$ω_d$$. Any control $$ℇ^x(t)$$ such that the integral of $$ℇ^x$$ over the total gate time equals $$π$$ will result in a complete inversion. It is common to use a Gaussian shaped π-pulse to implement a NOT gate. For our purposes, we will find it more convenient to work in the rotating frame with respect to our drive frequency $$ω_d$$. When this frequency is resonant with the qubit frequency $$ω$$, the Hamiltonian is given by $$ħℇ^x(t)σ_x/2$$. If we are going to solve the time dynamics for this system, we also have to define our pulse in the rotating frame.
 
 ```@example DRAG
-using Schrodinger, SpecialFunctions, Compat
+using Schrodinger, SpecialFunctions, SparseArrays
 
 function rotgaussianpulse(t::Real,p::Vector)
     # normalized pulse centered on t=0, begins and ends at 0

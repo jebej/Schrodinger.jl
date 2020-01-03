@@ -1,6 +1,6 @@
 ```@meta
 DocTestSetup = quote
-    using Schrodinger, PyPlot, Compat.SparseArrays
+    using Schrodinger, PyPlot, SparseArrays
 end
 ```
 
