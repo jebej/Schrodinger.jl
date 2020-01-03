@@ -29,11 +29,12 @@ julia> ψ = normalize!(Ket([1,1]))
 struct Ket{T<:SVector,D} <: QuVector
     data::T
     dims::Dims{D}
-    function Ket(x::T, dims::Dims{D}=size(x)) where {T<:SVector,D}
+    function Ket{T,D}(x, dims::Dims{D}) where {T<:SVector,D}
         checkdims(dims,size(x))
-        return new{T,D}(x,dims)
+        return new{T,D}(convert(T,x),dims)
     end
 end
+Ket(x::T, dims::Dims{D}=size(x)) where {T<:SVector,D} = Ket{T,D}(x,dims)
 Ket(x::AbstractVector,dims::Dims=size(x)) = Ket(float.(x),dims)
 
 """
@@ -48,11 +49,12 @@ It is possible to normalize the bra vector after construction with the `normaliz
 struct Bra{T<:SVector,D} <: QuVector
     data::T
     dims::Dims{D}
-    function Bra(x::T,dims::Dims{D}=size(x)) where {T<:SVector,D}
+    function Bra{T,D}(x,dims::Dims{D}) where {T<:SVector,D}
         checkdims(dims,size(x))
-        return new{T,D}(x, dims)
+        return new{T,D}(convert(T,x), dims)
     end
 end
+Bra(x::T, dims::Dims{D}=size(x)) where {T<:SVector,D} = Bra{T,D}(x,dims)
 Bra(x::AbstractVector,dims::Dims=size(x)) = Bra(float.(x),dims)
 
 """
@@ -73,11 +75,12 @@ julia> σ = Operator([0 -im ; im 0])
 struct Operator{T<:SMatrix,D} <: QuMatrix
     data::T
     dims::Dims{D}
-    function Operator(B::T,dims::Dims{D}=(size(B,1),)) where {T<:SMatrix,D}
+    function Operator{T,D}(B,dims::Dims{D}) where {T<:SMatrix,D}
         checkdims(dims,size(B))
-        return new{T,D}(B, dims)
+        return new{T,D}(convert(T,B), dims)
     end
 end
+Operator(B::T,dims::Dims{D}=(size(B,1),)) where {T<:SMatrix,D} = Operator{T,D}(B,dims)
 Operator(B::AbstractMatrix,dims::Dims=(size(B,1),)) = Operator(float.(B),dims)
 
 # Conversion between different QuObjects
@@ -105,7 +108,7 @@ end
 struct Density{T<:SMatrix,D} <: QuMatrix
     data::T
     dims::Dims{D}
-    function Density(A::T,dims::Dims{D}) where {T<:SMatrix,D}
+    function Density{T,D}(A::T,dims::Dims{D}) where {T<:SMatrix,D}
         checkdims(dims,size(A))
         isapproxhermitian(A) || throw(ArgumentError("a density matrix must be Hermitian"))
         return new{T,D}(A, dims)
