@@ -7,9 +7,7 @@ end
 
 # Additive identity and inverse
 +(A::T) where {T<:QuObject} = A
--(A::Ket) = Ket(-A.data,A.dims)
--(A::Bra) = Bra(-A.data,A.dims)
--(A::Operator) = Operator(-A.data,A.dims)
+-(A::T) where {T<:QuObject} = T(-A.data,A.dims)
 
 # QuVector / Number algebra
 +(x::Ket,b::Number) = Ket(x.data.+b,x.dims)
