@@ -153,8 +153,16 @@ end
 end
 
 @testset "Misc Functions" begin
-    for f in [real,imag,abs,abs2], A in [g,e1,plus,Bra(plus),σ,ρ,Operator(coherent(4,1.2+3im))]
-        @test f(A) == f.(data(A))
+    obj = [g,e1,plus,Bra(plus),σ,ρ,Operator(coherent(4,1.2+3im))]
+    for A in obj
+        for f in [real,imag,abs,abs2]
+            @test f(A) == f.(data(A))
+        end
+        @static if VERSION > v"0.7.0-"
+            @test data(round(A,digits=4)) == round.(data(A),digits=4)
+        else
+            @test data(round(A,4)) == round.(data(A),4)
+        end
     end
 end
 
