@@ -1,8 +1,6 @@
 # Schrodinger.jl Tests
 using Schrodinger
-using Schrodinger: ComplexF64
-
-using Compat.Test, Compat.LinearAlgebra, Compat.SparseArrays
+using Compat, Compat.Test, Compat.LinearAlgebra, Compat.SparseArrays
 
 @testset "All Tests" begin
 include("quobj.jl")

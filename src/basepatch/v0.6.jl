@@ -2,8 +2,6 @@ import Base: kron, randn, vec, dot, vecdot, IntSet, exp, log, sqrt
 import Base.LinAlg: trace, ctranspose, expm!, eigs, scale!
 export sincos, eigen
 
-const ComplexF64 = Complex128
-const ComplexF32 = Complex64
 const adjoint = ctranspose
 const qr! = qrfact!
 const luf = lufact

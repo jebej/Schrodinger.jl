@@ -1,7 +1,6 @@
 # QuObj Tests
 using Schrodinger
-using Schrodinger: ComplexF64
-using Compat.Test, Compat.LinearAlgebra, Compat.SparseArrays
+using Compat, Compat.Test, Compat.LinearAlgebra, Compat.SparseArrays
 if VERSION > v"0.7.0-"
     using Compat.Statistics: mean
 end
@@ -67,6 +66,9 @@ TWOQUBIT = Ket.(N!.(Vector{ComplexF64}[
     @test fidelity(basis(N,3),Operator(coherentαhalf)) ≈ abs(coherentαhalf[4])
     @test fidelity(Operator(coherentα),Operator(basis(N,3))) ≈ abs(coherentα[4]) rtol=1E-7
     @test fidelity(Operator(basis(N,2)),Operator(coherent(N,1))) ≈ abs(coherent(N,1)[3])
+    P = randn(N,N) + im*randn(N,N); P = normalize!(Operator(P'*P))
+    Q = randn(N,N) + im*randn(N,N); Q = normalize!(Operator(Q'*Q))
+    @test fidelity(P,Q) ≈ (rtQ=√(Q); real(trace(√(rtQ*P*rtQ))))
     # fidelity2
     @test fidelity2(g,g) == 1
     @test fidelity2(g,e1) == 0
@@ -74,9 +76,9 @@ TWOQUBIT = Ket.(N!.(Vector{ComplexF64}[
     @test fidelity2(coherentαhalf,basis(N,3)) ≈ abs2(coherentαhalf[4])
     @test fidelity2(Operator(coherentαhalf),basis(N,3)) ≈ abs2(coherentαhalf[4])
     @test fidelity2(basis(N,3),Operator(coherentα)) ≈ abs2(coherentα[4])
-    @test fidelity2(Operator(coherentαhalf),Operator(basis(N,3))) ≈ abs2(coherentαhalf[4]) atol=1E-10
+    @test fidelity2(Operator(coherentαhalf),Operator(basis(N,3))) ≈ abs2(coherentαhalf[4]) atol=2E-9
     @test fidelity2(Operator(coherent(N,α,true)),Operator(basis(N,3))) ≈ abs2(coherent(N,α,true)[4]) atol=2E-9
-    @test fidelity2(Operator(basis(N,2)),Operator(coherent(N,1))) ≈ abs2(coherent(N,1)[3])
+    @test fidelity2(Operator(basis(N,2)),Operator(coherent(N,1))) ≈ abs2(coherent(N,1)[3]) atol=2E-9
     # entanglement and average gate fidelity
     U1, V1 = rand_unitary(5), rand_unitary(5)
     @test entanglement_fidelity(U1,V1) ≈ (ε=qeye(5)⊗(U1'V1);ϕ=maxentangled(2,5);abs2(ϕ⋅(ε*ϕ)))
