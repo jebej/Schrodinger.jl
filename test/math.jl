@@ -1,7 +1,6 @@
 # QuObj Tests
 using Schrodinger
-using Schrodinger: ComplexF64
-using Compat.Test, Compat.LinearAlgebra, Compat.SparseArrays
+using Compat, Compat.Test, Compat.LinearAlgebra, Compat.SparseArrays
 println("Testing Math...")
 
 @testset "QuObj Basic Math" begin
