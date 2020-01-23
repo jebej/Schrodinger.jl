@@ -19,12 +19,12 @@ The Hamiltonian of a two-level system is usually expressed with a ``\hat{σ}_z``
 The drive consists of an oscillating field in a direction transverse to the TLS. We use a circularly polarized field, meaning that the component of the drive for the ``g \rightarrow w`` transition is complex and is the complex conjugate of the component of the drive for the ``w \rightarrow g`` transition. Explicitly, if the drive has strength ``\gamma`` (in angular frequency units), the drive operator is:
 
 ```math
-\begin{align*}
+\begin{aligned}
 \hat{H}_d = \hbar \gamma \begin{pmatrix}
 0 & e^{i \omega_d t} \\
 e^{-i \omega_d t} & 0
 \end{pmatrix},
-\end{align*}
+\end{aligned}
 ```
 where ``\omega_d`` is the drive frequency.
 
@@ -68,28 +68,28 @@ We now derive the dynamics of the system analytically, so that we may verify our
 First, we move to the interaction picture in order to ignore the precession about the z-axis. We are thus left only with ``\hat{H}_I = e^{i \hat{H}_0 t / \hbar} \hat{H}_D e^{-i \hat{H}_0 t / \hbar}``. For a state with time dependent coefficients ``c_0`` and ``c_1``, the Schrödinger equation thus reads:
 
 ```math
-\begin{align*}
+\begin{aligned}
 i \hbar \dot{|\psi\rangle}_I &= \hat{H}_I |\psi\rangle_I, \\
 i \hbar \begin{pmatrix} \dot{c}_0 \\ \dot{c}_1 \end{pmatrix} &= \hbar \gamma \begin{pmatrix} 0 & e^{i \Delta\omega t} \\ e^{-i \Delta\omega t} & 0 \end{pmatrix} \begin{pmatrix} c_0 \\ c_1 \end{pmatrix}, \\
  &= \hbar \gamma \begin{pmatrix} e^{i \Delta\omega t} c_1 \\ e^{-i \Delta\omega t} c_0 \end{pmatrix},
-\end{align*}
+\end{aligned}
 ```
 where ``\Delta\omega = \omega_d - \omega``.
 
 We thus have a system of coupled differential equations to solve, with initial condition ``c_0(t=0) = 1`` and normalization ``|c_0|^2 + |c_1|^2 = 1``. We first decouple the system by isolating ``c_0(t)`` in the second equation, differentiating it and inserting the result in the second equation:
 
 ```math
-\begin{align*}
+\begin{aligned}
 c_0(t) &= i/\gamma  e^{i \Delta\omega t} \dot{c}_1, \\
 \dot{c}_0(t) &= i/\gamma  \left( e^{i \Delta\omega t} \ddot{c}_1 + i \Delta\omega e^{i \Delta\omega t} \dot{c}_1 \right),
-\end{align*}
+\end{aligned}
 ```
 
 ```math
-\begin{align*}
+\begin{aligned}
 -1/\gamma  \left( e^{i \Delta\omega t} \ddot{c}_1 + i \Delta\omega e^{i \Delta\omega t} \dot{c}_1 \right) &= \gamma  e^{i \Delta\omega t} c_1, \\
 e^{i \Delta\omega t} \ddot{c}_1 + i \Delta\omega e^{i \Delta\omega t} \dot{c}_1 &= -\gamma^2  e^{i \Delta\omega t} c_1.
-\end{align*}
+\end{aligned}
 ```
 
 Finally, since the equation must be valid for all ``t``, we drop the exponential to obtain a homogeneous second order differential equation:
@@ -101,19 +101,19 @@ Finally, since the equation must be valid for all ``t``, we drop the exponential
 At this point we guess a solution ``c_1(t) \propto e^{i \alpha t}`` which, when inserted in the differential equation, gives a 2nd order polynomial in ``\alpha``:
 
 ```math
-\begin{align*}
+\begin{aligned}
 -\alpha^2 c_1 + i \Delta\omega i \alpha c_1 + \gamma^2 c_1 &= 0, \\
 \alpha^2 + \Delta\omega \alpha - \gamma^2 &= 0,
-\end{align*}
+\end{aligned}
 ```
 
 with solutions
 
 ```math
-\begin{align*}
+\begin{aligned}
 \alpha_\pm &= - \Delta\omega/2 \pm \sqrt{ ( \Delta\omega/2 )^2 + \gamma^2 }, \\
            &= - \Delta\omega/2 \pm \Omega,
-\end{align*}
+\end{aligned}
 ```
 where we have introduced the well know *Rabi frequency* ``\Omega = \sqrt{ ( \Delta\omega/2 )^2 + \gamma^2 }``.
 
@@ -133,23 +133,23 @@ c_1(t) = a e^{-i \Delta\omega t /2} 2i \sin(\Omega t) = c e^{-i \Delta\omega t /
 Finally, to determine the value of ``a``, we insert the general solution back in the original differential equation for ``c_1(t)`` and make use of the normalization property:
 
 ```math
-\begin{align*}
+\begin{aligned}
 \dot{c_1} &= c ( -i \Delta\omega/2 e^{-i \Delta\omega t /2} \sin(\Omega t) + \Omega e^{-i \Delta\omega t /2} \cos(\Omega t) ), \\
           &= \gamma e^{-i \Delta\omega t} c_0
-\end{align*}
+\end{aligned}
 ```
 
 equating the equations and taking the absolute square:
 
 ```math
-\begin{align*}
+\begin{aligned}
 e^{-i \Delta\omega t /2} c ( -i \Delta\omega/2 \sin(\Omega t) + \Omega \cos(\Omega t) ) &= \gamma e^{-i \Delta\omega t} c_0, \\
 |c|^2 ( (\Delta\omega/2)^2 \sin^2(\Omega t) + \Omega^2 \cos^2(\Omega t) ) &= \gamma^2 |c_0|^2 = \gamma^2 ( 1 - |c_1|^2 ), \\
 |c|^2 ( (\Delta\omega/2)^2 \sin^2(\Omega t) + \Omega^2 \cos^2(\Omega t) + \gamma^2 \sin^2(\Omega t) )&= \gamma^2, \\
 |c|^2 ( \Omega^2 \sin^2(\Omega t) + \Omega^2 \cos^2(\Omega t) )&= \gamma^2, \\
 |c|^2 \Omega^2 &= \gamma^2, \\
 |c|^2 &= \gamma^2 / \Omega^2.
-\end{align*}
+\end{aligned}
 ```
 
 The final solution for ``c_1(t)`` then, up to a constant global phase is:
