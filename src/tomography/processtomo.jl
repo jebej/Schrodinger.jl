@@ -16,7 +16,7 @@ function pdg_process_tomo(M,A,info=false)
     # Choi process matrix reconstruction with maximum likelihood projected
     # gradient descent
     size(A,1)==length(M) || throw(ArgumentError("A matrix inconsistent with number of measurements!"))
-    abs(sum(M)-1)<0.1 || throw(ArgumentError("measurement counts not normalized!"))
+    abs(sum(M)-1)<1/4 || throw(ArgumentError("measurement counts not normalized!"))
     # infer space dimensions from A matrix
     d = isqrt(isqrt(size(A,2)))
     # initial Choi matrix guess, the identity map
