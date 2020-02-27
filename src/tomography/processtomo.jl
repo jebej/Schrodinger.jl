@@ -12,9 +12,8 @@ end
 # Quantum process tomography via completely positive and trace-preserving
 # projection. Phys. Rev. A 98, 062336 (2018).
 
-function pdg_process_tomo(M,A,info=false)
-    # Choi process matrix reconstruction with maximum likelihood projected
-    # gradient descent
+function pgd_process_tomo(M::Matrix, A::Matrix; tol=1E-10, cptp_tol=1E-8, info=false)
+    # Choi process matrix reconstruction by maximum likelihood projected gradient descent
     size(A,1)==length(M) || throw(ArgumentError("A matrix inconsistent with number of measurements!"))
     abs(sum(M)-1)<1/4 || throw(ArgumentError("measurement counts not normalized!"))
     # infer space dimensions from A matrix
@@ -30,9 +29,9 @@ function pdg_process_tomo(M,A,info=false)
     info && println("start cost = $c₂")
     # iterate through projected gradient descent steps, with backtracking
     h = CPTP_helpers(C)
-    while c₁ - c₂ > 1E-10
+    while c₁ - c₂ > tol
         c₁, ∇C = c₂, ∇f(C)
-        D = project_CPTP(C .- 1/μ.*∇C, h) - C
+        D = project_CPTP(C .- 1/μ.*∇C, h, cptp_tol) - C
         α = 1.0; Π = γ*real(D⋅∇C)
         while (c₂ = f(C .+ α.*D)) > c₁ + α*Π
             α = α/2 # backtrack
@@ -43,18 +42,18 @@ function pdg_process_tomo(M,A,info=false)
     return C
 end
 
-function loglikelihood(M,C,A)
+function loglikelihood(M::Matrix, C::Matrix, A::Matrix)
     # Binomial statistics for the measurement count probability, up to some irrelevant constant
     P = max.(real.(A*vec(C)), 1E-16)
     return -real(transpose(vec(M))*log.(P))
 end
 
-function loglikelihood_gradient(M,C,A)
+function loglikelihood_gradient(M::Matrix, C::Matrix, A::Matrix)
     P = max.(real.(A*vec(C)), 1E-16)
     return unvec(-A'*(vec(M)./P))
 end
 
-function project_CPTP(C,h)
+function project_CPTP(C::Matrix, h, tol=1E-8)
     # generate storage objects
     x₁ = copy(vec(C)); y₁ = zero(x₁);
     x₂ = copy(y₁); y₂ = copy(y₁)
@@ -62,7 +61,7 @@ function project_CPTP(C,h)
     p_diff = 1.0; q_diff = 1.0
     D,V,Mdagvec𝕀,MdagM = h
     # iterate through TP & CP projections
-    while p_diff^2 + q_diff^2 + 2*abs(p⋅(x₂-x₁)) + 2*abs(q⋅(y₂-y₁)) > 1E-8
+    while p_diff^2 + q_diff^2 + 2*abs(p⋅(x₂-x₁)) + 2*abs(q⋅(y₂-y₁)) > tol
         y₂ = project_TP(x₁+p,Mdagvec𝕀,MdagM)
         p_diff = norm(x₁-y₂,2)
         @. p = x₁ - y₂ + p
@@ -75,7 +74,7 @@ function project_CPTP(C,h)
     return unvec(x₁)
 end
 
-function project_CP(vecC,D,V)
+function project_CP(vecC, D, V)
     # Project the process onto the completely positive subspace by making the
     # Choi matrix positive semidefinite
     # We do this by taking the eigendecomposition, setting any negative
@@ -89,7 +88,7 @@ function project_CP(vecC,D,V)
     return vec(V*Diagonal(D)*V')
 end
 
-function project_TP(vecC,Mdagvec𝕀,MdagM)
+function project_TP(vecC, Mdagvec𝕀, MdagM)
     # Project the process onto the trace-preserving subspace
     d⁻¹ = 1/isqrt(isqrt(length(vecC)))
     return vecC .- d⁻¹.*MdagM*vecC .+ d⁻¹.*Mdagvec𝕀
@@ -99,13 +98,13 @@ function CPTP_helpers(C)
     D = Vector{real(eltype(C))}(undef,size(C,1))
     V = Matrix{eltype(C)}(undef,size(C))
     Mdagvec𝕀,MdagM = TP_helper_matrices(C)
-    return D,V,Mdagvec𝕀,MdagM
+    return D, V, Mdagvec𝕀, MdagM
 end
 
 function TP_helper_matrices(C)
     d = isqrt(size(C,1))
-    𝕀 = Matrix{Int8}(I,d,d); k = zeros(Int8,1,d)
+    𝕀 = Matrix(1.0I,d,d); k = zeros(1,d)
     # this can be done more efficiently, but prob doesn't matter
-    M = sum((@inbounds k[i],k[mod1(i-1,d)] = 1,0; 𝕀 ⊗ k ⊗ 𝕀 ⊗ k) for i=1:d)
+    M = sum(i->(k[i]=1; k[mod1(i-1,d)]=0; (𝕀 ⊗ k) ⊗ (𝕀 ⊗ k)), 1:d)
     return M'*vec(𝕀), M'*M
 end

@@ -1,6 +1,6 @@
 # Tomography Tests
 using Schrodinger
-using Schrodinger: mle_state_tomo, build_density_matrix, pdg_process_tomo,
+using Schrodinger: mle_state_tomo, build_density_matrix, pgd_process_tomo,
     apply_process, operator_to_choi, trace_norm, gate_fidelity_choi,
     state_likelihood_model, process_likelihood_model
 
@@ -58,7 +58,7 @@ for G ∈ [σ0, σx, σy, σz, X½, Y½, T, H]
     #M = mapslices(p->rand(Multinomial(N,p)),P,dims=2)./(d^2*N)
     M = .-(abs.(size(P,1)/2 .- abs.(P .+ randn(size(P))./2^12)) .- size(P,1)/2)./size(P,2)
     # Reconstruct the Choi matrix from the measurements
-    Crec = Operator(@inferred(pdg_process_tomo(M,A,false)),(d,d))
+    Crec = Operator(@inferred(pgd_process_tomo(M,A,info=false)),(d,d))
     # Compare using the J distance, aka the trace norm of the difference
     @static if VERSION < v"1.0.0-"
         @test trace_norm(Ctrue-Crec)/2d < 0.004
