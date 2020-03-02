@@ -1,46 +1,51 @@
-apply_process(C,ψ::Ket) = apply_process(C,Operator(ψ))
+apply_process(C::Operator,ψ::Ket) = apply_process(C,Operator(ψ))
 # assumes Choi matrix
-apply_process(C::Operator,ρ::Operator) = ptrace((transpose(ρ)⊗qeye(dims(ρ)))*C,1)
+apply_process(C::Operator,ρ::Operator{T,D}) where {T,D} =
+    ptrace((transpose(ρ)⊗qeye(dims(ρ)))*C,ntuple(identity,D))
 # assumes Kraus operators
 apply_process(As::Vector{<:Operator},ρ::Operator) = sum(A->A*ρ*A',As)
 
 function gate_fidelity_choi(C::Operator,U::Operator)
     # calculate the average gate fidelity given a Choi matrix and a unitary gate
-    length(dims(C)) == 2 && dims(C)[1]==dims(C)[2]==dims(U)[1] || throw(DimensionMismatch())
-    V = qeye(dims(U)[1]) ⊗ U
+    if dims(C) != (dims(U)...,dims(U)...)
+        throw(DimensionMismatch())
+    end
+    V = qeye(dims(U)) ⊗ U
     return gate_fidelity_choi(V'*C*V)
 end
 
-function gate_fidelity_choi(C::Operator)
+function gate_fidelity_choi(C::Operator{T,D}) where {T,D}
     # calculate the average gate fidelity given a Choi matrix
     # Johnston, N. & Kribs, D. W. Quantum gate fidelity in terms of Choi
     # matrices. J. Phys. A Math. Theor. 44, 495303 (2011).
-    D = dims(C)
-    length(D)==2 && D[1]==D[2] || throw(ArgumentError("not a Choi matrix!"))
-    d = D[1]
-    return (d + real(sum(C[(i,i),(j,j)] for i=0:d-1,j=0:d-1)))/(d^2 + d)
+    dm = dims(C)
+    if D%2 != 0 || prod(i->dm[i],1:D÷2) != prod(i->dm[i],D÷2+1:D)
+        throw(ArgumentError("not a valid Choi matrix!"))
+    end
+    d = prod(i->dm[i],1:D÷2)
+    CC = Operator(data(C),(d,d)) # rewrap operator to use tensored indexing
+    return (d + real(sum(CC[(i,i),(j,j)] for i=0:d-1,j=0:d-1)))/(d^2 + d)
 end
 
-function gate_fidelity_kraus(As::Vector{<:Operator})
+function gate_fidelity_kraus(As::Vector{Operator{T,D}}) where {T,D}
     # calculate the average gate fidelity given a list of Kraus operators
-    d = dims(As[1])[1]
+    d = prod(i->dims(first(As))[i],1:D)
     return (d + sum(abs2∘trace,As))/(d^2 + d)
 end
 
-function gate_fidelity_kraus(As::Vector{<:Operator},U::Operator)
+function gate_fidelity_kraus(As::Vector{<:Operator{T1,D}},U::Operator{T2,D}) where {T1,T2,D}
     # calculate the average gate fidelity given a list of Kraus operators and
     # a unitary gate
     dimsmatch(As,U)
-    d = dims(U)[1]
+    d = prod(i->dims(U)[i],1:D)
     return (d + sum(abs2∘inner,product(As,(U,))))/(d^2 + d)
 end
 
 # conversion functions
 
 function operator_to_choi(O::Operator)
-    length(dims(O)) == 1 || throw(ArgumentError("multi-space operators not supported yet!"))
-    d = dims(O)[1]
-    return Operator(vec(data(O))*vec(data(O))',(d,d))
+    newdims = (dims(O)...,dims(O)...)
+    return Operator(vec(data(O))*vec(data(O))',newdims)
 end
 
 function kraus_to_natural(As::Vector{<:Operator})

@@ -1,5 +1,5 @@
 # Tomography Tests
-using Schrodinger
+using Schrodinger, Distributions
 using Schrodinger: mle_state_tomo, build_density_matrix, pgd_process_tomo,
     apply_process, operator_to_choi, trace_norm, gate_fidelity_choi,
     state_likelihood_model, process_likelihood_model
@@ -17,14 +17,14 @@ println("Testing Tomography...")
 # Build a few different variable for testing
 d = 2; N = 10^5
 g = basis(2,0); e1 = basis(2,1)
-ONEQUBIT = normalize!.([g,e1,(g+e1),(g-e1),(g+1im*e1),(g-1im*e1)])
+ONEQUBIT = normalize!.([(g+e1),(g-e1),(g+1im*e1),(g-1im*e1),g,e1])
 
 @testset "State Tomography" begin
 # Input states and POVM operators for state tomo
 ψ = coherent(d,0.32)
-E_m = Operator.(ONEQUBIT[[3,4,5,6,1,2]])
+E_m = Operator.(ONEQUBIT)./3
 # Create the A matrix
-A = @inferred state_likelihood_model(E_m./3)
+A = @inferred state_likelihood_model(E_m)
 # Simulate measurements
 P = [real(expect(ψ,E)) for E ∈ E_m]
 M = round.(Int,P*N .+ 25 .* randn(size(P)))./N
@@ -37,7 +37,7 @@ end
 
 @testset "Process Tomography" begin
 # Input states and POVM operators for process tomo
-ρ_in = Operator.(ONEQUBIT[[3,4,5,6,1,2]])
+ρ_in = Operator.(ONEQUBIT)
 E_m  = ρ_in./3
 @test sum(E_m) ≈ qeye(d)
 
@@ -52,11 +52,10 @@ H = Operator([1 1; 1 -1]/√2)
 for G ∈ [σ0, σx, σy, σz, X½, Y½, T, H]
     # Simulate tomography measurement by calculating theoretical probabilities
     # and drawing from a multinomial distribution
-    #P = [real(expect(G*ρ*G',E)) for E ∈ E_m,ρ ∈ ρ_in]
+    P = [real(expect(G*ρ*G',E)) for E ∈ E_m,ρ ∈ ρ_in]
     Ctrue = @inferred operator_to_choi(G) # ideal Choi matrix
     P = reshape(real(A*vec(data(Ctrue))),length(E_m),length(ρ_in))
-    #M = mapslices(p->rand(Multinomial(N,p)),P,dims=2)./(d^2*N)
-    M = .-(abs.(size(P,1)/2 .- abs.(P .+ randn(size(P))./2^12)) .- size(P,1)/2)./size(P,2)
+    M = mapslices(p->rand(Multinomial(N,p)),P,dims=2)./(N*size(P,2))
     # Reconstruct the Choi matrix from the measurements
     Crec = Operator(@inferred(pgd_process_tomo(M,A,info=false)),(d,d))
     # Compare using the J distance, aka the trace norm of the difference
@@ -76,7 +75,74 @@ for G ∈ [σ0, σx, σy, σz, X½, Y½, T, H]
     @test Crec ≈ (Crec |> choi_to_natural |> natural_to_kraus |> kraus_to_choi)
     @test Crec ≈ (Crec |> choi_to_chi |> chi_to_choi)
 end
+
+# Also test with some 2Q gates
+d = 4
+TWOQUBIT = vec(kron.(ONEQUBIT, permutedims(ONEQUBIT)))
+ρ_in = Operator.(TWOQUBIT)
+E_m = ρ_in/9 # POVM
+@test sum(E_m) ≈ qeye((2,2))
+A = process_likelihood_model(ρ_in,E_m)
+
+
+CNOT = Operator(
+  [1 0 0 0
+   0 1 0 0
+   0 0 0 1
+   0 0 1 0], (2,2))
+CZ = Operator(
+  [1 0 0 0
+   0 1 0 0
+   0 0 1 0
+   0 0 0 -1], (2,2))
+SWAP = Operator(
+  [1 0 0 0
+   0 0 1 0
+   0 1 0 0
+   0 0 0 1], (2,2))
+iSWAP = Operator(
+  [1    0  0    0
+   0    0  1im  0
+   0  1im  0    0
+   0    0  0    1], (2,2))
+sqrtSWAP = Operator(
+  [1         0         0  0
+   0  (1+im)/2  (1-im)/2  0
+   0  (1-im)/2  (1+im)/2  0
+   0         0         0  1], (2,2))
+sqrtiSWAP = Operator(
+  [1        0          0  0
+   0    1/√(2)  1im/√(2)  0
+   0  1im/√(2)    1/√(2)  0
+   0         0         0  1], (2,2))
+for G ∈ [CNOT, CZ, SWAP, sqrtSWAP, iSWAP, sqrtiSWAP]
+   # Simulate tomography measurement by calculating theoretical probabilities
+   # and drawing from a multinomial distribution
+   P = [real(expect(G*ρ*G',E)) for E ∈ E_m,ρ ∈ ρ_in]
+   M = mapslices(p->rand(Multinomial(N,normalize!(p,1))),P,dims=2)./(N*size(P,2))
+   # Reconstruct the Choi matrix from the measurements
+   Crec = Operator(@inferred(pgd_process_tomo(M,A,info=false)),(2,2,2,2))
+   # Compare using the J distance, aka the trace norm of the difference
+   Ctrue = @inferred operator_to_choi(G) # ideal Choi matrix
+   @static if VERSION < v"1.0.0-"
+       @test trace_norm(Ctrue-Crec)/2d < 0.004
+   else
+       @test @inferred(trace_norm(Ctrue-Crec))/2d < 0.004
+   end
+   # Compare with gate fidelity
+   F1 = @inferred gate_fidelity_choi(Crec,G)
+   F2 = mean(fidelity2(G*ψ,apply_process(Crec,ψ)) for ψ ∈ TWOQUBIT)
+   @test 1-F1 < 0.002
+   @test F1 ≈ F2 atol=1E-6
+
+   # also test superoperator conversions (TODO: move somewhere else)
+   #@test Crec ≈ (Crec |> choi_to_kraus |> kraus_to_natural |> natural_to_choi)
+   #@test Crec ≈ (Crec |> choi_to_natural |> natural_to_kraus |> kraus_to_choi)
+   #@test Crec ≈ (Crec |> choi_to_chi |> chi_to_choi)
 end
+
+end
+
 
 end
 
