@@ -1,11 +1,11 @@
-function process_likelihood_model(ρ_list,Eₘ_list)
+function process_likelihood_model(ρ_list::Vector,Eₘ_list::Vector)
     # Generate the A matrix used to calculate likelihoods
     # The A matrix depends on the input states and measurement operators
     dimsmatch(ρ_list,Eₘ_list)
     sum(abs,data(sum(Eₘ_list))-I)<1E-15 ||
         throw(ArgumentError("Eₘ operators do not form a valid POVM!"))
-    sup = x -> (@inbounds ρ,Eₘ = x; full(ρ⊗transpose(Eₘ)))
-    return copy(transpose(mapreduce(vec∘sup,hcat,product(ρ_list,Eₘ_list))::Matrix{ComplexF64}))
+    prep = (Eₘ,ρ) -> transpose(vec(full(ρ⊗transpose(Eₘ))))
+    return reduce(vcat,vec(prep.(Eₘ_list,permutedims(ρ_list))))
 end
 
 # below is the actual projected gradient descent algorithm from Knee, et al.
@@ -36,7 +36,7 @@ function pgd_process_tomo(M::Matrix, A::Matrix; tol=1E-10, cptp_tol=1E-8, info=f
         while (c₂ = f(C .+ α.*D)) > c₁ + α*Π
             α = α/2 # backtrack
         end
-        @. C = C + α*D
+        C .= C .+ α.*D
     end
     info && println("final cost = $c₂, Δc = $(c₁-c₂)")
     return C
@@ -80,9 +80,7 @@ function project_CP(vecC, D, V)
     # We do this by taking the eigendecomposition, setting any negative
     # eigenvalues to 0, and reconstructing the Choi matrix
     C = unvec(vecC)
-    @static if VERSION < v"0.7.0-"
-        @inbounds for i = 1:size(C,1); C[i,i] = real(C[i,i]); end
-    end
+    C .= (C .+ C')/2
     hermfact!(D,V,Hermitian(C))
     D .= max.(D,0)
     return vec(V*Diagonal(D)*V')
