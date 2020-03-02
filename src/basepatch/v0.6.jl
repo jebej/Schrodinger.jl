@@ -84,3 +84,26 @@ function kron(A::Diagonal{T1}, B::Diagonal{T2}) where {T1<:Number, T2<:Number}
     end
     return Diagonal(valC)
 end
+
+Base.reduce(::typeof(vcat), A::AbstractVector{<:AbstractVecOrMat}) =
+    _typed_vcat(mapreduce(eltype, promote_type, A), A)
+
+function _typed_vcat(::Type{T}, A::AbstractVecOrMat) where T
+    nargs = length(A)
+    nrows = sum(a->size(a, 1), A)::Int
+    ncols = size(A[1], 2)
+    for j = 2:nargs
+        if size(A[j], 2) != ncols
+            throw(ArgumentError("number of columns of each array must match (got $(map(x->size(x,2), A)))"))
+        end
+    end
+    B = similar(A[1], T, nrows, ncols)
+    pos = 1
+    for k=1:nargs
+        Ak = A[k]
+        p1 = pos+size(Ak,1)-1
+        B[pos:p1, :] = Ak
+        pos = p1+1
+    end
+    return B
+end

@@ -80,7 +80,7 @@ function project_CP(vecC, D, V)
     # We do this by taking the eigendecomposition, setting any negative
     # eigenvalues to 0, and reconstructing the Choi matrix
     C = unvec(vecC)
-    C .= (C .+ C')/2
+    hermitianize!(C)
     hermfact!(D,V,Hermitian(C))
     D .= max.(D,0)
     return vec(V*Diagonal(D)*V')

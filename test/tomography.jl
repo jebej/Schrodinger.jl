@@ -60,13 +60,13 @@ for G ∈ [σ0, σx, σy, σz, X½, Y½, T, H]
     Crec = Operator(@inferred(pgd_process_tomo(M,A,info=false)),(d,d))
     # Compare using the J distance, aka the trace norm of the difference
     @static if VERSION < v"1.0.0-"
-        @test trace_norm(Ctrue-Crec)/2d < 0.004
+        @test trace_norm(Ctrue-Crec)/2d < 0.003
     else
-        @test @inferred(trace_norm(Ctrue-Crec))/2d < 0.004
+        @test @inferred(trace_norm(Ctrue-Crec))/2d < 0.003
     end
     # Compare with gate fidelity
     F1 = @inferred gate_fidelity_choi(Crec,G)
-    F2 = mean(fidelity2(G*ψ,apply_process(Crec,ψ)) for ψ ∈ ONEQUBIT)
+    F2 = mean(ψ->fidelity2(G*ψ,apply_process(Crec,ψ)), ONEQUBIT)
     @test 1-F1 < 0.002
     @test F1 ≈ F2 atol=1E-6
 
@@ -78,7 +78,7 @@ end
 
 # Also test with some 2Q gates
 d = 4
-TWOQUBIT = vec(kron.(ONEQUBIT, permutedims(ONEQUBIT)))
+TWOQUBIT = vec(ONEQUBIT .⊗ permutedims(ONEQUBIT))
 ρ_in = Operator.(TWOQUBIT)
 E_m = ρ_in/9 # POVM
 @test sum(E_m) ≈ qeye((2,2))
@@ -125,15 +125,15 @@ for G ∈ [CNOT, CZ, SWAP, sqrtSWAP, iSWAP, sqrtiSWAP]
    # Compare using the J distance, aka the trace norm of the difference
    Ctrue = @inferred operator_to_choi(G) # ideal Choi matrix
    @static if VERSION < v"1.0.0-"
-       @test trace_norm(Ctrue-Crec)/2d < 0.004
+       @test trace_norm(Ctrue-Crec)/2d < 0.003
    else
-       @test @inferred(trace_norm(Ctrue-Crec))/2d < 0.004
+       @test @inferred(trace_norm(Ctrue-Crec))/2d < 0.003
    end
    # Compare with gate fidelity
    F1 = @inferred gate_fidelity_choi(Crec,G)
-   F2 = mean(fidelity2(G*ψ,apply_process(Crec,ψ)) for ψ ∈ TWOQUBIT)
+   F2 = mean(ψ->fidelity2(G*ψ,apply_process(Crec,ψ)), TWOQUBIT)
    @test 1-F1 < 0.002
-   @test F1 ≈ F2 atol=1E-6
+   @test F1 ≈ F2 atol=2E-5
 
    # also test superoperator conversions (TODO: move somewhere else)
    #@test Crec ≈ (Crec |> choi_to_kraus |> kraus_to_natural |> natural_to_choi)
