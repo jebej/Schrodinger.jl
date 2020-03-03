@@ -25,9 +25,9 @@ ONEQUBIT = normalize!.([(g+e1),(g-e1),(g+1im*e1),(g-1im*e1),g,e1])
 E_m = Operator.(ONEQUBIT)./3
 # Create the A matrix
 A = @inferred state_likelihood_model(E_m)
-# Simulate measurements
+# Simulate tomography measurement by drawing from a binomial distribution
 P = [real(expect(ψ,E)) for E ∈ E_m]
-M = round.(Int,P*N .+ 25 .* randn(size(P)))./N
+M = [rand(Binomial(N,p))/N for p in P]
 # Reconstruct state
 ρ = Operator(build_density_matrix(mle_state_tomo(M,A).minimizer))
 # Fidelity
@@ -50,25 +50,19 @@ Y½ = Operator([1 -1; 1 1]/√2)
 T = Operator([1 0; 0 cis(π/4)])
 H = Operator([1 1; 1 -1]/√2)
 for G ∈ [σ0, σx, σy, σz, X½, Y½, T, H]
-    # Simulate tomography measurement by calculating theoretical probabilities
-    # and drawing from a multinomial distribution
-    P = [real(expect(G*ρ*G',E)) for E ∈ E_m,ρ ∈ ρ_in]
-    Ctrue = @inferred operator_to_choi(G) # ideal Choi matrix
-    P = reshape(real(A*vec(data(Ctrue))),length(E_m),length(ρ_in))
-    M = mapslices(p->rand(Multinomial(N,p)),P,dims=2)./(N*size(P,2))
+    # Simulate tomography measurement by drawing from a binomial distribution
+    P = [real(expect(G*ρ*G',E)) for E ∈ E_m, ρ ∈ ρ_in]
+    M = [rand(Binomial(N,p))/N for p in P]./size(P,2)
     # Reconstruct the Choi matrix from the measurements
     Crec = Operator(@inferred(pgd_process_tomo(M,A,info=false)),(d,d))
     # Compare using the J distance, aka the trace norm of the difference
-    @static if VERSION < v"1.0.0-"
-        @test trace_norm(Ctrue-Crec)/2d < 0.003
-    else
-        @test @inferred(trace_norm(Ctrue-Crec))/2d < 0.003
-    end
+    Ctrue = @inferred operator_to_choi(G) # ideal Choi matrix
+    @test @inferred(trace_norm(Ctrue-Crec))/2d < 0.003
     # Compare with gate fidelity
     F1 = @inferred gate_fidelity_choi(Crec,G)
     F2 = mean(ψ->fidelity2(G*ψ,apply_process(Crec,ψ)), ONEQUBIT)
     @test 1-F1 < 0.002
-    @test F1 ≈ F2 atol=1E-6
+    @test F1 ≈ F2
 
     # also test superoperator conversions (TODO: move somewhere else)
     @test Crec ≈ (Crec |> choi_to_kraus |> kraus_to_natural |> natural_to_choi)
@@ -78,12 +72,11 @@ end
 
 # Also test with some 2Q gates
 d = 4
-TWOQUBIT = vec(ONEQUBIT .⊗ permutedims(ONEQUBIT))
-ρ_in = Operator.(TWOQUBIT)
+ρ_in = Operator.(vec(ONEQUBIT .⊗ permutedims(ONEQUBIT)))
 E_m = ρ_in/9 # POVM
 @test sum(E_m) ≈ qeye((2,2))
 A = process_likelihood_model(ρ_in,E_m)
-
+include(joinpath(@__DIR__,"twoqubit.jl"))
 
 CNOT = Operator(
   [1 0 0 0
@@ -116,24 +109,19 @@ sqrtiSWAP = Operator(
    0  1im/√(2)    1/√(2)  0
    0         0         0  1], (2,2))
 for G ∈ [CNOT, CZ, SWAP, sqrtSWAP, iSWAP, sqrtiSWAP]
-   # Simulate tomography measurement by calculating theoretical probabilities
-   # and drawing from a multinomial distribution
+   # Simulate tomography measurement by drawing from a binomial distribution
    P = [real(expect(G*ρ*G',E)) for E ∈ E_m,ρ ∈ ρ_in]
-   M = mapslices(p->rand(Multinomial(N,normalize!(p,1))),P,dims=2)./(N*size(P,2))
+   M = [rand(Binomial(N,p))/N for p in P]./size(P,2)
    # Reconstruct the Choi matrix from the measurements
    Crec = Operator(@inferred(pgd_process_tomo(M,A,info=false)),(2,2,2,2))
    # Compare using the J distance, aka the trace norm of the difference
    Ctrue = @inferred operator_to_choi(G) # ideal Choi matrix
-   @static if VERSION < v"1.0.0-"
-       @test trace_norm(Ctrue-Crec)/2d < 0.003
-   else
-       @test @inferred(trace_norm(Ctrue-Crec))/2d < 0.003
-   end
+   @test @inferred(trace_norm(Ctrue-Crec))/2d < 0.003
    # Compare with gate fidelity
    F1 = @inferred gate_fidelity_choi(Crec,G)
    F2 = mean(ψ->fidelity2(G*ψ,apply_process(Crec,ψ)), TWOQUBIT)
    @test 1-F1 < 0.002
-   @test F1 ≈ F2 atol=2E-5
+   @test F1 ≈ F2
 
    # also test superoperator conversions (TODO: move somewhere else)
    #@test Crec ≈ (Crec |> choi_to_kraus |> kraus_to_natural |> natural_to_choi)
