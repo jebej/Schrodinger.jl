@@ -117,18 +117,12 @@ F(|ψ⟩,|ϕ⟩) &= \\left|⟨ψ|ϕ⟩\\right|.
 See also [`fidelity2`](@ref), which is the square of the state fidelity.
 """
 function fidelity(ρ::Operator,σ::Operator)
+    # ref: https://quantumcomputing.stackexchange.com/q/9891
     dimsmatch(ρ,σ)
     checkdensityop(ρ)
     checkdensityop(σ)
-    sqrtρ = sqrt(Hermitian(full(ρ)))
-    A = sqrtρ*data(σ)*sqrtρ
-    D = eigvals(A)
-    res = 0.0
-    for i = 1:prod(dims(ρ))
-        d = real(D[i])
-        (d>0) && (res += sqrt(d))
-    end
-    return res
+    D = real.(eigvals(ρ*σ))
+    return sum(d -> d>0 ? √(d) : zero(d), D)
 end
 fidelity(ρ::Operator,ψ::Ket) = sqrt(fidelity2(ρ,ψ))
 fidelity(ψ::Ket,ρ::Operator) = fidelity(ρ,ψ)
