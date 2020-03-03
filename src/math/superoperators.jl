@@ -23,8 +23,10 @@ function gate_fidelity_choi(C::Operator{T,D}) where {T,D}
         throw(ArgumentError("not a valid Choi matrix!"))
     end
     d = prod(i->dm[i],1:D÷2)
-    CC = Operator(data(C),(d,d)) # rewrap operator to use tensored indexing
-    return (d + real(sum(CC[(i,i),(j,j)] for i=0:d-1,j=0:d-1)))/(d^2 + d)
+    TrA² = let CC = Operator(data(C),(d,d)) # rewrap operator to use tensored indexing
+        real(sum(CC[(i,i),(j,j)] for i=0:d-1, j=0:d-1))
+    end
+    return (d + TrA²)/(d^2 + d)
 end
 
 function gate_fidelity_kraus(As::Vector{Operator{T,D}}) where {T,D}
