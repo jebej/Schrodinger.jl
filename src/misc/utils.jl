@@ -49,13 +49,13 @@ function sqrtfact(n::Integer)
 end
 
 # pairwise sum of squared differences (SSD)
-function norm2_diff(A::Vector{T},B::Vector{T}) where {T}
+function norm2_diff(A::AbstractArray{T},B::AbstractArray{T}) where {T}
     n = length(A)
     n == length(B) || throw(DimensionMismatch())
     n == 0 ? abs2(zero(T)-zero(T)) : norm2_diff(A, B, 1, n)
 end
 
-function norm2_diff(A::Vector, B::Vector, i1::Integer, n::Integer)
+function norm2_diff(A::AbstractArray, B::AbstractArray, i1::Integer, n::Integer)
     if n < 128
         @inbounds s = abs2(A[i1] - B[i1])
         for i in i1+1 : i1+n-1
