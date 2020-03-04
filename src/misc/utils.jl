@@ -48,6 +48,26 @@ function sqrtfact(n::Integer)
     end
 end
 
+# pairwise sum of squared differences (SSD)
+function norm2_diff(A::Vector{T},B::Vector{T}) where {T}
+    n = length(A)
+    n == length(B) || throw(DimensionMismatch())
+    n == 0 ? abs2(zero(T)-zero(T)) : norm2_diff(A, B, 1, n)
+end
+
+function norm2_diff(A::Vector, B::Vector, i1::Integer, n::Integer)
+    if n < 128
+        @inbounds s = abs2(A[i1] - B[i1])
+        for i in i1+1 : i1+n-1
+            @inbounds s += abs2(A[i] - B[i])
+        end
+        return s
+    else
+        n2 = n÷2
+        return norm2_diff(A, B, i1, n2) + norm2_diff(A, B, i1+n2, n-n2)
+    end
+end
+
 normalize(z::Complex) = z == 0 ? one(z) : z/abs(z)
 normalize(z::Real) = one(z)
 

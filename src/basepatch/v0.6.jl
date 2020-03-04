@@ -1,6 +1,6 @@
 import Base: kron, randn, vec, dot, vecdot, IntSet, exp, log, sqrt
 import Base.LinAlg: trace, ctranspose, expm!, eigs, scale!
-export sincos, eigen
+export sincos, eigen, adjoint
 
 const adjoint = ctranspose
 const qr! = qrfact!
