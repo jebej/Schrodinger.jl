@@ -45,6 +45,17 @@ end
 
 # conversion functions
 
+"""
+    operator_to_choi(O)
+
+Compute the Choi-Jamilkowski matrix representation of an operator `O`. This uses
+the convention of applying the action of `O` to the second half of the extended
+Hilbert space, i.e.:
+
+$$
+J(\Phi) = (I ⊗ \Phi) |Ω><Ω|
+$$
+"""
 function operator_to_choi(O::Operator)
     newdims = (dims(O)...,dims(O)...)
     return Operator(vec(data(O))*vec(data(O))',newdims)
