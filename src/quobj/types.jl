@@ -29,8 +29,8 @@ julia> ψ = normalize!(Ket([1,1]))
 struct Ket{T<:SVector,D} <: QuVector
     data::T
     dims::Dims{D}
-    function Ket{T,D}(x, dims::Dims{D}) where {T<:SVector,D}
-        checkdims(dims,size(x))
+    function Ket{T,D}(x::AbstractVector, dims::Dims{D}) where {T<:SVector,D}
+        checkdims(x,dims)
         return new{T,D}(convert(T,x),dims)
     end
 end
@@ -49,8 +49,8 @@ It is possible to normalize the bra vector after construction with the `normaliz
 struct Bra{T<:SVector,D} <: QuVector
     data::T
     dims::Dims{D}
-    function Bra{T,D}(x,dims::Dims{D}) where {T<:SVector,D}
-        checkdims(dims,size(x))
+    function Bra{T,D}(x::AbstractVector,dims::Dims{D}) where {T<:SVector,D}
+        checkdims(x,dims)
         return new{T,D}(convert(T,x), dims)
     end
 end
@@ -75,8 +75,8 @@ julia> σ = Operator([0 -im ; im 0])
 struct Operator{T<:SMatrix,D} <: QuMatrix
     data::T
     dims::Dims{D}
-    function Operator{T,D}(B,dims::Dims{D}) where {T<:SMatrix,D}
-        checkdims(dims,size(B))
+    function Operator{T,D}(B::AbstractMatrix,dims::Dims{D}) where {T<:SMatrix,D}
+        checkdims(B,dims)
         return new{T,D}(convert(T,B), dims)
     end
 end
@@ -90,15 +90,14 @@ Operator(x::Ket) = Operator(x.data*x.data',x.dims)
 Operator(x::Bra) = Operator(conj(x.data)*tranpose(x.data),x.dims)
 
 # function to check if the dims given are consistent with the object size
-function checkdims(dims::Dims,size::NTuple{1,Integer})
-    if prod(dims) != (m=size[1])
+function checkdims(x::AbstractVector,dims::Dims{D}) where {D}
+    m = length(x)
+    if prod(dims) != m
         throw(DimensionMismatch("subspace dimensions $dims are not consistent with a vector of length $m"))
     end
 end
-function checkdims(dims::Dims,size::NTuple{2,Integer})
-    if size[2] != (m=size[1])
-        throw(DimensionMismatch("matrix is not square, size is $m×$(size[2])"))
-    end
+function checkdims(A::AbstractMatrix,dims::Dims{D}) where {D}
+    m = checksquare(A)
     if prod(dims) != m
         throw(DimensionMismatch("subspace dimensions $dims are not consistent with a matrix of size $m×$m"))
     end
@@ -109,7 +108,7 @@ struct Density{T<:SMatrix,D} <: QuMatrix
     data::T
     dims::Dims{D}
     function Density{T,D}(A::T,dims::Dims{D}) where {T<:SMatrix,D}
-        checkdims(dims,size(A))
+        checkdims(A,dims)
         isapproxhermitian(A) || throw(ArgumentError("a density matrix must be Hermitian"))
         return new{T,D}(A, dims)
     end
