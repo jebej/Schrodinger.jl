@@ -26,12 +26,12 @@ function opt_hadamard(n)
 end
 
 function opt_RF_3lvlNOT(n)
-    Δ = 2π*(-0.4) # anharmonicity (GHz)
+    Δ = 2π*(-0.2) # anharmonicity (GHz)
     Hd = Δ*Operator(basis(3,2)) # drift Hamiltonian
     Hc = [create(3)/2+destroy(3)/2, im*create(3)/2-im*destroy(3)/2]
-    t = 3 # (ns)
+    t = 10 # (ns)
     tvec = LinRange(-t/2,t/2,n)
-    ui = [-Δ*gaussianpulse.(tvec,[[t/2,t,0,0,pi]]) LinRange(-Δ/2,Δ/2,n)]
+    ui = [-Δ*gaussianpulse.(tvec,[[t/4,t,0,0,pi]]) LinRange(-Δ/20,Δ/20,n)]
     Ut = Operator([0 1 0; 1 0 0; 0 0 1]) # 3lvl NOT gate
     # Create objective function type
     O = CoherentSubspaces(Ut,1:2,Hd,Hc,t,n) # care only about computational subspace
@@ -39,13 +39,13 @@ function opt_RF_3lvlNOT(n)
 end
 
 function opt_3lvlNOT(n)
-    ω = 2π*7.0 # 0-1 transition freq (GHz)
-    Δ = 2π*(-0.4) # anharmonicity
+    ω = 2π*5.0 # 0-1 transition freq (GHz)
+    Δ = 2π*(-0.2) # anharmonicity
     Hd = ω*Operator(basis(3,1))+(2ω+Δ)*Operator(basis(3,2)) # drift Hamiltonian
     Hc = [create(3)+destroy(3)]
-    t = 3 # (ns)
+    t = 10 # (ns)
     tvec = LinRange(-t/2,t/2,n)
-    ui = gaussianpulse.(tvec,[[t/2,t,ω,0,pi]])
+    ui = gaussianpulse.(tvec,[[t/4,t,ω,0,pi]])
     #ui = 2 .* cos.(ω.*tvec)
     #Ut = Operator([0 1 0; 1 0 0; 0 0 1]) # 3lvl NOT gate
     Ut = (Operator([0 1 0; 1 0 0; 0 0 0]),Operator([0 0 0; 0 0 0; 0 0 -1]))
@@ -80,7 +80,7 @@ function run_examples()
     r4 = opt_3lvlNOT(1000)
     r5 = opt_2Q_QFT(500)
     rr = [r1, r2, r3, r4, r5]
-    [plotgrape(r) for r in rr]
+    foreach(plotgrape, rr)
     return rr
 end
 
@@ -90,7 +90,7 @@ function plotgrape(res::Schrodinger.GrapeResult)
     t = 0 : res.t/size(uf,1) : res.t
     figure()
     step(t,[uf[1:1,:]; uf])
-    gca()[:set_prop_cycle](nothing)
+    gca().set_prop_cycle(nothing)
     step(t,[ui[1:1,:]; ui],linestyle="dashed")
     legend(["Control $i" for i in 1:size(uf,2)])
     tight_layout(true)

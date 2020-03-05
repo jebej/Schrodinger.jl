@@ -8,4 +8,5 @@
 /docs/make.cmd
 /docs/test.md
 /examples
+/benchmark
 Manifest.toml

@@ -95,6 +95,8 @@ function calc_bprops!(P::Vector{<:NTuple{M,AbstractMatrix}},U,Ut) where M
     return nothing
 end
 
+Jmat!(O,k,j) = Jmat!(O.Jkj,O.Hc[k],O.cisDj,O.D[j],O.V[j],O.δt,O.A)
+
 function Jmat!(Jkj,Hck,cisDj,Dj,Vj,δt,A)
     # Jₖⱼ = Vⱼ*((Vⱼ'*Hₖ*Vⱼ).*Λⱼ)*Vⱼ'
     # Λⱼ[l,m] = λl≈λm ? -1im*δt*cis(λl) : -δt*(cis(λl)-cis(λm))/(λl-λm)
@@ -122,7 +124,7 @@ end
 
 function target_propagator(O)
     # Return the target propagator
-    return Operator(O.Ut isa NTuple ? sum(O.Ut) : copy(O.Ut),O.dims)
+    return Operator(O.Ut isa NTuple ? sum(O.Ut) : copy(O.Ut), O.dims)
 end
 
 function step_sample(fun,params,tspan,steps)

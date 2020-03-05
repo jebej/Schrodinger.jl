@@ -5,8 +5,8 @@ function gaussianpulse(t::Real,p::Vector)
     ω10 = p[3] # qubit 0-1 transition angular freq
     ϕ   = p[4] # phase
     A   = p[5] # amplitude, (π for π-pulse, etc...)
-    B = inv(√(2π)*σ*erf(tg/(√(8)*σ))-tg*gaussian(0.5tg,σ))
-    Ɛπ = A*B*(gaussian(t,σ)-gaussian(0.5tg,σ))
+    B = inv(√(2π)*σ*erf(tg/(√(8)*σ))-tg*gaussian(tg/2,σ))
+    Ɛπ = A*B*(gaussian(t,σ)-gaussian(tg/2,σ))
     return Ɛπ*cos(ω10*t+ϕ)
 end
 
@@ -31,8 +31,8 @@ function dragpulse(t::Real,p::Vector)
     λ   = p[5] # drive 1-2 transition amplitude ~√(2)
     ϕ   = p[6] # phase
     A   = p[7] # amplitude, (π for π-pulse, etc...)
-    B = inv(√(2π)*σ*erf(tg/(√(8)*σ))-tg*gaussian(0.5tg,σ))
-    Ɛπ = A*B*(gaussian(t,σ)-gaussian(0.5tg,σ))
+    B = inv(√(2π)*σ*erf(tg/(√(8)*σ))-tg*gaussian(tg/2,σ))
+    Ɛπ = A*B*(gaussian(t,σ)-gaussian(tg/2,σ))
     Ɛπ′ = A*B*gaussianprime(t,σ)
     ωt = ω10*t
     return (Ɛπ - λ^2*(λ^2-4)*Ɛπ^3/32Δ^2)*cos(ωt+ϕ) + (-λ^2*Ɛπ′/4Δ)*sin(ωt+ϕ)
@@ -51,8 +51,8 @@ function dragpulse_det(t::Real,p::Vector)
     ϕ   = p[7] # phase
     A   = p[8] # amplitude, (π for π-pulse, etc...)
     Δ = Δ - δω
-    B = inv(√(2π)*σ*erf(tg/(√(8)*σ))-tg*gaussian(0.5tg,σ))
-    Ɛπ = A*B*(gaussian(t,σ)-gaussian(0.5tg,σ))
+    B = inv(√(2π)*σ*erf(tg/(√(8)*σ))-tg*gaussian(tg/2,σ))
+    Ɛπ = A*B*(gaussian(t,σ)-gaussian(tg/2,σ))
     Ɛπ′ = A*B*gaussianprime(t,σ)
     C = (Ɛπ - λ^2*(λ^2-4)*Ɛπ^3/32Δ^2)
     S = (-λ^2*Ɛπ′/4Δ)
@@ -88,8 +88,8 @@ function dragpulse5(t::Real,p::Vector)
     λ   = p[5] # drive 1-2 transition amplitude ~√(2)
     ϕ   = p[6] # phase
     A   = p[7] # amplitude, (π for π-pulse, etc...)
-    B = inv(√(2π)*σ*erf(tg/(√(8)*σ))-tg*gaussian(0.5tg,σ))
-    Ɛπ = A*B*(gaussian(t,σ)-gaussian(0.5tg,σ))
+    B = inv(√(2π)*σ*erf(tg/(√(8)*σ))-tg*gaussian(tg/2,σ))
+    Ɛπ = A*B*(gaussian(t,σ)-gaussian(tg/2,σ))
     Ɛπ′ = A*B*gaussianprime(t,σ)
     Ɛx = Ɛπ + (λ^2-4)*Ɛπ^3/8Δ^2 - (13λ^4-76λ^2+112)*Ɛπ^5/128Δ^4
     Ɛy = -Ɛπ′/Δ + 33(λ^2-2)*Ɛπ^2*Ɛπ′/24Δ^3
