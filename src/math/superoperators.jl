@@ -45,14 +45,11 @@ end
 
 # conversion functions
 
-function operator_to_choi(O::Operator)
-    newdims = (dims(O)...,dims(O)...)
-    return Operator(vec(data(O))*vec(data(O))',newdims)
-end
+operator_to_choi(O::Operator) = Operator(vec(O))
 
-function kraus_to_natural(As::Vector{<:Operator})
-    return sum(A->conj(A)⊗A,As)
-end
+kraus_to_choi(As::Vector{<:Operator}) = sum(operator_to_choi,As)
+
+kraus_to_natural(As::Vector{<:Operator}) = sum(A->conj(A)⊗A,As)
 
 function natural_to_kraus(K::Operator)
     # we go through the Choi representation since the extra conversion step is
@@ -82,12 +79,6 @@ function choi_to_kraus(C::Operator)
     return [Operator(unvec(√(D[i])*V[:,i]),(dims(C)[1],)) for i = length(D):-1:1]
 end
 
-function kraus_to_choi(As::Vector{<:Operator})
-    length(dims(As[1])) == 1 || throw(ArgumentError("multi-space operators not supported yet!"))
-    d = dims(As[1])[1]
-    return Operator(sum(A->vec(data(A))*vec(data(A))',As),(d,d))
-end
-
 function choi_to_chi(C::Operator)
     length(dims(C)) == 2 || throw(ArgumentError("multi-space operators not supported yet!"))
     B = Operator(_choi_to_pauli_basis((dims(C)[1],)),dims(C))
@@ -111,9 +102,9 @@ function _choi_to_pauli_basis(D::NTuple{N,Int}) where N
     return B
 end
 
-Base.vec(O::Operator) = Ket(copy(vec(data(O))),dims(O).^2)
+Base.vec(O::Operator) = Ket(vec(data(O)),(dims(O)...,dims(O)...))
 
-unvec(v::Ket) = Operator(copy(unvec(data(O))),isqrt.(dims(v)))
+unvec(v::Ket{T,D}) where {T,D} = Operator(copy(unvec(data(O))),dims(v)[1:D÷2])
 
 super(A::Operator) = conj(A) ⊗ A # represents A*ρ*A†
 super(A::Operator,B::Operator) = transpose(B) ⊗ A
