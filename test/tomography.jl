@@ -120,13 +120,15 @@ for G ∈ [CNOT, CZ, SWAP, sqrtSWAP, iSWAP, sqrtiSWAP]
    # Compare with gate fidelity
    F1 = @inferred gate_fidelity_choi(Crec,G)
    F2 = mean(ψ->fidelity2(G*ψ,apply_process(Crec,ψ)), TWOQUBIT)
+   F3 = gate_fidelity_choi(@inferred natural_to_choi(choi_to_natural(Ctrue)'*choi_to_natural(Crec)))
    @test 1-F1 < 0.002
    @test F1 ≈ F2
+   @test F1 ≈ F3
 
    # also test superoperator conversions (TODO: move somewhere else)
-   #@test Crec ≈ (Crec |> choi_to_kraus |> kraus_to_natural |> natural_to_choi)
-   #@test Crec ≈ (Crec |> choi_to_natural |> natural_to_kraus |> kraus_to_choi)
-   #@test Crec ≈ (Crec |> choi_to_chi |> chi_to_choi)
+   @test Crec ≈ (Crec |> choi_to_kraus |> kraus_to_natural |> natural_to_choi)
+   @test Crec ≈ (Crec |> choi_to_natural |> natural_to_kraus |> kraus_to_choi)
+   @test Crec ≈ (Crec |> choi_to_chi |> chi_to_choi)
 end
 
 end
