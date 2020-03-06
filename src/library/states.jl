@@ -1,7 +1,7 @@
 """
     basis(N, n)
 
-Generate a basis state (a.k.a. Fock or number state) ket \$|n⟩\$, in a Hilbert space of size `N`. Note that the size of the Hilbert space must be *at least* `n+1`. The function `fock` is an alias for `basis`.
+Generate a basis state (a.k.a. Fock or number state) ket ``|n⟩``, in a Hilbert space of size `N`. Note that the size of the Hilbert space must be *at least* `n+1`. The function `fock` is an alias for `basis`.
 
 Returns a sparse vector.
 
@@ -24,7 +24,7 @@ basis(N::Integer, n::Integer) = basis(n::Integer,(N,))
 """
     coherent(N, α, analytic=false)
 
-Generate a coherent state ket \$|α⟩\$, in a Hilbert space of size `N`. To create a coherent density operator, use the `Operator` function: `Operator(coherent(N,n))`.
+Generate a coherent state ket ``|α⟩``, in a Hilbert space of size `N`. To create a coherent density operator, use the `Operator` function: `Operator(coherent(N,n))`.
 
 Two methods can be used for generating a coherent state: via application of a displacment operator on a ground state (the default), or analytically, with the formula
 
@@ -56,7 +56,7 @@ end
 """
     thermal(N, n)
 
-Generate a thermal state density matrix \$ρ_n\$ with particle number `n`, in a Hilbert space of size `N`. A thermal state \$ρ_n\$ is a probabilistic mixture of basis states such that the expectation value of the number operator \$\\hat{n}\$ is `n`. Note that this is true only if \$N≫n\$. The returned density matrix is always normalized.
+Generate a thermal state density matrix ``ρ_n`` with particle number `n`, in a Hilbert space of size `N`. A thermal state ``ρ_n`` is a probabilistic mixture of basis states such that the expectation value of the number operator ``\\hat{n}`` is `n`. Note that this is true only if ``N≫n``. The returned density matrix is always normalized.
 
 Returns a sparse matrix.
 

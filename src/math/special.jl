@@ -1,12 +1,12 @@
 """
     expect(σ,ψ), expect(σ,ρ)
 
-Compute the expectation value of an operator \$σ\$ given a state ket \$|ψ⟩\$ or a density matrix \$ρ\$. The expectation value is defined as
+Compute the expectation value of an operator ``σ`` given a state ket ``|ψ⟩`` or a density matrix ``ρ``. The expectation value is defined as
 ```math
-\\begin{align*}
+\\begin{aligned}
 E(σ,|ψ⟩) &= ⟨ψ|σ|ψ⟩, \\\\
 E(σ,ρ) &= \\textrm{tr}(σρ).
-\\end{align*}
+\\end{aligned}
 ```
 
 A specialized method exists for vector of `Ket` or `Operator` inputs.
@@ -85,9 +85,7 @@ end
 
 Compute the purity of a quantum state `ρ`, defined by
 ```math
-\\begin{align*}
 γ = \\textrm{tr}(ρ^†ρ).
-\\end{align*}
 ```
 This is the same as the square of the Frobenius norm of a matrix.
 
@@ -106,13 +104,13 @@ purity(ψ::QuVector) = real(one(eltype(ψ)))
 """
     fidelity(ρ,σ), fidelity(ρ,ψ), fidelity(ψ,ϕ)
 
-Compute the fidelity between density matrices \$ρ\$ and \$σ\$, a density matrix \$ρ\$ and a ket \$|ψ⟩\$, or two kets \$|ψ⟩\$ and \$|ϕ⟩\$. The fidelity in those three cases is defined as
+Compute the fidelity between density matrices ``ρ`` and ``σ``, a density matrix ``ρ`` and a ket ``|ψ⟩``, or two kets ``|ψ⟩`` and ``|ϕ⟩``. The fidelity in those three cases is defined as
 ```math
-\\begin{align*}
+\\begin{aligned}
 F(ρ,σ) &= \\textrm{tr}\\sqrt{ρ^{1/2}σρ^{1/2}}, \\\\
 F(ρ,|ψ⟩) &= \\sqrt{⟨ψ|ρ|ψ⟩}, \\\\
 F(|ψ⟩,|ϕ⟩) &= \\left|⟨ψ|ϕ⟩\\right|.
-\\end{align*}
+\\end{aligned}
 ```
 See also [`fidelity2`](@ref), which is the square of the state fidelity.
 """
@@ -131,7 +129,7 @@ fidelity(ψ::Ket,ϕ::Ket) = abs(dot(ψ,ϕ))
 """
     fidelity2(ρ,ψ)
 
-Compute the Uhlmann state fidelity between density matrices \$ρ\$ and \$σ\$, a density matrix \$ρ\$ and a ket \$|ψ⟩\$, or two kets \$|ψ⟩\$ and \$|ϕ⟩\$. The Uhlmann state fidelity is simply defined as the square of the "regular" state [`fidelity`](@ref).
+Compute the Uhlmann state fidelity between density matrices ``ρ`` and ``σ``, a density matrix ``ρ`` and a ket ``|ψ⟩``, or two kets ``|ψ⟩`` and ``|ϕ⟩``. The Uhlmann state fidelity is simply defined as the square of the "regular" state [`fidelity`](@ref).
 """
 fidelity2(ρ::Operator,σ::Operator) = abs2(fidelity(ρ,σ))
 function fidelity2(ρ::Operator,ψ::Ket)
@@ -163,27 +161,23 @@ Compute the entanglement fidelity of an imperfect quantum operation `V` with res
 ```math
 F_\\text{e}(\\mathcal{E}) = ⟨ϕ|(I⊗\\mathcal{E})(ϕ)|ϕ⟩,
 ```
-where \$|ϕ⟩ = \\frac{1}{\\sqrt{d}}\\sum_{i=1}^d|i⟩|i⟩\$ is the maximally entangled state and \$\\mathcal{E}\$ is a trace preserving quantum operation.
+where ``|ϕ⟩ = \\frac{1}{\\sqrt{d}}\\sum_{i=1}^d|i⟩|i⟩`` is the maximally entangled state and ``\\mathcal{E}`` is a trace preserving quantum operation.
 
-When trying to find the fidelity of a quantum gate \$U\$, implemented imperfectly as \$V\$, then \$\\mathcal{E} = U^†∘V\$. In the case where \$U\$ and \$V\$ are a simple operators,
+When trying to find the fidelity of a quantum gate ``U``, implemented imperfectly as ``V``, then ``\\mathcal{E} = U^†∘V``. In the case where ``U`` and ``V`` are a simple operators,
 ```math
-\\begin{align*}
 (I⊗\\mathcal{E})(ϕ) = (I⊗U^†V)|ϕ⟩⟨ϕ|(I⊗U^†V)^† \\quad\\text{and so}
-\\end{align*}
 ```
 ```math
-\\begin{align*}
+\\begin{aligned}
 F_\\text{e}(\\mathcal{E}) &= ⟨ϕ|(I⊗U^†V)|ϕ⟩⟨ϕ|(I⊗U^†V)^†|ϕ⟩ \\\\
   &= |⟨ϕ|(I⊗U^†V)|ϕ⟩|^2 \\\\
   &= |⟨U,V⟩|^2/d^2 \\\\
-\\end{align*}
+\\end{aligned}
 ```
 
 The entanglement fidelity is related to the [`average gate fidelity`](@ref gate_fidelity) by
 ```math
-\\begin{align*}
 \\overline{F}(\\mathcal{E}) =  \\frac{d F_\\text{e}(\\mathcal{E}) + 1}{d + 1}.
-\\end{align*}
 ```
 """
 function entanglement_fidelity(U::Operator,V::Operator,d::Integer=prod(dims(U)))
@@ -198,9 +192,7 @@ Compute the average gate fidelity of an imperfect quantum operation `V` with res
 
 The average gate fidelity is related to the [`entanglement fidelity`](@ref entanglement_fidelity) by
 ```math
-\\begin{align*}
 \\overline{F}(\\mathcal{E}) =  \\frac{d F_\\text{e}(\\mathcal{E}) + 1}{d + 1}.
-\\end{align*}
 ```
 """
 function gate_fidelity(U::Operator,V::Operator,d::Integer=prod(dims(U)))

@@ -47,7 +47,7 @@ qeye(dims::Dims) = qeye(Float64,prod(dims),dims)
 """
     destroy(N)
 
-Generate a quantum harmonic oscillator lowering (annihilation) operator \$\\hat{a}\$ in a truncated Hilbert space of size `N`. Returns a sparse matrix.
+Generate a quantum harmonic oscillator lowering (annihilation) operator ``\\hat{a}`` in a truncated Hilbert space of size `N`. Returns a sparse matrix.
 
 # Example
 ```jldoctest
@@ -70,7 +70,7 @@ destroy(N::Integer) = destroy(Float64,N)
 """
     create(N)
 
-Generate a quantum harmonic oscillator raising (creation) operator \$\\hat{a}^†\$ in a truncated Hilbert space of size `N`. Returns a sparse matrix.
+Generate a quantum harmonic oscillator raising (creation) operator ``\\hat{a}^†`` in a truncated Hilbert space of size `N`. Returns a sparse matrix.
 
 # Example
 ```jldoctest
@@ -93,7 +93,7 @@ create(N::Integer) = create(Float64,N)
 """
     numberop(N)
 
-Generate a number operator \$\\hat{n}\$ in a Hilbert space of size `N`. Returns a sparse matrix.
+Generate a number operator ``\\hat{n}`` in a Hilbert space of size `N`. Returns a sparse matrix.
 
 # Example
 ```jldoctest
@@ -117,7 +117,7 @@ numberop(N::Integer) = numberop(Float64,N)
 """
     displacementop(N, α)
 
-Generate a quantum harmonic oscillator displacement operator \$\\hat{D}(α)\$ in a truncated Hilbert space of size `N`. Returns a dense matrix.
+Generate a quantum harmonic oscillator displacement operator ``\\hat{D}(α)`` in a truncated Hilbert space of size `N`. Returns a dense matrix.
 
 ```math
 \\hat{D}(α) = \\exp\\left(α\\hat{a}^† - α^*\\hat{a}\\right)
@@ -140,7 +140,7 @@ end
 """
     squeezeop(N, z)
 
-Generate a quantum harmonic oscillator squeeze operator \$\\hat{S}(z)\$ in a truncated Hilbert space of size `N`. Returns a dense matrix.
+Generate a quantum harmonic oscillator squeeze operator ``\\hat{S}(z)`` in a truncated Hilbert space of size `N`. Returns a dense matrix.
 
 ```math
 \\hat{S}(z) = \\exp\\left(\\frac{1}{2}\\left(z^*\\hat{a}^2 - z\\hat{a}^{†2}\\right)\\right)
@@ -191,7 +191,7 @@ projectorop(N::Integer,S::Integer) = projectorop(N,S:S)
 """
     sylvesterop(N,k,l)
 
-Generate the \$(k,j)^{\textrm{th}}\$ Sylvester generalized Pauli matrix in N-d.
+Generate the ``(k,j)^{\textrm{th}}`` Sylvester generalized Pauli matrix in N-d.
 https://en.wikipedia.org/wiki/Generalizations_of_Pauli_matrices
 """
 function sylvesterop(N::Integer,k::Integer,j::Integer)
