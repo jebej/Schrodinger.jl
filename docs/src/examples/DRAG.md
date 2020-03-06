@@ -1,9 +1,3 @@
-```@meta
-DocTestSetup = quote
-    using Schrodinger, SparseArrays
-end
-```
-
 ```@setup DRAG
 !isdir("img") && mkdir("img")
 ```

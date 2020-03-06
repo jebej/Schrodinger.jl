@@ -1,9 +1,3 @@
-```@meta
-DocTestSetup = quote
-    using Schrodinger, PyPlot, SparseArrays
-end
-```
-
 ```@setup driven_TLS
 !isdir("img") && mkdir("img")
 ```
@@ -224,9 +218,9 @@ A cool experiment that can be done with qubits is to verify that the TLS dynamic
 ```@example driven_TLS
 figure(); # hide
 t = 0:0.1:12
-ωd_ratio = transpose(0.6:0.01:1.4)
+ωd_ratio = transpose(0.5:0.01:1.5)
 chev = abs2.(c₁.(t,γ,ω.*ωd_ratio.-ω))
-imshow(chev,origin="lower",extent=[0.6,1.4,0,12],aspect=1/15)
+imshow(chev,origin="lower",extent=[0.5,1.5,0,12],aspect=1/15)
 xlabel("\$ω_d/ω\$"); ylabel("Time");
 tight_layout(true); savefig(joinpath("img","driven_TLS_4.svg")); # hide
 ```

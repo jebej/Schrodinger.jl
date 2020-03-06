@@ -1,6 +1,6 @@
 using Documenter, Schrodinger, SparseArrays, PyPlot
 
-DocMeta.setdocmeta!(Schrodinger, :DocTestSetup, :(using Schrodinger); recursive=true)
+DocMeta.setdocmeta!(Schrodinger, :DocTestSetup, :(using Schrodinger, LinearAlgebra, SparseArrays); recursive=true)
 
 makedocs(
     sitename = "Schrodinger.jl",
