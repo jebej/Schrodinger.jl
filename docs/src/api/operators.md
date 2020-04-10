@@ -1,8 +1,8 @@
 # Operator Library
 
 ```@autodocs
-Modules = [Schrodinger]
-Pages   = ["operators.jl","random.jl"]
-Order   = [:function]
-Private = false
+Modules = [Schrodinger,Schrodinger.Gate]
+Pages   = ["operators.jl","random.jl","gates.jl"]
+Order   = [:function,:constant]
+Private = true
 ```
