@@ -2,7 +2,7 @@
 
 ```@autodocs
 Modules = [Schrodinger]
-Pages   = ["types.jl"]
+Pages   = ["types.jl", "basicmethods.jl"]
 Order   = [:type, :function]
 Private = false
 ```

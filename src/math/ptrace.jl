@@ -16,7 +16,7 @@ ptrace(ρ,2) # trace out qubit 2
 ```
 """
 function ptrace(σ::Operator, out)
-    res = ptrace(full(σ),out,dims(σ))
+    res = ptrace(Array(σ),out,dims(σ))
     return Operator(res[1],res[2])
 end
 
@@ -39,7 +39,7 @@ julia> ptrace(Φ₊,1) # trace out qubit 1
 ```
 """
 function ptrace(ψ::Ket, out)
-    res = ptrace(full(ψ),out,dims(ψ))
+    res = ptrace(Array(ψ),out,dims(ψ))
     return Operator(res[1], res[2])
 end
 ptrace(ψ::Bra, out) = ptrace(ψ',out)

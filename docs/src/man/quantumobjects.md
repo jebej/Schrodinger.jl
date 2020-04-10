@@ -47,10 +47,10 @@ julia> Φ = coherent(10,α)
 0.47∠101°|3⟩ + 0.45∠67°|2⟩ + 0.42∠135°|4⟩ + 0.35∠34°|1⟩ + 0.34∠168°|5⟩ +…
 ```
 
-A coherent state is a superposition of number states, which is evident when displayed in the number basis. Note the three dots at the end of the line: Schrodinger.jl only displays the 5 largest components of a `Ket` vector. You can extract the full vector with the [`full`](@ref) function:
+A coherent state is a superposition of number states, which is evident when displayed in the number basis. Note the three dots at the end of the line: Schrodinger.jl only displays the 5 largest components of a `Ket` vector. You can extract the underlying storage array with the [`data`](@ref) function:
 
 ```jldoctest coherexample
-julia> full(Φ)
+julia> Array(Φ)
 10-element Array{Complex{Float64},1}:
      0.1969115853703145 + 1.3877787807814457e-16im
      0.2953682773152671 + 0.1969121848768447im

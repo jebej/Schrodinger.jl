@@ -52,9 +52,9 @@ function gen_opt_fun(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},t::Real,n:
     N = prod(dims(Hd))
     m = length(Hc)
     # Make sure we pass dense operators
-    Ut_d = full(Ut)
-    Hd_d = full(Hd)
-    Hc_d = full.(Hc)
+    Ut_d = Array(Ut)
+    Hd_d = Array(Hd)
+    Hc_d = Array.(Hc)
     # Generate cache for various objects
     H = promote_type(typeof(Hd_d),eltype(Hc_d))(N,N)
     A = Matrix{ComplexF64}(N,N)

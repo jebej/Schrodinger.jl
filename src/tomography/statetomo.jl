@@ -3,7 +3,7 @@ function state_likelihood_model(Eₘ_list)
     # The model matrix depends on the measurement operators
     sum(abs,data(sum(Eₘ_list))-I)<1E-14 ||
         throw(ArgumentError("Eₘ operators do not form a valid POVM!"))
-    return reduce(vcat,transpose.(vec.(full.(Eₘ_list))))
+    return reduce(vcat,transpose.(vec.(Array.(Eₘ_list))))
 end
 
 function mle_state_tomo(M,A)

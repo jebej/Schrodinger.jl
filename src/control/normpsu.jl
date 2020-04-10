@@ -25,9 +25,9 @@ function NormPSU(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},t::Real,n::Int
     N = prod(dims(Hd))
     m = length(Hc)
     # Make sure we pass dense operators
-    Ut_d = full(Ut)
-    Hd_d = full(Hd)
-    Hc_d = full.(Hc)
+    Ut_d = Array(Ut)
+    Hd_d = Array(Hd)
+    Hc_d = Array.(Hc)
     # Storage for last control ampitudes, NaN for first run
     u_last = fill(NaN64,m*n)
     # Generate cache for various objects

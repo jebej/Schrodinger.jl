@@ -52,7 +52,7 @@ LindbladEvo(::Any) = throw(ArgumentError("invalid Hamiltonian specification"))
 SchrodingerProp(H₀::Operator, tspan) = SchrodingerProp(H₀,float(tspan[2]-tspan[1]))
 function SchrodingerProp(H₀::Operator, Δt::Real)
     # Constant Hamiltonian term
-    U = expim(Hermitian(-full(H₀).*Δt))
+    U = expim(Hermitian(-Array(H₀).*Δt))
     return Propagator(U,Δt,dims(H₀))
 end
 SchrodingerProp(H₀::Operator, Hₙ::Tuple, tspan, steps::Integer) = SchrodingerProp(H₀,(Hₙ,),tspan,steps)
@@ -62,7 +62,7 @@ function SchrodingerProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, tspan, step
     # Sampling times and spacing dt
     t₁, t₂ = tspan; dt = (t₂-t₁)/steps
     # Unpack constant and time dep operators
-    H0, Hn = full(H₀), unpack_operators(1,full,Hₙ)
+    H0, Hn = Array(H₀), unpack_operators(1,Array,Hₙ)
     # Multiply sampled propagators together to generate total evolution
     U = Matrix{Complex{F}}(I, size(H0))
     H = Hermitian(zeros(compute_H_type(H0,Hn),size(H0)...))
@@ -87,7 +87,7 @@ function LindbladProp(H₀::Operator, Cₘ::Tuple{Vararg{Operator}}, Δt::Real)
     F = real(eltype(H₀)); d = prod(dims(H₀))
     Id = Matrix{F}(I, d, d)
     # Constant Hamiltonian term
-    L₀Δt = -1im*Δt.*(Id⊗full(H₀) .- transpose(full(H₀))⊗Id)
+    L₀Δt = -1im*Δt.*(Id⊗Array(H₀) .- transpose(Array(H₀))⊗Id)
     # Add constant collapse operator terms
     L₀Δt .+= sum_collapse(Cₘ,Id,Δt)
     # Build constant propagator
@@ -104,7 +104,7 @@ function LindbladProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, Cₘ::Tuple{Va
     # Sampling times and spacing dt
     t₁, t₂ = tspan; dt = (t₂-t₁)/steps
     # Unpack constant and time dep operators
-    H0, Hn = full(H₀), unpack_operators(1,full,Hₙ)
+    H0, Hn = Array(H₀), unpack_operators(1,Array,Hₙ)
     # Build constant collapse propagator part
     U₀ = exp!(sum_collapse(Cₘ,Id,dt))
     # Multiply sampled propagators together to generate total evolution
@@ -131,21 +131,21 @@ LindbladProp(H) = throw(ArgumentError("invalid Propagator specification"))
 
 
 # Utils
-function unpack_operators(x::Number,f::Function,t::Tuple{Tuple{Operator,Function,Array},Vararg{Tuple}})
+function unpack_operators(x::Number,f::T,t::Tuple{Tuple{Operator,Function,Array},Vararg{Tuple}}) where {T}
     a, b = first(t), unpack_operators(x,f,tail(t))
     return (x*f(a[1]), b[1]...), (a[2], b[2]...), (a[3], b[3]...)
 end
-function unpack_operators(x::Number,f::Function,t::Tuple{Tuple{Operator,Function},Vararg{Tuple}})
+function unpack_operators(x::Number,f::T,t::Tuple{Tuple{Operator,Function},Vararg{Tuple}}) where {T}
     a, b = first(t), unpack_operators(x,f,tail(t))
     return (x*f(a[1]), b[1]...), (a[2], b[2]...), ([], b[3]...)
 end
-unpack_operators(x::Number,f::Function,t::Tuple{}) = (), (), ()
+unpack_operators(x::Number,f::T,t::Tuple{}) where {T} = (), (), ()
 
 function sum_collapse(Cₘ,Id,dt)
     # sum the Lindblad superoperators corresponding to the action of
     # D[Cᵢ](ρ) = CᵢρCᵢ† - 1/2 * (Cᵢ†Cᵢρ + ρCᵢ†Cᵢ)
     mapreduce(+,Cₘ) do Cᵢ
-        C = full(Cᵢ); CdC = C'*C
+        C = Array(Cᵢ); CdC = C'*C
         dt*(conj(C)⊗C - 0.5*(Id⊗CdC + transpose(CdC)⊗Id))
     end
 end

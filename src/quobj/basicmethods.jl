@@ -1,9 +1,14 @@
-import Base: length, size, eltype, getindex, setindex!, similar, copy, hash,
+import Base: Array, length, size, eltype, getindex, setindex!, similar, copy, hash,
     isequal, ==, convert, promote_rule, isapprox, show, @propagate_inbounds
 import LinearAlgebra: Hermitian, Symmetric, checksquare, diag, complex, norm, opnorm,
 	rank, normalize!, normalize, ishermitian, issymmetric, isdiag, triu, tril
 
 # Special QuObject methods
+"""
+    data(A::QuObject)
+
+Extract the object storing the data; for example, a `Vector` or a `SparseMatrix`.
+"""
 data(A::QuObject) = A.data
 dims(A::QuObject) = A.dims
 isnormalized(A::QuVector) = norm(A) ≈ 1
@@ -50,7 +55,7 @@ eltype(A::QuObject) = eltype(A.data)
 diag(A::QuMatrix,k::Int=0) = diag(A.data,k)
 triu(A::QuMatrix) = Operator(triu(A.data),A.dims)
 tril(A::QuMatrix) = Operator(tril(A.data),A.dims)
-full(A::QuObject) = Array(A.data)
+Array(A::QuObject) = Array(A.data)
 complex(x::Ket) = Ket(complex(x.data),x.dims)
 complex(x::Bra) = Bra(complex(x.data),x.dims)
 complex(A::Operator) = Operator(complex(A.data),A.dims)
