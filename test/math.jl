@@ -74,7 +74,7 @@ plus = normalize!(g+1.0im*basis(2,1))
     else
         @test data(ρ^2.5) == data(ρ)^2.5
     end
-    @test data(dense(ρ)^2.5) == full(ρ)^2.5
+    @test data(dense(ρ)^2.5) == Array(ρ)^2.5
     @test (σ^2)[4,2] == √(2)*√(3)
     @test_broken data(σ^2.5) == data(σ)^2.5
 end
@@ -148,7 +148,7 @@ end
 
 @testset "Math Functions" begin
     for f in [sqrt,log,exp], A in [Operator(coherent(4,1.2+3im)),ρ,create(4)+destroy(4)]
-        @test data(f(A)) == f(full(A))
+        @test data(f(A)) == f(Array(A))
     end
 end
 

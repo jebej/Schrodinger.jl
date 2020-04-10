@@ -22,7 +22,7 @@ export Operator, Ket, Bra,
     Propagator, SchrodingerProp, LindbladProp,
     sesolve, mesolve, lsolve, psolve, psteady,
     grape, NormPSU, CoherentSubspaces,
-    expim, gaussian, inner, scale, scale!, full,
+    expim, gaussian, inner, scale, scale!,
     eigen
 
 # VERSION-conditional definitions

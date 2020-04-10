@@ -4,7 +4,7 @@ function process_likelihood_model(ρ_list::Vector,Eₘ_list::Vector)
     dimsmatch(ρ_list,Eₘ_list)
     sum(abs,data(sum(Eₘ_list))-I)<1E-15 ||
         throw(ArgumentError("Eₘ operators do not form a valid POVM!"))
-    prep = (Eₘ,ρ) -> transpose(vec(full(ρ⊗transpose(Eₘ))))
+    prep = (Eₘ,ρ) -> transpose(vec(Array(ρ⊗transpose(Eₘ))))
     return reduce(vcat,vec(prep.(Eₘ_list,permutedims(ρ_list))))
 end
 
