@@ -12,14 +12,14 @@ Generate a qubit rotation operator giving a `θ` rad rotation about an axis defi
 ```
 """
 function rotation(θ::Real,n::NTuple{3,Real}=(1,0,0))
-    R = Matrix{ComplexF64}(undef,2,2)
     a = 1/√(n[1]^2+n[2]^2+n[3]^2)
     nx,ny,nz = a*n[1],a*n[2],a*n[3]
     c = cos(θ/2); s = sin(θ/2)
-    R[1,1] = Complex(c,-nz*s)
-    R[2,1] = Complex(ny*s,-nx*s)
-    R[1,2] = Complex(-ny*s,-nx*s)
-    R[2,2] = Complex(c,nz*s)
+    R = Matrix{Complex{typeof(nz*s)}}(undef,2,2)
+    R[1,1] = complex(c,-nz*s)
+    R[2,1] = complex(ny*s,-nx*s)
+    R[1,2] = complex(-ny*s,-nx*s)
+    R[2,2] = complex(c,nz*s)
     return Operator(R,(2,))
 end
 
@@ -37,7 +37,7 @@ H = \\frac{1}{\\sqrt 2}
 
 The Hadamard is a ``π`` rotation about the axis ``\\vec{n} = (1,0,1)``, plus a global ``i`` phase.
 """
-const H = Operator(Float64[√0.5 √0.5; √0.5 -√0.5],(2,))
+const H = Operator([√0.5 √0.5; √0.5 -√0.5],(2,))
 
 """
     Gate.S
@@ -53,7 +53,7 @@ S =
 
 The phase gate is the square of the T gate: ``S = T^2``.
 """
-const S = Operator(sparse(ComplexF64[1 0; 0 1im]),(2,))
+const S = Operator(sparse([1 0; 0 1im]),(2,))
 
 """
     Gate.T
@@ -69,10 +69,10 @@ T =
 
 The phase gate is the square of the T gate: ``S = T^2``.
 """
-const T = Operator(sparse(ComplexF64[1 0; 0 Complex(√0.5,√0.5)]),(2,))
+const T = Operator(sparse([1 0; 0 complex(√0.5,√0.5)]),(2,))
 
-const cNOT = Operator(sparse(Float64[1 0 0 0;0 1 0 0;0 0 0 1;0 0 1 0]),(2,2))
-const rcNOT = Operator(sparse(Float64[0 1 0 0;1 0 0 0;0 0 1 0;0 0 0 1]),(2,2))
-const cZ = Operator(sparse(Float64[1 0 0 0;0 1 0 0;0 0 1 0;0 0 0 -1]),(2,2))
+const cNOT = Operator(sparse([1 0 0 0;0 1 0 0;0 0 0 1;0 0 1 0]),(2,2))
+const rcNOT = Operator(sparse([0 1 0 0;1 0 0 0;0 0 1 0;0 0 0 1]),(2,2))
+const cZ = Operator(sparse([1 0 0 0;0 1 0 0;0 0 1 0;0 0 0 -1]),(2,2))
 
 end
