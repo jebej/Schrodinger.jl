@@ -191,7 +191,7 @@ projectorop(N::Integer,S::Integer) = projectorop(N,S:S)
 """
     sylvesterop(N,k,l)
 
-Generate the ``(k,j)^{\textrm{th}}`` Sylvester generalized Pauli matrix in N-d.
+Generate the ``(k,j)^\\text{th}`` Sylvester generalized Pauli matrix in N-d.
 https://en.wikipedia.org/wiki/Generalizations_of_Pauli_matrices
 """
 function sylvesterop(N::Integer,k::Integer,j::Integer)
@@ -205,7 +205,7 @@ end
 """
     Sigma1(N)
 
-Generate the N-d shift matrix Σ₁.
+Generate the N-d shift matrix ``Σ₁``.
 """
 function Sigma1(N)
     rowval = circshift(1:N,-1)
@@ -217,7 +217,7 @@ end
 """
     Sigma3(N)
 
-Generate the N-d clock matrix Σ₃.
+Generate the N-d clock matrix ``Σ₃``.
 """
 function Sigma3(N)
     ω = Complex(cospi(2/N),sinpi(2/N))

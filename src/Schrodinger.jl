@@ -5,6 +5,10 @@ using Base: tail, front, product, promote_eltype
 using OrdinaryDiffEq, Optim
 using OrdinaryDiffEq.DiffEqBase: AbstractParameterizedFunction
 
+# Export submodules
+export Gate
+
+# Export types & functions
 export Operator, Ket, Bra,
     data, dims, isnormalized, dimsmatch, dense, braket, isapproxhermitian,
     isunitary, isapproxunitary, isdensityop, checkdensityop,
@@ -13,7 +17,7 @@ export Operator, Ket, Bra,
     purity, fidelity, fidelity2, entanglement_fidelity, gate_fidelity,
     fock, basis, coherent, thermal, maxentangled, maxmixed, ket, @qb_str,
     qzero, qeye, create, destroy, numberop, projectorop,
-    displacementop, squeezeop, Gate,
+    displacementop, squeezeop,
     rand_unitary,
     Liouvillian, SchrodingerEvo, LindbladEvo,
     Propagator, SchrodingerProp, LindbladProp,
