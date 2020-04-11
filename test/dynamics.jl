@@ -11,7 +11,7 @@ println("  - Simple qubit (1/3)")
 ω = 0.2*2π
 H = 0.5ω*σx
 ψ₀ = basis(2,0)
-res = sesolve(H,ψ₀,(0.0,10.0),(σz,σy),saveat=0.1)
+res = @inferred sesolve(H,ψ₀,(0.0,10.0),(σz,σy),saveat=0.1)
 @test real.(res.evals) ≈ [cos.(ω.*res.times) sin.(π.+ω.*res.times)]
 @test SchrodingerProp(H,(0,10))(ψ₀) ≈ res.states[end]
 end
@@ -27,7 +27,7 @@ sm = qeye(N) ⊗ destroy(2)
 Hj = ωc*a'*a + ωa*sm'*sm + g*(a'*sm + a*sm')
 O = (a'*a, sm'*sm)
 ψ₀ = normalize!(basis(N,1)+0.5*basis(N,3)+1im*basis(N,4)) ⊗ basis(2,0)
-res = sesolve(Hj, ψ₀, (0.0,25.0), qeye(N) ⊗ Operator([0 0;0 1]))
+res = @inferred sesolve(Hj, ψ₀, (0.0,25.0), qeye(N) ⊗ Operator([0 0;0 1]))
 f(t,g) = 0.5*(1 - (4/9*cos(2g*t) + 1/9*cos(√3*2g*t) + 4/9*cos(√4*2g*t)))
 @test real.(res.evals) ≈ f.(res.times,g)
 @test SchrodingerProp(Hj,(0.0,25.0))(ψ₀) ≈ res.states[end]
