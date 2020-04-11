@@ -8,7 +8,7 @@ end
 
 function lsolve(L::Liouvillian,ψ₀::Ket,tspan,e_ops,alg;kwargs...)
     dimsmatch(L,ψ₀)
-    u0 = complex(full(ψ₀))
+    u0 = complex(Array(ψ₀))
     prob = ODEProblem(L,u0,tspan)
     sol  = solve(prob,alg;dense=false,abstol=1E-10,reltol=1E-8,kwargs...)
     states = Ket.(sol.u::Vector{typeof(u0)},(dims(ψ₀),))
@@ -21,7 +21,7 @@ function lsolve_steady(L::Liouvillian,ψ₀::Ket,e_ops,alg;kwargs...)
     #alg = DynamicSS(odealg;dense=false,abstol=1E-10,reltol=1E-8,kwargs...))
     dimsmatch(L,ψ₀)
     f = ODEFunction(L,jac=(J,ψ,p,t)->L(Val{:jac},J,ψ,p,t))
-    u0 = complex(full(ψ₀))
+    u0 = complex(Array(ψ₀))
     prob = SteadyStateProblem(f,u0)
     sol  = solve(prob,alg;dense=false,abstol=1E-10,reltol=1E-8,kwargs...)
     states = [Ket(sol.u::Vector{typeof(u0)},dims(ψ₀))]
@@ -32,7 +32,7 @@ end
 
 function lsolve(L::Liouvillian,ρ₀::Operator,tspan,e_ops,alg;kwargs...)
     dimsmatch(L,ρ₀)
-    u0 = vec(complex(full(ρ₀)))
+    u0 = vec(complex(Array(ρ₀)))
     prob = ODEProblem(L,u0,tspan)
     sol  = solve(prob,alg;dense=false,abstol=1E-10,reltol=1E-8,kwargs...)
     states = Operator.(unvec.(sol.u::Vector{typeof(u0)}),(dims(ρ₀),))
