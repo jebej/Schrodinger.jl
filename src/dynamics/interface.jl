@@ -8,33 +8,36 @@ end
 
 function lsolve(L::Liouvillian,ψ₀::Ket,tspan,e_ops,alg;kwargs...)
     dimsmatch(L,ψ₀)
-    prob = ODEProblem(L,complex(full(ψ₀)),tspan)
+    u0 = complex(full(ψ₀))
+    prob = ODEProblem(L,u0,tspan)
     sol  = solve(prob,alg;dense=false,abstol=1E-10,reltol=1E-8,kwargs...)
-    states = Ket.(sol.u,[dims(ψ₀)])
+    states = Ket.(sol.u::Vector{typeof(u0)},(dims(ψ₀),))
     evals  = calc_expvals(e_ops,states)
     #probs  = levelprobs(states)
-    return Result(sol.t,states,evals,sol.alg)
+    return Result(sol.t::Vector{Float64},states,evals,alg)
 end
 
 function lsolve_steady(L::Liouvillian,ψ₀::Ket,e_ops,alg;kwargs...)
     #alg = DynamicSS(odealg;dense=false,abstol=1E-10,reltol=1E-8,kwargs...))
     dimsmatch(L,ψ₀)
     f = ODEFunction(L,jac=(J,ψ,p,t)->L(Val{:jac},J,ψ,p,t))
-    prob = SteadyStateProblem(f,complex(full(ψ₀)))
+    u0 = complex(full(ψ₀))
+    prob = SteadyStateProblem(f,u0)
     sol  = solve(prob,alg;dense=false,abstol=1E-10,reltol=1E-8,kwargs...)
-    states = [Ket(sol.u,dims(ψ₀))]
+    states = [Ket(sol.u::Vector{typeof(u0)},dims(ψ₀))]
     evals  = calc_expvals(e_ops,states)
     #probs  = levelprobs(states)
-    return Result(Float64[],states,evals,sol.alg)
+    return Result(Float64[],states,evals,alg)
 end
 
 function lsolve(L::Liouvillian,ρ₀::Operator,tspan,e_ops,alg;kwargs...)
     dimsmatch(L,ρ₀)
-    prob = ODEProblem(L,vec(complex(full(ρ₀))),tspan)
+    u0 = vec(complex(full(ρ₀)))
+    prob = ODEProblem(L,u0,tspan)
     sol  = solve(prob,alg;dense=false,abstol=1E-10,reltol=1E-8,kwargs...)
-    states = Operator.(unvec.(sol.u),[dims(ρ₀)])
+    states = Operator.(unvec.(sol.u::Vector{typeof(u0)}),(dims(ρ₀),))
     evals  = calc_expvals(e_ops,states)
-    return Result(sol.t,states,evals,sol.alg)
+    return Result(sol.t::Vector{Float64},states,evals,alg)
 end
 
 function sesolve(H,ψ₀::Ket,tspan,e_ops=(),alg=Vern8();kwargs...)
