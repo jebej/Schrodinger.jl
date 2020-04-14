@@ -1,6 +1,6 @@
 # Misc. Tests
 using Schrodinger
-using Compat, Compat.Test, Compat.LinearAlgebra, Compat.SparseArrays
+using Test, LinearAlgebra, SparseArrays
 include("reffuns.jl")
 println("Testing Misc. Functions...")
 

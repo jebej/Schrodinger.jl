@@ -1,5 +1,5 @@
 # The functions below check if a matrix is approximately Hermitian
-using Compat.LinearAlgebra: RealHermSymComplexHerm
+using LinearAlgebra: RealHermSymComplexHerm
 
 const ERR = 1E-13
 

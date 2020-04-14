@@ -9,7 +9,6 @@ addons:
     packages:
       - python3-pip
 julia:
-  - 0.7
   - 1.0
   - 1.3
   - nightly

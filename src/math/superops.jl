@@ -70,9 +70,6 @@ end
 
 function choi_to_kraus(C::Operator)
     check_choi(C)
-    @static if VERSION < v"0.7.0-"
-        @inbounds for i = 1:size(C,1); C[i,i] = real(C[i,i]); end
-    end
     D,V = eigen(Hermitian(data(C)),1E-10,Inf)
     dm = _half_dims(dims(C))
     return [Operator(unvec(√(D[i])*V[:,i]),dm) for i = length(D):-1:1]

@@ -1,6 +1,6 @@
 # QuObj Tests
 using Schrodinger
-using Compat, Compat.Test, Compat.LinearAlgebra, Compat.SparseArrays
+using Test, LinearAlgebra, SparseArrays
 println("Testing Math...")
 
 @testset "QuObj Basic Math" begin
@@ -56,9 +56,7 @@ plus = normalize!(g+1.0im*basis(2,1))
     @test_throws ArgumentError 2/e1
     @test_throws ArgumentError 2/(g')
     @test_throws ArgumentError 2/(e1')
-    if VERSION > v"0.7.0-"
-        @test (x=(g/0);isnan(x[2])&&isinf(x[1])) # see julia PR #22715
-    end
+    @test (x=(g/0);isnan(x[2])&&isinf(x[1]))
     @test (x=(e1/0);isnan(x[1])&&isinf(x[2]))
     @test ρ/2 == qeye(4)/8
     @test (x=ρ/0;isnan(x[2,1])&&isinf(x[1,1]))
@@ -69,11 +67,7 @@ plus = normalize!(g+1.0im*basis(2,1))
     @test_throws ArgumentError plus^3.3
     @test ρ^3 == 0.015625*qeye(4)
     @test σx^2 == σy^2 == σz^2 == σ0
-    if VERSION < v"0.7.0-"
-        @test_throws MethodError data(ρ^2.5)
-    else
-        @test data(ρ^2.5) == data(ρ)^2.5
-    end
+    @test data(ρ^2.5) == data(ρ)^2.5
     @test data(dense(ρ)^2.5) == Array(ρ)^2.5
     @test (σ^2)[4,2] == √(2)*√(3)
     @test_broken data(σ^2.5) == data(σ)^2.5
@@ -158,11 +152,7 @@ end
         for f in [real,imag,abs,abs2]
             @test f(A) == f.(data(A))
         end
-        @static if VERSION > v"0.7.0-"
-            @test data(round(A,digits=4)) == round.(data(A),digits=4)
-        else
-            @test data(round(A,4)) == round.(data(A),4)
-        end
+        @test data(round(A,digits=4)) == round.(data(A),digits=4)
     end
 end
 

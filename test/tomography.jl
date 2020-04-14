@@ -7,10 +7,8 @@ using Schrodinger: mle_state_tomo, build_density_matrix, pgd_process_tomo,
 using Schrodinger: kraus_to_natural, natural_to_kraus, natural_to_choi,
     choi_to_natural, kraus_to_choi, choi_to_kraus, choi_to_chi, chi_to_choi
 
-using Compat.Test, Compat.LinearAlgebra, Compat.Random
-if VERSION > v"0.7.0-"
-    using Compat.Statistics: mean
-end
+using Test, LinearAlgebra, Random, Statistics
+
 println("Testing Tomography...")
 
 @testset "Tomography" begin

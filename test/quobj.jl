@@ -1,6 +1,6 @@
 # QuObj Tests
 using Schrodinger
-using Compat, Compat.Test, Compat.LinearAlgebra, Compat.SparseArrays
+using Test, LinearAlgebra, SparseArrays
 println("Testing QuObject Basics...")
 
 @testset "QuObject Basics" begin
