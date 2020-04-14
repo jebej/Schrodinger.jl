@@ -22,19 +22,12 @@ export Operator, Ket, Bra,
     Propagator, SchrodingerProp, LindbladProp,
     sesolve, mesolve, lsolve, psolve, psteady,
     grape, NormPSU, CoherentSubspaces,
-    expim, gaussian, inner, scale, scale!,
-    eigen
+    expim, gaussian, inner, scale, scale!
+
+# re-export some LinearAlgebra methods
+export eigen, eigs, eigvals, trace, normalize, normalize!
 
 include("basepatch/v1.0.jl")
-import Base: BitSet, print_array, sum
-import LinearAlgebra: adjoint, exp, exp!, tr, eigen
-import Arpack: eigs
-import SpecialFunctions: erf
-export eigs, eigvals, trace, normalize, normalize!
-trace(A::AbstractMatrix) = tr(A)
-sum(A::AbstractArray,i::Integer) = Base._sum(A,i)
-parseb2(s::AbstractString) = Base.tryparse_internal(Int,s,firstindex(s),lastindex(s),2,true)
-const luf = lu
 
 include("quobj/types.jl")
 include("quobj/basicmethods.jl")

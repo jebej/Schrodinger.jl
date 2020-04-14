@@ -1,3 +1,5 @@
+using SpecialFunctions: erf
+
 function gaussianpulse(t::Real,p::Vector)
     # Gaussian pulse centered on t=0, area normalized, and starting and finishing at y=0
     σ   = p[1] # gaussian standard deviation (FWHM = 2√(2ln2)σ ≈ 2.355σ)
