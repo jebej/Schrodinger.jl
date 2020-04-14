@@ -1,6 +1,6 @@
 # Julia Base math definitions translation
 import Base: +, -, *, /, ^, real, imag, abs, abs2, round, sqrt, exp, log
-import LinearAlgebra: kron, dot, transpose, conj
+import LinearAlgebra: kron, dot, transpose, adjoint, conj
 
 # Additive identity and inverse
 +(A::T) where {T<:QuObject} = A

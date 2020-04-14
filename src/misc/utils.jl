@@ -1,10 +1,4 @@
-import LinearAlgebra: RealHermSymComplexHerm, normalize
-import Base: reverse
-
-convert(::Type{BitSet},r::IntCol) = BitSet(r)
-BitSet(elems::Vararg{Int}) = BitSet(elems)
-
-reverse(n::Number) = n
+using LinearAlgebra: RealHermSymComplexHerm
 
 tname(T::Type) = T.name.name
 
@@ -67,9 +61,6 @@ function norm2_diff(A::AbstractArray, B::AbstractArray, i1::Integer, n::Integer)
         return norm2_diff(A, B, i1, n2) + norm2_diff(A, B, i1+n2, n-n2)
     end
 end
-
-normalize(z::Complex) = z == 0 ? one(z) : z/abs(z)
-normalize(z::Real) = one(z)
 
 function unwrap!(p)
     n,m = size(p,1),size(p,2)

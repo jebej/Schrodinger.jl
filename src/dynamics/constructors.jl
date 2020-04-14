@@ -91,7 +91,7 @@ function LindbladProp(H₀::Operator, Cₘ::Tuple{Vararg{Operator}}, Δt::Real)
     # Add constant collapse operator terms
     L₀Δt .+= sum_collapse(Cₘ,Id,Δt)
     # Build constant propagator
-    U = exp!(L₀Δt)
+    U = LinearAlgebra.exp!(L₀Δt)
     return Propagator(U,Δt,dims(H₀))
 end
 LindbladProp(H₀::Operator, Hₙ::Tuple, Cₘ::Operator, tspan, steps::Integer) = LindbladProp(H₀,(Hₙ,),(Cₘ,),tspan,steps)
@@ -106,7 +106,7 @@ function LindbladProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, Cₘ::Tuple{Va
     # Unpack constant and time dep operators
     H0, Hn = Array(H₀), unpack_operators(1,Array,Hₙ)
     # Build constant collapse propagator part
-    U₀ = exp!(sum_collapse(Cₘ,Id,dt))
+    U₀ = LinearAlgebra.exp!(sum_collapse(Cₘ,Id,dt))
     # Multiply sampled propagators together to generate total evolution
     U = Matrix{Complex{F}}(I, size(U₀))
     H = Hermitian(zeros(compute_H_type(H0,Hn),size(H0)...))
@@ -115,7 +115,7 @@ function LindbladProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, Cₘ::Tuple{Va
     for i = 1:steps
         step_hamiltonian!(H.data,H0,Hn,(t₁,dt,i))
         expim!(A,H,Λ,C,D) # A = exp(-1im*H*dt)
-        invA = LinearAlgebra.inv!(luf(A))
+        invA = LinearAlgebra.inv!(lu(A))
         mul!(B,U₀,U) # TODO: use the Lie product formula here for better results
         mul!(U,transpose(invA⊗Id),B)
         I_kron_mul!(B,A,U)

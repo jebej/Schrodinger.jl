@@ -2,7 +2,6 @@ using Optim: AbstractOptimizer, Options, MultivariateOptimizationResults
 
 abstract type ObjectiveFunction end
 abstract type PenaltyFunction end
-const IntCol = Union{AbstractVector{Int},BitSet,Set{Int},NTuple{N,Int} where N}
 
 struct GrapeResult{D,T<:AbstractMatrix,P<:MultivariateOptimizationResults}
     Ut::Operator{T,D}

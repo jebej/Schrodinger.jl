@@ -1,4 +1,5 @@
-import LinearAlgebra: eigvals
+import LinearAlgebra: eigvals, eigen
+import Arpack: eigs
 
 eigvals(A::QuMatrix, args...; kwargs...) =
     eigvals(A.data, args...; kwargs...)
