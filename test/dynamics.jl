@@ -7,6 +7,7 @@ println("Testing Dynamics...")
 N = 5 # cavity levels for tests
 
 @testset "Simple Qubit" begin
+println("  - Simple qubit (1/3)")
 ω = 0.2*2π
 H = 0.5ω*σx
 ψ₀ = basis(2,0)
@@ -16,6 +17,7 @@ res = sesolve(H,ψ₀,(0.0,10.0),(σz,σy),saveat=0.1)
 end
 
 @testset "Jaynes-Cummings" begin
+println("  - Jaynes-Cummings (2/3)")
 ωc = 1.0*2π
 ωa = 1.0*2π
 g = 0.05*2π
@@ -37,10 +39,10 @@ res = @inferred lsolve(L,Operator(ψ₀),(0.0,25.0), O, Schrodinger.Tsit5())
 f(t,g,κ,ϕ) = 0.5*(1+cos(t*2g+ϕ))*exp(-0.5κ*t)*exp(-0.5κ*t)
 @test real.(res.evals) ≈ [f.(res.times,g,κ,-π) f.(res.times,g,κ,0)]
 @test LindbladProp(Hj,c_ops,(0.0,25.0))(Operator(ψ₀)) ≈ res.states[end]
-
 end
 
 @testset "Three-Level Atom and Cavity" begin
+println("  - Three-Level Atom and Cavity (3/3)")
 c = 4.4 # coupling strength
 κ = 0.1
 g,e,u = basis(3,0), basis(3,1), basis(3,2)
