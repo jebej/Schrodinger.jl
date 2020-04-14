@@ -1,5 +1,3 @@
-using Compat: dropdims
-
 function ptrace_ref(A::Matrix, out, sysdims::NTuple)
     # Function adapted from a [MATLAB function](http://www.dr-qubit.org/Matlab_code.html) by Toby Cubitt and licensed under GPL2.
     # First, calculate systems, dimensions, etc.

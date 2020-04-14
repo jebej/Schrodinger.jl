@@ -1,6 +1,6 @@
 module Gate
 using ..Schrodinger
-using Compat.SparseArrays
+using SparseArrays
 
 """
     Gate.rotation(θ, n=(1,0,0))

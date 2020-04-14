@@ -1,6 +1,6 @@
 # Superoperator Tests
 using Schrodinger
-using Compat, Compat.Test, Compat.LinearAlgebra
+using Test, LinearAlgebra
 using Schrodinger: apply_process, operator_to_choi, trace_norm,
     gate_fidelity_choi, kraus_to_natural, natural_to_kraus, natural_to_choi,
     choi_to_natural, kraus_to_choi, choi_to_kraus, choi_to_chi, chi_to_choi

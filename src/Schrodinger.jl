@@ -25,7 +25,6 @@ export Operator, Ket, Bra,
     expim, gaussian, inner, scale, scale!,
     eigen
 
-# VERSION-conditional definitions
 include("basepatch/v1.0.jl")
 import Base: BitSet, print_array, sum
 import LinearAlgebra: adjoint, exp, exp!, tr, eigen

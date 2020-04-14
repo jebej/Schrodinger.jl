@@ -1,9 +1,7 @@
 # QuObj Tests
 using Schrodinger
-using Compat, Compat.Test, Compat.LinearAlgebra, Compat.SparseArrays
-if VERSION > v"0.7.0-"
-    using Compat.Statistics: mean
-end
+using Test, LinearAlgebra, SparseArrays, Statistics
+
 println("Testing Quantum Info Functions...")
 
 @testset "Quantum Information" begin

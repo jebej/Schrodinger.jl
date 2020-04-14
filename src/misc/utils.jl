@@ -100,11 +100,7 @@ function expim!(R::Matrix,H::RealHermSymComplexHerm,Λ=Vector{real(eltype(R))}(u
         end
     end
     # Finally multiply B by Uᴴ to obtain U*exp(iΛ)*Uᴴ = exp(i*H)
-    @static if VERSION < v"0.7.0-"
-        A_mul_Bc!(R,B,U)
-    else
-        mul!(R,B,adjoint(U))
-    end
+    mul!(R,B,adjoint(U))
     return R
 end
 
