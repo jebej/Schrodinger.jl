@@ -12,8 +12,9 @@ function mle_state_tomo(M,A)
     d^2 == d² || throw(ArgumentError("invalid number of columns in model matrix!"))
     # create function with autodiff
     t0 = [(k=(i-2d)÷d+1; k*(2d-k)+1 == i ? 1/√d : 0.0) for i=1:d^2]
-    od = OnceDifferentiable(t -> loglikelihood_statetomo(t,M,A), t0; autodiff = :forward)
-    return optimize(od, t0, ConjugateGradient(), Optim.Options())
+    f = OnceDifferentiable(t -> loglikelihood_statetomo(t,M,A), t0; autodiff = :forward)
+    # optimize parameters such that norm(t) == 1 to keep trace == 1
+    return optimize(f, t0, ConjugateGradient(manifold=Optim.Sphere()), Optim.Options())
 end
 
 function loglikelihood_statetomo(t,M,A)
@@ -25,19 +26,15 @@ end
 function t_expectation_values(t::AbstractVector,A::Matrix)
     # assemble ρ from the t-vector
     ρ = build_density_matrix(t)
-    # calculate the probabilities by multiplying the vectorized density
-    # operator with the model matrix
+    # calculate probabilities by multiplying the vectorized density operator with the model matrix
     return A*vec(ρ)
 end
 
 function build_density_matrix(t::AbstractVector)
     # reconstruct the density matrix from the t-parameters
     T = build_T_matrix(t)
-    α = 1/sum(abs2,T)
-    # ρ = α * T'*T
-    ρ = T'*T
-    ρ .*= α
-    return ρ
+    # ρ = T'*T
+    return T'*T
 end
 
 function build_T_matrix(t::AbstractVector{S}) where S<:Real
