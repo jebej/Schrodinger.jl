@@ -32,7 +32,7 @@ M = [rand(Binomial(N,p))/N for p in P]
 ρ = Operator(build_density_matrix(mle_state_tomo(M,A).minimizer))
 # Fidelity
 F1 = @inferred fidelity2(ρ,ψ)
-@test 1-F1 < 0.001
+@test 1-F1 < 0.005
 end
 
 @testset "Process Tomography" begin
