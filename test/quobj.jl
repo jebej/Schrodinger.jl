@@ -73,6 +73,15 @@ end
     @test !isapproxunitary(U2+Matrix(x))
 end
 
+@testset "Promotion" begin
+    @test [σy', σx'] isa Vector{Operator{SparseMatrixCSC{ComplexF64,Int},1}}
+    @test [σy', transpose(σy')] isa Vector{Operator{SparseMatrixCSC{ComplexF64,Int},1}}
+    @test [sqrt(σx), sqrt(σx)'] isa Vector{Operator{Matrix{ComplexF64},1}}
+    @test [sqrt(σx)', sqrt(σx)'] isa Vector{Operator{Adjoint{ComplexF64,Matrix{ComplexF64}},1}}
+    @test [sqrt(σx), σx'] isa Vector{Operator{Matrix{ComplexF64},1}}
+    @test [sqrt(σx'), σy] isa Vector{Operator{Matrix{ComplexF64},1}}
+end
+
 @testset "Display" begin
     @test sprint(show, "text/plain", qb"01"+qb"10") ==
     """
