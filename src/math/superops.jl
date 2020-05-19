@@ -46,7 +46,7 @@ end
 Compute the Choi matrix ``C_O`` of a unitary map represented by an operator `O`. We use the
 convention of applying `O` to the second half of the extended Hilbert space, i.e.:
 ```math
-C_O = \\sum_{i,j} |i⟩⟨j| ⊗ O|i⟩⟨j|O^\\dagger
+C_O = ∑_{i,j} |i⟩⟨j| ⊗ O|i⟩⟨j|O^†
 ```
 """
 operator_to_choi(O::Operator) = Operator(vec(O))
