@@ -29,7 +29,7 @@ Generate a coherent state ket ``|α⟩``, in a Hilbert space of size `N`. To cre
 Two methods can be used for generating a coherent state: via application of a displacment operator on a ground state (the default), or analytically, with the formula
 
 ```math
-|α⟩ = e^{-\\frac{|α|^2}{2}} \\sum_{n=0}^{N-1} \\frac{α^n}{\\sqrt{n!}} |n⟩.
+|α⟩ = e^{-\\frac{|α|^2}{2}} ∑_{n=0}^{N-1} \\frac{α^n}{\\sqrt{n!}} |n⟩.
 ```
 
 While the operator method will return a normalized ket, the analytic method will not. Both methods converge as `N` gets larger. The analytic method is also much faster, especially for large `N`.
@@ -116,7 +116,7 @@ end
 Generate a maximally entangled state between `n` `N`-d systems:
 
 ```math
-|\\phi⟩=\\sum_{j=0}^{N-1}\\frac{1}{\\sqrt{N}}|j⟩^{⊗n}.
+|ϕ⟩=∑_{j=0}^{N-1}\\frac{1}{\\sqrt{N}}|j⟩^{⊗n}.
 ```
 
 Tracing out all but one of the entangled systems results in a maximally mixed state.

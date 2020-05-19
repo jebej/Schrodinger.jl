@@ -5,7 +5,7 @@ Compute the expectation value of an operator ``σ`` given a state ket ``|ψ⟩``
 ```math
 \\begin{aligned}
 E(σ,|ψ⟩) &= ⟨ψ|σ|ψ⟩, \\\\
-E(σ,ρ) &= \\textrm{tr}(σρ).
+E(σ,ρ) &= \\text{tr}(σρ).
 \\end{aligned}
 ```
 
@@ -88,7 +88,7 @@ end
 
 Compute the purity of a quantum state `ρ`, defined by
 ```math
-γ = \\textrm{tr}(ρ^†ρ).
+γ = \\text{tr}(ρ^†ρ).
 ```
 This is the same as the square of the Frobenius norm of a matrix.
 
@@ -110,7 +110,7 @@ purity(ψ::QuVector) = real(one(eltype(ψ)))
 Compute the fidelity between density matrices ``ρ`` and ``σ``, a density matrix ``ρ`` and a ket ``|ψ⟩``, or two kets ``|ψ⟩`` and ``|ϕ⟩``. The fidelity in those three cases is defined as
 ```math
 \\begin{aligned}
-F(ρ,σ) &= \\textrm{tr}\\sqrt{ρ^{1/2}σρ^{1/2}}, \\\\
+F(ρ,σ) &= \\text{tr}\\sqrt{ρ^{1/2}σρ^{1/2}}, \\\\
 F(ρ,|ψ⟩) &= \\sqrt{⟨ψ|ρ|ψ⟩}, \\\\
 F(|ψ⟩,|ϕ⟩) &= \\left|⟨ψ|ϕ⟩\\right|.
 \\end{aligned}
@@ -164,7 +164,7 @@ Compute the entanglement fidelity of an imperfect quantum operation `V` with res
 ```math
 F_\\text{e}(\\mathcal{E}) = ⟨ϕ|(I⊗\\mathcal{E})(ϕ)|ϕ⟩,
 ```
-where ``|ϕ⟩ = \\frac{1}{\\sqrt{d}}\\sum_{i=1}^d|i⟩|i⟩`` is the maximally entangled state and ``\\mathcal{E}`` is a trace preserving quantum operation.
+where ``|ϕ⟩ = \\frac{1}{\\sqrt{d}}∑_{i=1}^d|i⟩|i⟩`` is the maximally entangled state and ``\\mathcal{E}`` is a trace preserving quantum operation.
 
 When trying to find the fidelity of a quantum gate ``U``, implemented imperfectly as ``V``, then ``\\mathcal{E} = U^†∘V``. In the case where ``U`` and ``V`` are a simple operators,
 ```math

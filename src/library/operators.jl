@@ -166,7 +166,7 @@ end
 Generate a projector on the subspaces defined by an integer or a vector/range of integers `S`:
 
 ```math
-P = \\sum_{i∈S} |i⟩⟨i|.
+P = ∑_{i∈S} |i⟩⟨i|.
 ```
 
 # Example
