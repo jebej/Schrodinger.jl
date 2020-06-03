@@ -1,16 +1,11 @@
 # Schrodinger equation
-function SchrodingerEvo(H₀::Operator)
-    # Constant Hamiltonian term
-    L₀ = -1im*data(H₀)
-    return Liouvillian(dims(H₀),L₀)
-end
+SchrodingerEvo(H₀::Operator) = Liouvillian(dims(H₀),-1im*data(H₀))
+
 function SchrodingerEvo(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}})
     dimsmatch(H₀,first.(Hₙ))
-    # Constant Hamiltonian term
-    L₀ = -1im*data(H₀)
-    # Time-dependent Hamiltonian terms
-    Lₙ,fₙ,pₙ = unpack_operators(-1im,data,Hₙ)
-    return Liouvillian(dims(H₀),L₀,Lₙ,fₙ,pₙ)
+    # Unpack time-dependent Hamiltonian terms
+    Lₙ,fₙ,pₙ = unpack_operators(Hₙ)
+    return Liouvillian(dims(H₀),-1im*data(H₀),-1im.*data.(Lₙ),fₙ,pₙ)
 end
 SchrodingerEvo(H₀::Operator,Hₙ::Vararg{Tuple}) = SchrodingerEvo(H₀,Hₙ)
 SchrodingerEvo(H::Tuple{Operator,Vararg{Tuple}}) = SchrodingerEvo(first(H),tail(H))
@@ -26,21 +21,21 @@ function LindbladEvo(H₀::Operator, Cₘ::Tuple{Vararg{Operator}})
     dimsmatch(H₀,Cₘ)
     Id = data(qeye(dims(H₀)))
     # Constant Hamiltonian term
-    L₀ = -1im*(Id⊗data(H₀) - transpose(data(H₀))⊗Id)
+    L₀ = -1im*super_vonneumann(H₀,Id)
     # Add constant collapse operator terms
-    L₀ += sum_collapse(Cₘ,Id,1)
+    L₀ += sum_collapse(Cₘ,Id)
     return Liouvillian(dims(H₀),L₀)
 end
 function LindbladEvo(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, Cₘ::Tuple{Vararg{Operator}})
     dimsmatch(H₀,first.(Hₙ)); dimsmatch(H₀,Cₘ)
     Id = data(qeye(dims(H₀)))
     # Constant Hamiltonian term
-    L₀ = -1im*(Id⊗data(H₀) - transpose(data(H₀))⊗Id)
+    L₀ = -1im*super_vonneumann(H₀,Id)
     # Add constant collapse operator terms
-    L₀ += sum_collapse(Cₘ,Id,1)
-    # Time-dependent Hamiltonian terms
-    Lₙ,fₙ,pₙ = unpack_operators(-1im,data,Hₙ)
-    return Liouvillian(dims(H₀),L₀,@.((Id,)⊗Lₙ-transpose(Lₙ)⊗(Id,)),fₙ,pₙ)
+    L₀ += sum_collapse(Cₘ,Id)
+    # Unpack time-dependent Hamiltonian terms
+    Lₙ,fₙ,pₙ = unpack_operators(Hₙ)
+    return Liouvillian(dims(H₀),L₀,-1im.*super_vonneumann.(Lₙ,(Id,)),fₙ,pₙ)
 end
 LindbladEvo(H₀::Operator,Cₘ::Vararg{Operator}) = LindbladEvo(H₀,Cₘ)
 LindbladEvo(H::Tuple{Operator,Vararg{Tuple}},Cₘ::Vararg{Operator}) = LindbladEvo(first(H),tail(H),Cₘ)
@@ -57,19 +52,18 @@ function SchrodingerProp(H₀::Operator, Δt::Real)
 end
 SchrodingerProp(H₀::Operator, Hₙ::Tuple, tspan, steps::Integer) = SchrodingerProp(H₀,(Hₙ,),tspan,steps)
 function SchrodingerProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, tspan, steps::Integer)
-    dimsmatch(H₀,first.(Hₙ))
-    F = real(eltype(H₀))
+    dimsmatch(H₀,first.(Hₙ)); F = real(eltype(H₀))
     # Sampling times and spacing dt
     t₁, t₂ = tspan; dt = (t₂-t₁)/steps
-    # Unpack constant and time dep operators
-    H0, Hn = Array(H₀), unpack_operators(1,Array,Hₙ)
+    # Unpack time-dependent Hamiltonian terms
+    H_tdep = unpack_operators(Hₙ)
     # Multiply sampled propagators together to generate total evolution
-    U = Matrix{Complex{F}}(I, size(H0))
-    H = Hermitian(zeros(compute_H_type(H0,Hn),size(H0)...))
+    U = Matrix{Complex{F}}(I, size(H₀))
+    H = Hermitian(zeros(compute_H_type(H₀,H_tdep),size(H₀)...))
     A = similar(U); B = similar(U); C = similar(H.data); D = similar(U)
     Λ = Vector{F}(undef,size(H,1))
     for i = 1:steps
-        step_hamiltonian!(H.data,H0,Hn,(t₁,dt,i)) # calc H for this time step
+        step_hamiltonian!(H.data,H₀,H_tdep,(t₁,dt,i)) # calc H for this time step
         expim!(A,H,Λ,C,D) # A = exp(-1im*H*dt)
         mul!(B,A,U) # U = A*U
         U,B = B,U # swappitty swap for the next step
@@ -84,12 +78,11 @@ LindbladProp(H₀::Operator, Cₘ::Operator, tspan) = LindbladProp(H₀,(Cₘ,),
 LindbladProp(H₀::Operator, Cₘ::Tuple{Vararg{Operator}}, tspan) = LindbladProp(H₀,Cₘ,tspan[2]-tspan[1])
 function LindbladProp(H₀::Operator, Cₘ::Tuple{Vararg{Operator}}, Δt::Real)
     dimsmatch(H₀,Cₘ)
-    F = real(eltype(H₀)); d = prod(dims(H₀))
-    Id = Matrix{F}(I, d, d)
+    Id = Diagonal(I, prod(dims(H₀)))
     # Constant Hamiltonian term
-    L₀Δt = -1im*Δt.*(Id⊗Array(H₀) .- transpose(Array(H₀))⊗Id)
+    L₀Δt = (-1im*Δt).*(Id⊗Array(H₀) .- transpose(Array(H₀))⊗Id)
     # Add constant collapse operator terms
-    L₀Δt .+= sum_collapse(Cₘ,Id,Δt)
+    L₀Δt .+= Δt.*sum_collapse(dense.(Cₘ),Id)
     # Build constant propagator
     U = LinearAlgebra.exp!(L₀Δt)
     return Propagator(U,Δt,dims(H₀))
@@ -98,24 +91,24 @@ LindbladProp(H₀::Operator, Hₙ::Tuple, Cₘ::Operator, tspan, steps::Integer)
 LindbladProp(H₀::Operator, Hₙ::Tuple, Cₘ::Tuple{Vararg{Operator}}, tspan, steps::Integer) = LindbladProp(H₀,(Hₙ,),Cₘ,tspan,steps)
 LindbladProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, Cₘ::Operator, tspan, steps::Integer) = LindbladProp(H₀,Hₙ,(Cₘ,),tspan,steps)
 function LindbladProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, Cₘ::Tuple{Vararg{Operator}}, tspan, steps::Integer)
-    dimsmatch(H₀,first.(Hₙ)); dimsmatch(H₀,Cₘ)
-    F = real(eltype(H₀)); d = prod(dims(H₀))
-    Id = Matrix{F}(I, d, d)
+    dimsmatch(H₀,first.(Hₙ)); dimsmatch(H₀,Cₘ); F = real(eltype(H₀));
+    Id = Diagonal(I, prod(dims(H₀)))
     # Sampling times and spacing dt
     t₁, t₂ = tspan; dt = (t₂-t₁)/steps
-    # Unpack constant and time dep operators
-    H0, Hn = Array(H₀), unpack_operators(1,Array,Hₙ)
+    # Unpack time-dependent Hamiltonian terms
+    H_tdep = unpack_operators(Hₙ)
     # Build constant collapse propagator part
-    U₀ = LinearAlgebra.exp!(sum_collapse(Cₘ,Id,dt))
+    U₀ = LinearAlgebra.exp!(dt.*sum_collapse(dense.(Cₘ),Id))
     # Multiply sampled propagators together to generate total evolution
     U = Matrix{Complex{F}}(I, size(U₀))
-    H = Hermitian(zeros(compute_H_type(H0,Hn),size(H0)...))
-    A = Matrix{Complex{F}}(undef,size(H0)...); B = similar(U); C = similar(H.data); D = similar(A)
+    H = Hermitian(zeros(compute_H_type(H₀,H_tdep),size(H₀)...))
+    A = Matrix{Complex{F}}(undef,size(H₀)...); B = similar(U); C = similar(H.data); D = similar(A)
     Λ = Vector{F}(undef,size(H,1))
     for i = 1:steps
-        step_hamiltonian!(H.data,H0,Hn,(t₁,dt,i))
+        step_hamiltonian!(H.data,H₀,H_tdep,(t₁,dt,i))
         expim!(A,H,Λ,C,D) # A = exp(-1im*H*dt)
         invA = LinearAlgebra.inv!(lu(A))
+        #
         mul!(B,U₀,U) # TODO: use the Lie product formula here for better results
         mul!(U,transpose(invA⊗Id),B)
         I_kron_mul!(B,A,U)
@@ -127,32 +120,37 @@ LindbladProp(H) = throw(ArgumentError("invalid Propagator specification"))
 
 
 # Utils
-function unpack_operators(x::Number,f::T,t::Tuple{Tuple{Operator,Function,Array},Vararg{Tuple}}) where {T}
-    a, b = first(t), unpack_operators(x,f,tail(t))
-    return (x*f(a[1]), b[1]...), (a[2], b[2]...), (a[3], b[3]...)
+function unpack_operators(t::Tuple{Tuple{Operator,Function,Array},Vararg{Tuple}})
+    a, b = first(t), unpack_operators(tail(t))
+    return (a[1], b[1]...), (a[2], b[2]...), (a[3], b[3]...)
 end
-function unpack_operators(x::Number,f::T,t::Tuple{Tuple{Operator,Function},Vararg{Tuple}}) where {T}
-    a, b = first(t), unpack_operators(x,f,tail(t))
-    return (x*f(a[1]), b[1]...), (a[2], b[2]...), ([], b[3]...)
+function unpack_operators(t::Tuple{Tuple{Operator,Function},Vararg{Tuple}})
+    a, b = first(t), unpack_operators(tail(t))
+    return (a[1], b[1]...), (a[2], b[2]...), (Float64[], b[3]...)
 end
-unpack_operators(x::Number,f::T,t::Tuple{}) where {T} = (), (), ()
+unpack_operators(t::Tuple{}) = (), (), ()
 
-function sum_collapse(Cₘ,Id,dt)
+function super_vonneumann(H,Id)
+    # represents the action [H,ρ] as a linear superoperator I⊗H - Hᵀ⊗I
+    return Id⊗data(H) - copy(transpose(data(H)))⊗Id
+end
+
+function sum_collapse(Cₘ,Id)
     # sum the Lindblad superoperators corresponding to the action of
-    # D[Cᵢ](ρ) = CᵢρCᵢ† - 1/2 * (Cᵢ†Cᵢρ + ρCᵢ†Cᵢ)
-    mapreduce(+,Cₘ) do Cᵢ
-        C = Array(Cᵢ); CdC = C'*C
-        dt*(conj(C)⊗C - 0.5*(Id⊗CdC + transpose(CdC)⊗Id))
+    # D[Cᵢ](ρ) = CᵢρCᵢ† - 1/2 * (Cᵢ†Cᵢρ + ρCᵢ†Cᵢ) as a linear superoperator
+    mapreduce(+,data.(Cₘ)) do Cᵢ
+        CdC = Cᵢ'*Cᵢ
+        return conj(Cᵢ)⊗Cᵢ - (Id⊗CdC + copy(transpose(CdC))⊗Id)./2
     end
 end
 
 function step_hamiltonian!(H,H0,Hn,tspec)
     Hₙ,fₙ,pₙ = Hn
     t₁, dt, i = tspec; tᵢ = t₁ + (i-1)*dt
-    H .= -dt.*H0 # constant part
+    H .= -dt.*data(H0) # constant part
     for j = 1:length(Hₙ) # sample function at 3 points
-        Hᵢ,fᵢ,pᵢ = Hₙ[j],fₙ[j],pₙ[j]
-        H .+= -dt*(fᵢ(tᵢ,pᵢ) + fᵢ(tᵢ+0.5dt,pᵢ) + fᵢ(tᵢ+dt,pᵢ))/3 .* Hᵢ
+        Hᵢ,fᵢ,pᵢ = data(Hₙ[j]),fₙ[j],pₙ[j]
+        H .+= (-dt*(fᵢ(tᵢ,pᵢ) + fᵢ(tᵢ+0.5dt,pᵢ) + fᵢ(tᵢ+dt,pᵢ))/3) .* Hᵢ
     end
 end
 

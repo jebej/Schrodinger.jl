@@ -101,10 +101,12 @@ Base.vec(O::Operator) = Ket(vec(data(O)),(dims(O)...,dims(O)...))
 unvec(v::Ket) = Operator(unvec(data(v)),_half_dims(dims(v)))
 
 super(A::Operator) = conj(A) ⊗ A # represents A*ρ*A†
-super(A::Operator,B::Operator) = transpose(B) ⊗ A
+super(A::Operator,B::Operator) = transpose(B) ⊗ A # represents A*ρ*B
+super(A::Operator,::UniformScaling) = qeye(dims(A)) ⊗ A # represents A*ρ
+super(::UniformScaling,B::Operator) = transpose(B) ⊗ qeye(dims(B)) # represents ρ*B
 
 # linear operator that represents the action AρB on a vectorized version of ρ
-super(A::AbstractMatrix,B::AbstractMatrix=data(qeye(size(A,1)))) = transpose(B) ⊗ A
+super(A::AbstractMatrix,B::AbstractMatrix=data(qeye(size(A,1)))) = copy(transpose(B)) ⊗ A
 
 function unvec(vecA::AbstractVector)
     # unvectorize a vector into a square matrix

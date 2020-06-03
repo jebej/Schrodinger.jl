@@ -19,7 +19,7 @@ expect(σ::Operator,ρ::Operator) = (dimsmatch(σ,ρ); trace(data(σ)*data(ρ)))
 expect(σ::Operator,states::Vector{<:QuObject}) = expect!(Vector{ComplexF64}(undef,length(states)),σ,states)
 
 function expect!(res,σ::Operator,states::Vector{Ket{T,D}}) where {T,D}
-    dimsmatch(σ,states[1])
+    dimsmatch(σ,first(states))
     tmp = Vector{ComplexF64}(undef,prod(dims(σ)))
     for (i,ψ) in enumerate(states)
         mul!(tmp,data(σ),data(ψ))
@@ -29,7 +29,7 @@ function expect!(res,σ::Operator,states::Vector{Ket{T,D}}) where {T,D}
 end
 
 function expect!(res,σ::Operator,states::Vector{Operator{T,D}}) where {T,D}
-    dimsmatch(σ,states[1])
+    dimsmatch(σ,first(states))
     checkbounds(res,length(states))
     superσ = super(data(σ))
     tmp = Vector{ComplexF64}(undef,size(superσ,1))
@@ -43,6 +43,18 @@ function expect!(res,σ::Operator,states::Vector{Operator{T,D}}) where {T,D}
     end
     return res
 end
+
+calc_expvals(o::Operator,states) = calc_expvals((o,),states)
+
+function calc_expvals(e_ops::NTuple{M,Operator},states) where M
+    evals = Matrix{ComplexF64}(undef,length(states),M)
+    for (j,σ) in enumerate(e_ops)
+        expect!(@view(evals[:,j]), σ, states)
+    end
+    return evals
+end
+
+calc_expvals(e_ops::Tuple{},states) = Matrix{ComplexF64}(undef,0,0)
 
 """
     levelprobs(ψ), levelprobs(ψ,s)

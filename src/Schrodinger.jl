@@ -2,7 +2,6 @@ module Schrodinger
 using LinearAlgebra, SparseArrays, Printf
 using Base: tail, front, product, promote_eltype
 using OrdinaryDiffEq, Optim
-using OrdinaryDiffEq.DiffEqBase: AbstractParameterizedFunction
 
 # Export submodules
 export Gate
@@ -28,6 +27,9 @@ export Operator, Ket, Bra,
 export eigen, eigs, eigvals, trace, normalize, normalize!
 
 include("basepatch/v1.0.jl")
+@static if VERSION < v"1.1"
+    using Future: copy!
+end
 
 include("quobj/types.jl")
 include("quobj/basicmethods.jl")
@@ -61,5 +63,7 @@ include("library/random.jl")
 include("library/drivefuns.jl")
 include("library/constants.jl")
 include("library/gates.jl")
+
+include("quobj/gpu.jl")
 
 end
