@@ -15,38 +15,39 @@ mesolve(H,C,ρ₀::Operator,tspan,e_ops=(),alg=Tsit5();kwargs...) = lsolve(Lindb
 mesolve(H,C,ψ₀::Ket,tspan,e_ops=(),alg=Tsit5();kwargs...) = mesolve(H,C,Operator(ψ₀),tspan,e_ops,alg;kwargs...)
 
 # The functions below require a Liouvillian
+using OrdinaryDiffEq.DiffEqBase: __solve # for inferability
 
 function lsolve(L::Liouvillian,ψ₀::Ket,tspan,e_ops,alg;kwargs...)
     dimsmatch(L,ψ₀)
-    u0 = complex(Array(ψ₀))
-    prob = ODEProblem(LiouvillianODE(L),u0,tspan)
-    sol  = solve(prob,alg;dense=false,abstol=1E-10,reltol=1E-8,kwargs...)
-    states = Ket.(sol.u::Vector{typeof(u0)},(dims(ψ₀),))
+    u0 = issparse(ψ₀) ? complex(Array(ψ₀)) : complex(data(ψ₀))
+    prob = ODEProblem{true}(LiouvillianODE(L),u0,tspan)
+    sol  = __solve(prob,alg;dense=false,abstol=1E-10,reltol=1E-8,kwargs...)
+    states = Ket.(convert.(Array,sol.u),(dims(ψ₀),))
     evals  = calc_expvals(e_ops,states)
     #probs  = levelprobs(states)
-    return Result(sol.t::Vector{Float64},states,evals,alg)
+    return Result(sol.t,states,evals,alg)
+end
+
+function lsolve(L::Liouvillian,ρ₀::Operator,tspan,e_ops,alg;kwargs...)
+    dimsmatch(L,ρ₀)
+    u0 = issparse(ρ₀) ? vec(complex(Array(ρ₀))) :  vec(complex(data(ρ₀)))
+    prob = ODEProblem{true}(LiouvillianODE(L),u0,tspan)
+    sol  = __solve(prob,alg;dense=false,abstol=1E-10,reltol=1E-8,kwargs...)
+    states = Operator.(convert.(Array,unvec.(sol.u)),(dims(ρ₀),))
+    evals  = calc_expvals(e_ops,states)
+    return Result(sol.t,states,evals,alg)
 end
 
 function lsolve_steady(L::Liouvillian,ψ₀::Ket,e_ops,alg;kwargs...)
     #alg = DynamicSS(odealg;dense=false,abstol=1E-10,reltol=1E-8,kwargs...))
     dimsmatch(L,ψ₀)
-    u0 = complex(Array(ψ₀))
+    u0 = issparse(ψ₀) ? complex(Array(ψ₀)) : complex(data(ψ₀))
     prob = SteadyStateProblem(LiouvillianODE(L),u0)
-    sol  = solve(prob,alg;dense=false,abstol=1E-10,reltol=1E-8,kwargs...)
-    states = [Ket(sol.u::Vector{typeof(u0)},dims(ψ₀))]
+    sol  = __solve(prob,alg;dense=false,abstol=1E-10,reltol=1E-8,kwargs...)
+    states = [Ket(convert(Array,sol.u),dims(ψ₀))]
     evals  = calc_expvals(e_ops,states)
     #probs  = levelprobs(states)
     return Result([Inf],states,evals,alg)
-end
-
-function lsolve(L::Liouvillian,ρ₀::Operator,tspan,e_ops,alg;kwargs...)
-    dimsmatch(L,ρ₀)
-    u0 = vec(complex(Array(ρ₀)))
-    prob = ODEProblem(LiouvillianODE(L),u0,tspan)
-    sol  = solve(prob,alg;dense=false,abstol=1E-10,reltol=1E-8,kwargs...)
-    states = Operator.(unvec.(sol.u::Vector{typeof(u0)}),(dims(ρ₀),))
-    evals  = calc_expvals(e_ops,states)
-    return Result(sol.t::Vector{Float64},states,evals,alg)
 end
 
 # Propagator interface

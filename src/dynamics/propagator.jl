@@ -33,13 +33,13 @@ Operator(U::Propagator) = Operator(data(U),dims(U))
 function SchrodingerProp(L::Liouvillian{T},tspan,alg=Vern8();kwargs...) where T
     d = prod(dims(L))
     prob = ODEProblem(LiouvillianODE(L),Matrix{Complex{T}}(I,d,d),tspan)
-    sol  = solve(prob,alg;save_start=false,saveat=[tspan[end]],abstol=1E-8,reltol=1E-6,kwargs...)
+    sol  = __solve(prob,alg;save_start=false,saveat=[tspan[end]],abstol=1E-8,reltol=1E-6,kwargs...)
     return Propagator(sol.u[],(tspan[2]-tspan[1]),dims(L))
 end
 
 function LindbladProp(L::Liouvillian{T},tspan,alg=Tsit5();kwargs...) where T
     d = prod(dims(L))^2
     prob = ODEProblem(LiouvillianODE(L),Matrix{Complex{T}}(I,d,d),tspan)
-    sol  = solve(prob,alg;save_start=false,saveat=[tspan[end]],abstol=1E-7,reltol=1E-5,kwargs...)
+    sol  = __solve(prob,alg;save_start=false,saveat=[tspan[end]],abstol=1E-7,reltol=1E-5,kwargs...)
     return Propagator(sol.u[],(tspan[2]-tspan[1]),dims(L))
 end
