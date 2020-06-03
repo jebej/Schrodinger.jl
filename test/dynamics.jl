@@ -33,7 +33,7 @@ f(t,g) = 0.5*(1 - (4/9*cos(2g*t) + 1/9*cos(√3*2g*t) + 4/9*cos(√4*2g*t)))
 @test SchrodingerProp(Hj,(0.0,25.0))(ψ₀) ≈ res.states[end]
 
 ψ₀ = basis(N,0) ⊗ basis(2,1)
-c_ops = (√(κ)*a, √(κ)*sm)
+c_ops = (√(κ)*a, √(κ)*sm) # use same rate to solve eq. analytically
 L = @inferred LindbladEvo(Hj,c_ops)
 res = @inferred lsolve(L,Operator(ψ₀),(0.0,25.0), O, Schrodinger.Tsit5())
 f(t,g,κ,ϕ) = 0.5*(1+cos(t*2g+ϕ))*exp(-0.5κ*t)*exp(-0.5κ*t)
@@ -59,20 +59,18 @@ H1_coeff(t,p) = 9*exp(-(t/5)^2)
 S = @inferred SchrodingerEvo(H0,(H1,H1_coeff))
 res = @inferred lsolve(S, ψ₀, (-15.0,15.0), (n, σ_uu, σ_gg), Schrodinger.Tsit5())
 U1 = @inferred SchrodingerProp(H0,(H1,H1_coeff),(-15.0,15.0),2000)
-@test_broken U2 = @inferred SchrodingerProp(S,(-15.0,15.0))
-U2 = SchrodingerProp(S,(-15.0,15.0)) # TODO: remove when above passes
+U2 = SchrodingerProp(S,(-15.0,15.0))
 @test U1(ψ₀) ≈ res.states[end] rtol=5E-6 # okay showing here...
 @test U2(ψ₀) ≈ res.states[end] # this one is much better, need to figure out why
-@test U2.U ≈ U1.U rtol=4E-5
+@test U2 ≈ U1 rtol=4E-5
 
-S = @inferred LindbladEvo((H0,(H1,H1_coeff,[1,2,3])),√(κ)*a)
-res = @inferred lsolve(S, Operator(ψ₀), (-15.0,15.0), (n, σ_uu, σ_gg), Schrodinger.Tsit5())
+L = @inferred LindbladEvo((H0,(H1,H1_coeff,[1,2,3])),√(κ)*a)
+res = @inferred lsolve(L, Operator(ψ₀), (-15.0,15.0), (n, σ_uu, σ_gg), Schrodinger.Tsit5())
 U1 = @inferred LindbladProp(H0,(H1,H1_coeff),√(κ)*a,(-15.0,15.0),500)
-@test_broken U2 = @inferred LindbladProp(S,(-15.0,15.0))
-U2 = LindbladProp(S,(-15.0,15.0)) # TODO: remove when above passes
+U2 = LindbladProp(L,(-15.0,15.0))
 @test U1(Operator(ψ₀)) ≈ res.states[end] rtol=4E-4 # very poor showing here...
 @test U2(Operator(ψ₀)) ≈ res.states[end] # this one is much better, need to figure out why
-@test U2.U ≈ U1.U rtol=3E-3 #...
+@test U2 ≈ U1 rtol=3E-3 #...
 end
 
 end
