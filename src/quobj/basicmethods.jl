@@ -2,6 +2,7 @@ import Base: Array, length, size, eltype, getindex, setindex!, similar, copy, ha
     isequal, ==, convert, promote_rule, isapprox, show, @propagate_inbounds
 import LinearAlgebra: Hermitian, Symmetric, checksquare, diag, complex, norm, opnorm,
 	rank, normalize!, normalize, ishermitian, issymmetric, isdiag, triu, tril
+import SparseArrays: issparse
 
 # Special QuObject methods
 """
@@ -23,6 +24,7 @@ function checkdensityop(A::QuMatrix)
         throw(ArgumentError(string("not a density operator, matrix ",a,b,c)))
     end
 end
+issparse(A::QuObject) = issparse(data(A))
 dense(x::Ket) = Ket(Vector(x.data),x.dims)
 dense(x::Bra) = Bra(Vector(x.data),x.dims)
 dense(A::Operator) = Operator(Matrix(A.data),A.dims)

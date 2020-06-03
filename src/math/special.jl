@@ -20,7 +20,7 @@ expect(σ::Operator,states::Vector{<:QuObject}) = expect!(Vector{ComplexF64}(und
 
 function expect!(res,σ::Operator,states::Vector{Ket{T,D}}) where {T,D}
     dimsmatch(σ,first(states))
-    tmp = Vector{ComplexF64}(undef,prod(dims(σ)))
+    tmp = copy(similar(data(first(states))))
     for (i,ψ) in enumerate(states)
         mul!(tmp,data(σ),data(ψ))
         res[i] = dot(data(ψ),tmp)
@@ -32,7 +32,7 @@ function expect!(res,σ::Operator,states::Vector{Operator{T,D}}) where {T,D}
     dimsmatch(σ,first(states))
     checkbounds(res,length(states))
     superσ = super(data(σ))
-    tmp = Vector{ComplexF64}(undef,size(superσ,1))
+    tmp = copy(vec(similar(data(first(states)))))
     N = length(tmp); sqrtNp1 = isqrt(N)+1
     for (i,ρ) in enumerate(states)
         mul!(tmp,superσ,vec(data(ρ)))
