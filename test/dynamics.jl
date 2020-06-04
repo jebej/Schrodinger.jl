@@ -34,11 +34,13 @@ f(t,g) = 0.5*(1 - (4/9*cos(2g*t) + 1/9*cos(√3*2g*t) + 4/9*cos(√4*2g*t)))
 
 ψ₀ = basis(N,0) ⊗ basis(2,1)
 c_ops = (√(κ)*a, √(κ)*sm) # use same rate to solve eq. analytically
-L = @inferred LindbladEvo(Hj,c_ops)
-res = @inferred lsolve(L,Operator(ψ₀),(0.0,25.0), O, Schrodinger.Tsit5())
+res = @inferred mesolve(Hj,c_ops,Operator(ψ₀),(0.0,25.0),O)
+res = mesolve(Hj,c_ops,ψ₀,(0.0,25.0),O)
 f(t,g,κ,ϕ) = 0.5*(1+cos(t*2g+ϕ))*exp(-0.5κ*t)*exp(-0.5κ*t)
 @test real.(res.evals) ≈ [f.(res.times,g,κ,-π) f.(res.times,g,κ,0)]
 @test LindbladProp(Hj,c_ops,(0.0,25.0))(Operator(ψ₀)) ≈ res.states[end]
+L = @inferred LindbladEvo(Hj,c_ops)
+@test LindbladProp(L,(0.0,25.0))(Operator(ψ₀)) ≈ res.states[end]
 end
 
 @testset "Three-Level Atom and Cavity" begin
