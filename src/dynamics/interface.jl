@@ -52,37 +52,22 @@ end
 
 # Propagator interface
 
-function psolve(U::Propagator,ψ₀::Ket,steps,e_ops)
+function psolve(U::Propagator,ψ₀::QuObject,steps::Integer,e_ops=())
     dimsmatch(U,ψ₀)
-    states = Vector{Ket{Vector{Complex{Float64}},length(dims(ψ₀))}}(undef,steps+1)
-    states[1] = complex(dense(ψ₀))
-    for s = 2:steps+1
-        states[s] = U(states[s-1])
-    end
-    evals  = calc_expvals(e_ops,states)
+    state1 = complex(dense(ψ₀))
+    states = Vector{typeof(state1)}(undef,steps+1); states[1] = state1
+    for s in 2:steps+1; states[s] = U(states[s-1]); end
+    evals = calc_expvals(e_ops,states)
     #probs  = levelprobs(states)
-    t = collect(LinRange(0,steps*U.Δt,steps+1))
-    return Result(t,states,evals,:SchrodingerPropSolver)
+    return Result(collect(0:U.Δt:steps*U.Δt),states,evals,:SchrodingerPropSolver)
 end
 
-function psolve(U::Propagator,ρ₀::Operator,steps,e_ops)
-    dimsmatch(U,ρ₀)
-    states = Vector{Operator{Matrix{Complex{Float64}},length(dims(ρ₀))}}(undef,steps+1)
-    states[1] = complex(dense(ρ₀))
-    for s = 2:steps+1
-        states[s] = U(states[s-1])
-    end
-    evals  = calc_expvals(e_ops,states)
-    #probs  = levelprobs(states)
-    t = collect(LinRange(0,steps*U.Δt,steps+1))
-    return Result(t,states,evals,:SchrodingerPropSolver)
-end
-
-function psteady(U::Propagator,ρ₀::Operator,steps,e_ops)
-    dimsmatch(U,ρ₀)
-    states = Vector{Operator{Matrix{Complex{Float64}},length(dims(ρ₀))}}(undef,2)
-    states[1] = complex(dense(ρ₀))
-    states[2] = U(states[1],steps)
+function psteady(U::Propagator,ψ₀::QuObject,steps::Integer,e_ops=())
+    # same as above but without saving intermediate states
+    dimsmatch(U,ψ₀)
+    state1 = complex(dense(ψ₀))
+    state2 = U(state1,steps)
+    states = [state1, state2]
     evals  = calc_expvals(e_ops,states)
     #probs  = levelprobs(states)
     return Result([0.0,steps*U.Δt],states,evals,:SchrodingerPropSteady)
