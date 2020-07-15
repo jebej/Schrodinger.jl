@@ -75,12 +75,10 @@ levelprobs(ψ::QuObject,S::AbstractVector) = map(s->levelprobs(ψ,s),S)
 function levelprobs(states::Vector{<:QuObject},S::Union{Integer,AbstractVector})
     N = length(states)
     D = dims(states[1])
+    maximum(S)>length(D) && throw(ArgumentError("System index larger than number of subsystems!"))
     probs = map(S) do s
-        s > length(D) && throw(ArgumentError("System index $s is larger than the number of systems, $M."))
         P = Matrix{Float64}(undef,N,D[s])
-        for n = 1:N
-            P[n,:] = levelprobs(states[n],s)
-        end
+        @inbounds for n in 1:N; P[n,:] = levelprobs(states[n],s); end
         return P
     end
     return probs
@@ -89,9 +87,7 @@ end
 function levelprobs(states::Vector{<:QuObject})
     N = length(states)
     P = Matrix{Float64}(undef,N,prod(dims(states[1])))
-    for n = 1:N
-        P[n,:] = levelprobs(states[n])
-    end
+    @inbounds for n in 1:N; P[n,:] = levelprobs(states[n]); end
     return P
 end
 
