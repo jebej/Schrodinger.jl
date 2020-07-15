@@ -44,7 +44,19 @@ function lsolve_steady(L::Liouvillian,ψ₀::Ket,e_ops,alg;kwargs...)
     u0 = issparse(ψ₀) ? complex(Array(ψ₀)) : complex(data(ψ₀))
     prob = SteadyStateProblem(LiouvillianODE(L),u0)
     sol  = __solve(prob,alg;dense=false,abstol=1E-10,reltol=1E-8,kwargs...)
-    states = [Ket(convert(Array,sol.u),dims(ψ₀))]
+    states = [normalize!(Ket(convert(Array,sol.u),dims(ψ₀)))]
+    evals  = calc_expvals(e_ops,states)
+    #probs  = levelprobs(states)
+    return Result([Inf],states,evals,alg)
+end
+
+function lsolve_steady(L::Liouvillian,ρ₀::Operator,e_ops,alg;kwargs...)
+    #alg = DynamicSS(odealg;dense=false,abstol=1E-10,reltol=1E-8,kwargs...))
+    dimsmatch(L,ρ₀)
+    u0 = issparse(ρ₀) ? vec(complex(Array(ρ₀))) :  vec(complex(data(ρ₀)))
+    prob = SteadyStateProblem(LiouvillianODE(L),u0)
+    sol  = __solve(prob,alg;dense=false,abstol=1E-10,reltol=1E-8,kwargs...)
+    states = [normalize!(Operator(convert(Array,unvec(sol.u)),dims(ρ₀)))]
     evals  = calc_expvals(e_ops,states)
     #probs  = levelprobs(states)
     return Result([Inf],states,evals,alg)
