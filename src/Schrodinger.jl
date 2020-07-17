@@ -1,7 +1,7 @@
 module Schrodinger
 using LinearAlgebra, SparseArrays, Printf
 using Base: tail, front, product, promote_eltype
-using OrdinaryDiffEq, Optim
+using OrdinaryDiffEq, Optim, NLsolve
 
 # Export submodules
 export Gate
