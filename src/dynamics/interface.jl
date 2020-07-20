@@ -38,37 +38,35 @@ function lsolve(L::Liouvillian,ρ₀::Operator,tspan,e_ops,alg;kwargs...)
     return Result(sol.t,states,evals,alg)
 end
 
-function build_steady_fun(L::TL) where {TL<:Liouvillian}
-    # for solving steady state with NLsolve
-    J_mat = similar(L.L₀); jac_liouvillian!(L,J_mat,Inf) # compute Jacobian at t=∞
-    f! = (dψ,ψ) -> mul_liouvillian!(L,dψ,ψ,Inf)
-    j! = (J,ψ)  -> copy!(J,J_mat) # constant Jacobian
-    ψ0 = zeros(complex(eltype(J_mat)),size(J_mat,1))
-    return OnceDifferentiable(f!, j!, ψ0, similar(ψ0), J_mat)
-end
+# Steady-state solver
 
 function lsteady(L::Liouvillian,ψ₀::Ket,e_ops;kwargs...)
+    # for now input state is used only for dispatch; it could be used as starting guess
     dimsmatch(L,ψ₀)
-    u0 = issparse(ψ₀) ? complex(Array(ψ₀)) : complex(data(ψ₀))
-    df = build_steady_fun(L)
-    sol = nlsolve(df, u0; ftol=1E-10, kwargs...)
-    states = [normalize!(Ket(convert(Array,sol.zero),dims(ψ₀)))]
+    sol = solve_steady(L)
+    states = [normalize!(Ket(convert(Array,sol),dims(ψ₀)))]
     evals  = calc_expvals(e_ops,states)
     #probs  = levelprobs(states)
-    return Result([Inf],states,evals,:SchrodingerNLSolver)
+    return Result([Inf],states,evals,:SchrodingerLinSolver)
 end
 
 function lsteady(L::Liouvillian,ρ₀::Operator,e_ops;kwargs...)
     dimsmatch(L,ρ₀)
-    u0 = issparse(ρ₀) ? vec(complex(Array(ρ₀))) :  vec(complex(data(ρ₀)))
-    df = build_steady_fun(L)
-    sol = nlsolve(df, u0; ftol=1E-10, kwargs...)
-    states = [normalize!(Operator(convert(Array,unvec(sol.zero)),dims(ρ₀)))]
-    #
+    sol = solve_steady(L)
+    states = [normalize!(Operator(convert(Array,unvec(sol)),dims(ρ₀)))]
     evals  = calc_expvals(e_ops,states)
     #probs  = levelprobs(states)
-    return Result([Inf],states,evals,:SchrodingerNLSolver)
+    return Result([Inf],states,evals,:SchrodingerLinSolver)
 end
+
+function solve_steady(L::Liouvillian)
+    # to solve for steady state, compute Liouvillian matrix at t=∞ and solve L*ψ == 0
+    L_mat = similar(L.L₀); jac_liouvillian!(L,L_mat,Inf)
+    return homogeneous_linsolve(L_mat)
+end
+
+homogeneous_linsolve(A::AbstractSparseMatrix) = vec(eigs(A,nev=1,which=:SM,tol=1E-12)[2]::Matrix{eltype(A)})
+homogeneous_linsolve(A::AbstractMatrix) = vec(svd(A, full=true).Vt[end,:]')
 
 # Propagator interface
 
