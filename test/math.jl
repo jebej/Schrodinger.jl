@@ -70,7 +70,9 @@ plus = normalize!(g+1.0im*basis(2,1))
     @test data(ρ^2.5) == data(ρ)^2.5
     @test data(dense(ρ)^2.5) == Array(ρ)^2.5
     @test (σ^2)[4,2] == √(2)*√(3)
-    @test data(σ^2.5) == data(σ)^2.5
+    if VERSION >= v"1.4"
+        @test data(σ^2.5) == data(σ)^2.5
+    end
 end
 
 @testset "QuObj/QuObj Algebra" begin
