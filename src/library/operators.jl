@@ -150,9 +150,9 @@ Generate a quantum harmonic oscillator squeeze operator ``\\hat{S}(z)`` in a tru
 ```jldoctest
 julia> squeezeop(3,0.5im)
 3×3 Operator{Array{Complex{Float64},2},1} with dimensions 3
- 0.938148+0.0im       0.0+0.0im       0.0-0.346234im
+ 0.938148-0.0im       0.0-0.0im       0.0-0.346234im
       0.0+0.0im       1.0+0.0im       0.0+0.0im
-      0.0-0.346234im  0.0+0.0im  0.938148+0.0im
+      0.0-0.346234im  0.0-0.0im  0.938148-0.0im
 ```
 """
 function squeezeop(N::Integer, z::Number)

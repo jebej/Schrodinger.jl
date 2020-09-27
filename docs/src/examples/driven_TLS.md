@@ -170,7 +170,6 @@ c₁(t,γ,Δω) = (Ω = √(γ^2+(Δω/2)^2); γ/Ω * cis(-Δω/2*t) * sin(Ω*t)
 c1 = c₁.(r1.times,γ,Δω) # compute data for c₁
 analytic = [1 .- abs2.(c1) abs2.(c1)] # 1-|c₁|² and |c₁|²
 
-figure(); # hide
 plot(r1.times,analytic)
 legend(["|g⟩", "|e⟩", "|g⟩ (analytic)", "|e⟩ (analytic)"]);
 tight_layout(true); savefig(joinpath("img","driven_TLS_2.svg")); # hide

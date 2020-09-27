@@ -97,7 +97,7 @@ O = -σz # observable
 We can now pass all three arguments (`H`, `g` and `O`) to the [`sesolve`](@ref) function (Schrodinger Equation solver) to solve for the time dynamics! We also pass a keyword argument `saveat` to make sure we have enough points. As can be seen, the results match with theory:
 
 ```jldoctest gettingstarted
-res = sesolve(H, g, t, [O], saveat=2/200)
+res = sesolve(H, g, t, O, saveat=2/200)
 real.(res.evals) ≈ -cos.(ω.*res.times) # check against theory
 # output
 true
@@ -108,7 +108,7 @@ Let's plot the results!
 ```@setup gettingstartedplot
 !isdir("img") && mkdir("img")
 using Schrodinger, PyPlot
-res = sesolve(π*σx, basis(2,0), (0.0,2.0), [-σz], saveat=2/200)
+res = sesolve(π*σx, basis(2,0), (0.0,2.0), -σz, saveat=2/200)
 figure(figsize=(8,4.5), dpi=100);
 plot(res.times,real.(res.evals)); xlabel("time (s)"); legend(["\$⟨-σ_z⟩\$"]); grid()
 tight_layout(true); savefig(joinpath("img","gettingstarted-plot.svg"))
