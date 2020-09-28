@@ -14,7 +14,7 @@ julia> qzero(4,(2,2))
 ```
 """
 function qzero(::Type{T}, N::Integer, dims::Dims=(N,)) where {T<:Number}
-    return Operator(SparseMatrixCSC(N,N,ones(Int,N+1),Int[],T[]),dims)
+    return Operator(SparseMatrixCSC{T,Int}(N,N,ones(Int,N+1),Int[],T[]),dims)
 end
 qzero(::Type{T}, dims::Dims) where {T<:Number} = qzero(T,prod(dims),dims)
 qzero(N::Integer, dims::Dims=(N,)) = qzero(Float64,N,dims)
@@ -38,7 +38,7 @@ julia> qeye(4,(2,2))
 function qeye(::Type{T}, N::Integer, dims::Dims=(N,)) where {T<:Number}
     rowval = Vector{Int}(undef,N); for i=1:N; @inbounds rowval[i]=i; end
     colptr = Vector{Int}(undef,N+1); for i=1:N+1; @inbounds colptr[i]=i; end
-    return Operator(SparseMatrixCSC(N,N,colptr,rowval,ones(T,N)),dims)
+    return Operator(SparseMatrixCSC{T,Int}(N,N,colptr,rowval,ones(T,N)),dims)
 end
 qeye(::Type{T}, dims::Dims) where {T<:Number} = qeye(T,prod(dims),dims)
 qeye(N::Integer, dims::Dims=(N,)) = qeye(Float64,N,dims)
@@ -63,7 +63,7 @@ function destroy(::Type{T}, N::Integer) where {T<:Number}
     rowval = Vector{Int}(undef,N-1); for i=1:N-1; @inbounds rowval[i]=i; end
     colptr = Vector{Int}(undef,N+1); colptr[1]=1; for i=2:N+1; @inbounds colptr[i]=i-1; end
     nzval  = Vector{T}(undef,N-1); for i=1:N-1; @inbounds nzval[i]=√(T(i)); end
-    return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,))
+    return Operator(SparseMatrixCSC{T,Int}(N,N,colptr,rowval,nzval),(N,))
 end
 destroy(N::Integer) = destroy(Float64,N)
 
@@ -86,7 +86,7 @@ function create(::Type{T}, N::Integer) where {T<:Number}
     rowval = Vector{Int}(undef,N-1); for i=1:N-1; @inbounds rowval[i]=i+1; end
     colptr = Vector{Int}(undef,N+1); for i=1:N; @inbounds colptr[i]=i; end; colptr[N+1]=N;
     nzval  = Vector{T}(undef,N-1); for i=1:N-1; @inbounds nzval[i]=√(T(i)); end
-    return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,))
+    return Operator(SparseMatrixCSC{T,Int}(N,N,colptr,rowval,nzval),(N,))
 end
 create(N::Integer) = create(Float64,N)
 
@@ -110,7 +110,7 @@ function numberop(::Type{T}, N::Integer) where {T<:Number}
     rowval = Vector{Int}(undef,N); for i=1:N; @inbounds rowval[i]=i; end
     colptr = Vector{Int}(undef,N+1); for i=1:N+1; @inbounds colptr[i]=i; end
     nzval  = Vector{T}(undef,N+1); for i=0:N; @inbounds nzval[i+1]=i; end
-    return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,))
+    return Operator(SparseMatrixCSC{T,Int}(N,N,colptr,rowval,nzval),(N,))
 end
 numberop(N::Integer) = numberop(Float64,N)
 

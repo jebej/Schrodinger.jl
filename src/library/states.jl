@@ -81,7 +81,7 @@ function thermal(N::Integer, n::Real)
     rowval = collect(1:N)
     colptr = Vector{Int}(undef,N+1); colptr[1:N] = rowval; colptr[end] = N+1
     nzval  = normalize!([exp(-β*k) for k = 0:N-1],1)
-    return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,))
+    return Operator(SparseMatrixCSC{eltype(nzval),Int}(N,N,colptr,rowval,nzval),(N,))
 end
 
 
@@ -105,8 +105,8 @@ julia> maxmixed(4)
 function maxmixed(N::Integer)
     rowval = collect(1:N)
     colptr = Vector{Int}(undef,N+1); colptr[1:N] = rowval; colptr[end] = N+1
-    nzval  = Vector{Float64}(undef,N); fill!(nzval, 1/N)
-    return Operator(SparseMatrixCSC(N,N,colptr,rowval,nzval),(N,))
+    nzval  = fill(1/N,N)
+    return Operator(SparseMatrixCSC{eltype(nzval),Int}(N,N,colptr,rowval,nzval),(N,))
 end
 
 
