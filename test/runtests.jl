@@ -8,6 +8,7 @@ include("math.jl")
 include("special.jl")
 include("dynamics.jl")
 include("superops.jl")
+include("control.jl")
 include("tomography.jl")
 include("misc.jl")
 end
