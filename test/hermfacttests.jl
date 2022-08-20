@@ -1,21 +1,32 @@
-using BenchmarkTools
+using Schrodinger, LinearAlgebra, BenchmarkTools
+using Schrodinger: hermfact!
 
-H1 = rand(ComplexF64,4,4); H1 = Hermitian(H1+H1');
-H2 = rand(Float64,4,4);    H2 = Hermitian(H2+H2');
+d = 4
 
-H = H2
+H1 = rand(ComplexF64,d,d); H1 = Hermitian(H1+H1');
+H2 = rand(Float64,d,d);    H2 = Hermitian(H2+H2');
 
-w, Z = eig(H)
+H = H1
 
-w2, Z2 = hermfact!(similar(w), similar(Z), copy(H))
+w1, Z1 = eigen(H)
 
-@assert w==w2 && Z==Z2
+w2, Z2 = hermfact!(copy(H))
 
-a = @benchmark eig(H) setup=(A=copy($H))
-println("BASE eigendecomposition")
-show(STDOUT,MIME"text/plain"(),a)
+
+@assert w1==w2 && Z1==Z2
+
+
+a = @benchmark eigen($H)
+println("LinearAlgebra normal eigendecomposition:")
+show(stdout, MIME"text/plain"(), a)
 println("\n")
-b = @benchmark hermfact!(w2, Z2, A) setup=(A=copy($H))
-println("In-place eigendecomposition")
-show(STDOUT,MIME"text/plain"(),b)
-println()
+
+b = @benchmark eigen!(A) setup=(A=copy($H))
+println("LinearAlgebra in-place eigendecomposition:")
+show(stdout, MIME"text/plain"(), b)
+println("\n")
+
+c = @benchmark hermfact!(A) setup=(A=copy($H))
+println("FastLapackInterface eigendecomposition:")
+show(stdout, MIME"text/plain"(), c)
+println("\n")

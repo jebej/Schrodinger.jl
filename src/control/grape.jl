@@ -64,7 +64,7 @@ function calc_fprops!(U,X,D,V,u,δt,Hd,Hc,H,u_last)
             H.data .+= -δt*u[(k-1)*n+j].*Hc[k] # add in time dependent parts
         end
         # Calculate U and store eigenvectors and eigenvalues for this timeslice
-        expim!(U[j],H,D[j],V[j],X[1])
+        expim!(U[j],D[j],V[j],H,X[1])
     end
     # Calculate forward propagators (cumulative product of U)
     copyto!(X[1],U[1])

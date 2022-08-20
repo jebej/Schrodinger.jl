@@ -28,12 +28,12 @@ function pgd_process_tomo(M::Matrix{T}, A::Matrix; tol=1E-10, cptp_tol=1E-8, inf
     c₁ = T(1E6); c₂ = f(C)
     info && println("start cost = $c₂")
     # iterate through projected gradient descent steps, with backtracking
-    h = CPTP_helpers(C)
+    MdagM, 𝕀 = TP_helpers(C)
     stp = 0
     while c₁ - c₂ > tol
         stp += 1
         c₁, ∇C = c₂, ∇f(C)
-        D = project_CPTP(C .- μ⁻¹.*∇C, h, cptp_tol) - C
+        D = project_CPTP(C .- μ⁻¹.*∇C, MdagM, 𝕀, cptp_tol) - C
         α = one(T); Π = γ*real(D⋅∇C)
         while (c₂ = f(C .+ α.*D)) > c₁ + α*Π
             α = α/2 # backtrack
@@ -58,19 +58,18 @@ function loglikelihood_gradient(M::Matrix{T}, C::Matrix{Complex{T}}, A::Matrix) 
     return unvec(A'*mMP)
 end
 
-function project_CPTP(C::Matrix{Complex{T}}, h::Tuple, tol::Real=1E-8) where {T<:Real}
+function project_CPTP(C::Matrix{Complex{T}}, MdagM, 𝕀, tol::Real=1E-8) where {T<:Real}
     # generate storage objects
     X₁ = copy(C); Y₁ = zero(X₁);
     X₂ = copy(Y₁); Y₂ = copy(Y₁)
     P = copy(Y₁); Q = copy(Y₁)
     ΔP = one(T); ΔQ = one(T)
-    D, V, MdagM, 𝕀 = h
     # iterate through TP & CP projections
     while ΔP^2 + ΔQ^2 + 2*abs(P⋅X₂-P⋅X₁) + 2*abs(Q⋅Y₂-Q⋅Y₁) > tol
         project_TP!(Y₂, X₁+P, MdagM, 𝕀)
         ΔP = norm2_diff(X₁,Y₂)
         P .= X₁ .- Y₂ .+ P
-        project_CP!(X₂, Y₂+Q, D, V)
+        project_CP!(X₂, Y₂+Q)
         ΔQ = norm2_diff(Y₂,X₂)
         Q .= Y₂ .- X₂ .+ Q
         X₁, X₂ = X₂, X₁
@@ -79,12 +78,12 @@ function project_CPTP(C::Matrix{Complex{T}}, h::Tuple, tol::Real=1E-8) where {T<
     return X₁
 end
 
-function project_CP!(X::Matrix{Complex{T}}, C::Matrix{Complex{T}}, D::Vector{T}, V::Matrix) where {T<:Real}
+function project_CP!(X::Matrix{Complex{T}}, C::Matrix{Complex{T}}) where {T<:Real}
     # Project the process onto the completely positive subspace by making the
     # Choi matrix positive semidefinite
     # We do this by taking the eigendecomposition, setting any negative
     # eigenvalues to 0, and reconstructing the Choi matrix
-    hermfact!(D,V,Hermitian(hermitianize!(C)))
+    D,V = hermfact!(Hermitian(hermitianize!(C)))
     D .= max.(D,zero(T))
     mul!(C,Diagonal(D),V')
     mul!(X,V,C)
@@ -97,14 +96,7 @@ function project_TP!(Y::Matrix{Complex{T}}, C::Matrix{Complex{T}}, MdagM::Matrix
     Y .= C .- d⁻¹.*(Y.-𝕀)
 end
 
-function CPTP_helpers(C::Matrix{Complex{T}}) where {T<:Real}
-    D = Vector{T}(undef,size(C,1))
-    V = Matrix{Complex{T}}(undef,size(C))
-    MdagM, 𝕀 = TP_helper_matrices(C)
-    return D, V, MdagM, 𝕀
-end
-
-function TP_helper_matrices(C::Matrix{Complex{T}}) where {T<:Real}
+function TP_helpers(C::Matrix{Complex{T}}) where {T<:Real}
     d = isqrt(size(C,1))
     𝕀 = Matrix{T}(I,d,d); k = zeros(Complex{T},1,d)
     # this could be done more efficiently, but it doesn't matter

@@ -8,6 +8,7 @@ version = "0.1.0"
 
 [deps]
 Arpack = "7d9fca2a-8960-54d3-9f78-7d1dccf2cb97"
+FastLapackInterface = "29a986be-02c6-4525-aec4-84b980013641"
 Future = "9fa8497b-333b-5362-9e8d-4d0656e87820"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Optim = "429524aa-4258-5aef-a3af-852621145aeb"
@@ -24,3 +25,7 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 test = ["Distributions", "Random", "Statistics", "Test"]
+
+[compat]
+julia = "1.0"
+FastLapackInterface = "^1.2.4"

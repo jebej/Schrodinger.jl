@@ -60,11 +60,10 @@ function SchrodingerProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, tspan, step
     # Multiply sampled propagators together to generate total evolution
     U = Matrix{Complex{F}}(I, size(H₀))
     H = Hermitian(zeros(compute_H_type(H₀,H_tdep),size(H₀)...))
-    A = similar(U); B = similar(U); C = similar(H.data); D = similar(U)
-    Λ = Vector{F}(undef,size(H,1))
+    A = similar(U); B = similar(U); C = similar(U)
     for i = 1:steps
         step_hamiltonian!(H.data,H₀,H_tdep,(t₁,dt,i)) # calc H for this time step
-        expim!(A,H,Λ,C,D) # A = exp(-1im*H*dt)
+        expim!(A,H,C) # A = exp(-1im*H*dt)
         mul!(B,A,U) # U = A*U
         U,B = B,U # swappitty swap for the next step
     end
@@ -102,11 +101,10 @@ function LindbladProp(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, Cₘ::Tuple{Va
     # Multiply sampled propagators together to generate total evolution
     U = Matrix{Complex{F}}(I, size(U₀))
     H = Hermitian(zeros(compute_H_type(H₀,H_tdep),size(H₀)...))
-    A = Matrix{Complex{F}}(undef,size(H₀)...); B = similar(U); C = similar(H.data); D = similar(A)
-    Λ = Vector{F}(undef,size(H,1))
+    A = Matrix{Complex{F}}(undef,size(H₀)...); B = similar(U); C = similar(A)
     for i = 1:steps
         step_hamiltonian!(H.data,H₀,H_tdep,(t₁,dt,i))
-        expim!(A,H,Λ,C,D) # A = exp(-1im*H*dt)
+        expim!(A,H,C) # A = exp(-1im*H*dt)
         invA = LinearAlgebra.inv!(lu(A))
         #
         mul!(B,U₀,U) # TODO: use the Lie product formula here for better results

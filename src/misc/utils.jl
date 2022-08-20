@@ -74,16 +74,16 @@ function unwrap!(p)
     return p
 end
 
-expim(H::RealHermSymComplexHerm) = expim!(Matrix{complex(eltype(H))}(H),copy(H))
-expim!(H::RealHermSymComplexHerm) = expim!(Matrix{complex(eltype(H))}(H),H)
+expim(H::RealHermSymComplexHerm) = expim!(copy(H))
+expim!(H::RealHermSymComplexHerm{T}) where {T} = expim!(Matrix{complex(T)}(H),H)
 
-function expim!(R::Matrix,H::RealHermSymComplexHerm,Λ=Vector{real(eltype(R))}(undef,size(H,1)),U=Matrix(H),B=similar(R))
+function expim!(R::Matrix, H::RealHermSymComplexHerm, B=similar(R))
     # First decompose H into U*Λ*Uᴴ
     #F = eigfact!(H); copy!(Λ,F.values); copy!(U,F.vectors)
-    hermfact!(Λ,U,H)
+    Λ,U = hermfact!(H)
     # Calculate the imaginary exponential of each eigenvalue and multiply
     # each column of U to obtain B = U*exp(iΛ)
-    n = length(Λ)
+    n = size(H,1)
     @inbounds for j = 1:n
         a = cis(Λ[j])
         @simd for i = 1:n
@@ -91,6 +91,24 @@ function expim!(R::Matrix,H::RealHermSymComplexHerm,Λ=Vector{real(eltype(R))}(u
         end
     end
     # Finally multiply B by Uᴴ to obtain U*exp(iΛ)*Uᴴ = exp(i*H)
+    mul!(R,B,adjoint(U))
+    return R
+end
+
+function expim!(R::Matrix, D::Vector, V::Matrix, H::RealHermSymComplexHerm, B=similar(R))
+    # same as above, but copy eigenvalues and vectors into D and V (useful for GRAPE)
+    Λ,U = hermfact!(H)
+    n = size(H,1)
+    @inbounds for j = 1:n
+        λ = Λ[j]
+        a = cis(λ)
+        D[j] = λ
+        @simd for i = 1:n
+            Vij = U[i,j]
+            B[i,j] = a * Vij
+            V[i,j] = Vij
+        end
+    end
     mul!(R,B,adjoint(U))
     return R
 end
