@@ -10,7 +10,7 @@ Compute the partial trace of a linear `Operator` ρ by tracing out the subsystem
 ρ  = 0.25 * Operator(Φ₊) + 0.75 * Operator(Ψ₊) # density matrix
 ptrace(ρ,2) # trace out qubit 2
 # output
-2×2 Operator{Array{Float64,2},1} with dimensions 2
+2×2 Operator{Matrix{Float64}, 1} with dimensions 2
  0.5  0.0
  0.0  0.5
 ```
@@ -29,11 +29,11 @@ Compute the partial trace of a state `Ket` or `Bra` ψ by tracing out the subsys
 # Example
 ```jldoctest
 julia> Φ₊ = normalize!(basis(2,0)⊗basis(2,0) + basis(2,1)⊗basis(2,1)) # Bell pair
-4-d Ket{SparseVector{Float64,Int64},2} with dimensions 2⊗2
+4-d Ket{SparseVector{Float64, Int64}, 2} with dimensions 2⊗2
 0.71∠0°|0,0⟩ + 0.71∠0°|1,1⟩
 
 julia> ptrace(Φ₊,1) # trace out qubit 1
-2×2 Operator{Array{Float64,2},1} with dimensions 2
+2×2 Operator{Matrix{Float64}, 1} with dimensions 2
  0.5  0.0
  0.0  0.5
 ```

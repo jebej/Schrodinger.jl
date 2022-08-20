@@ -42,7 +42,7 @@ figure(); # hide
 plot(res1.times*1e9,levelprobs(res1.states)); grid();
 xlabel("Time (ns)"); ylabel("Level Probabilities");
 legend(["Ground State", "Excited State"]);
-tight_layout(true); savefig(joinpath("img","qubitNOT.svg")); # hide
+tight_layout(); savefig(joinpath("img","qubitNOT.svg")); # hide
 ```
 ![qubit NOT gate](img/qubitNOT.svg)
 
@@ -65,7 +65,7 @@ figure(); # hide
 plot(res2.times*1e9,levelprobs(res2.states)); grid()
 xlabel("Time (ns)"); ylabel("Level Probabilities");
 legend(["Ground State", "1st Excited State", "2nd Excited State"]);
-tight_layout(true); savefig(joinpath("img","3levelNOT.svg")); # hide
+tight_layout(); savefig(joinpath("img","3levelNOT.svg")); # hide
 ```
 ![3-level NOT gate](img/3levelNOT.svg)
 
@@ -117,7 +117,7 @@ figure(); # hide
 plot(res3.times*1e9,levelprobs(res3.states)); grid()
 xlabel("Time (ns)"); ylabel("Level Probabilities");
 legend(["Ground State", "1st Excited State", "2nd Excited State"]);
-tight_layout(true); savefig(joinpath("img","3levelDRAG.svg")); # hide
+tight_layout(); savefig(joinpath("img","3levelDRAG.svg")); # hide
 ```
 ![3-level DRAG](img/3levelDRAG.svg)
 
@@ -161,7 +161,7 @@ plot(tgs*1E9, 1 .- Fg_res); ylim([10E-8,1]); grid()
 title("Average gate fidelity averaging over all input states");
 yscale("log"); xlabel("Gate Time (ns)"); ylabel("Gate Error 1-Fg");
 legend(["Gaussian","DRAG 5th Order"]);
-tight_layout(true); savefig(joinpath("img","fidelities.svg")); # hide
+tight_layout(); savefig(joinpath("img","fidelities.svg")); # hide
 ```
 ![NOT-gate fidelities](img/fidelities.svg)
 

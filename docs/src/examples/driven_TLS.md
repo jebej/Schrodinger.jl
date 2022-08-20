@@ -49,7 +49,7 @@ figure(); # hide
 plot(r1.times,levelprobs(r1.states)); grid();
 xlabel("Time"); ylabel("Level Probabilities");
 legend(["|g⟩", "|e⟩"]);
-tight_layout(true); savefig(joinpath("img","driven_TLS_1.svg")); # hide
+tight_layout(); savefig(joinpath("img","driven_TLS_1.svg")); # hide
 ```
 ![driven_TLS_1](img/driven_TLS_1.svg)
 
@@ -172,7 +172,7 @@ analytic = [1 .- abs2.(c1) abs2.(c1)] # 1-|c₁|² and |c₁|²
 
 plot(r1.times,analytic)
 legend(["|g⟩", "|e⟩", "|g⟩ (analytic)", "|e⟩ (analytic)"]);
-tight_layout(true); savefig(joinpath("img","driven_TLS_2.svg")); # hide
+tight_layout(); savefig(joinpath("img","driven_TLS_2.svg")); # hide
 ```
 ![driven_TLS_2](img/driven_TLS_2.svg)
 
@@ -204,7 +204,7 @@ plot(r1.times, 180/π.*angle.(1im.*getindex.(r1.states,2)))
 plot(r2.times, 180/π.*angle.(1im.*getindex.(r2.states,2)))
 xlabel("Time"); ylabel("∠c₁ (°)"); grid()
 legend(["Schrödinger picture", "Interaction picture"]);
-tight_layout(true); savefig(joinpath("img","driven_TLS_3.svg")); # hide
+tight_layout(); savefig(joinpath("img","driven_TLS_3.svg")); # hide
 ```
 ![driven_TLS_3](img/driven_TLS_3.svg)
 
@@ -221,6 +221,6 @@ t = 0:0.1:12
 chev = abs2.(c₁.(t,γ,ω.*ωd_ratio.-ω))
 imshow(chev,origin="lower",extent=[0.5,1.5,0,12],aspect=1/15)
 xlabel("\$ω_d/ω\$"); ylabel("Time");
-tight_layout(true); savefig(joinpath("img","driven_TLS_4.svg")); # hide
+tight_layout(); savefig(joinpath("img","driven_TLS_4.svg")); # hide
 ```
 ![driven_TLS_4](img/driven_TLS_4.svg)

@@ -8,7 +8,7 @@ Returns a sparse vector.
 # Example
 ```jldoctest
 julia> ψ = basis(3,2)
-3-d Ket{SparseVector{Float64,Int64},1} with dimensions 3
+3-d Ket{SparseVector{Float64, Int64}, 1} with dimensions 3
 1.00∠0°|2⟩
 ```
 """
@@ -39,8 +39,8 @@ Returns a dense vector.
 # Example
 ```jldoctest
 julia> coherent(6,0.4+1im)
-6-d Ket{Array{Complex{Float64},1},1} with dimensions 6
-0.60∠68°|1⟩ + 0.56∠0°|0⟩ + 0.46∠136°|2⟩ + 0.29∠-155°|3⟩ + 0.15∠-87°|4⟩ +…
+6-d Ket{Vector{ComplexF64}, 1} with dimensions 6
+0.60∠68°|1⟩ + 0.56∠-0°|0⟩ + 0.46∠136°|2⟩ + 0.29∠-155°|3⟩ + 0.15∠-87°|4⟩ +…
 ```
 """
 function coherent(N::Integer, α::Number, analytic::Bool=false)
@@ -65,12 +65,12 @@ Returns a sparse matrix.
 julia> N=5; n=0.2;
 
 julia> ρ = thermal(N,n)
-5×5 Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 5
- 0.833441  0.0       0.0        0.0         0.0
- 0.0       0.138907  0.0        0.0         0.0
- 0.0       0.0       0.0231511  0.0         0.0
- 0.0       0.0       0.0        0.00385852  0.0
- 0.0       0.0       0.0        0.0         0.000643087
+5×5 Operator{SparseMatrixCSC{Float64, Int64}, 1} with dimensions 5
+ 0.833441   ⋅         ⋅          ⋅           ⋅
+  ⋅        0.138907   ⋅          ⋅           ⋅
+  ⋅         ⋅        0.0231511   ⋅           ⋅
+  ⋅         ⋅         ⋅         0.00385852   ⋅
+  ⋅         ⋅         ⋅          ⋅          0.000643087
 
 julia> expect(numberop(N),ρ)
 0.19935691318327978
@@ -95,11 +95,11 @@ Returns a sparse matrix.
 # Example
 ```jldoctest
 julia> maxmixed(4)
-4×4 Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 4
- 0.25  0.0   0.0   0.0
- 0.0   0.25  0.0   0.0
- 0.0   0.0   0.25  0.0
- 0.0   0.0   0.0   0.25
+4×4 Operator{SparseMatrixCSC{Float64, Int64}, 1} with dimensions 4
+ 0.25   ⋅     ⋅     ⋅
+  ⋅    0.25   ⋅     ⋅
+  ⋅     ⋅    0.25   ⋅
+  ⋅     ⋅     ⋅    0.25
 ```
 """
 function maxmixed(N::Integer)
@@ -124,11 +124,11 @@ Tracing out all but one of the entangled systems results in a maximally mixed st
 # Example
 ```jldoctest
 julia> ψ = maxentangled(3,4)
-64-d Ket{SparseVector{Float64,Int64},3} with dimensions 4⊗4⊗4
+64-d Ket{SparseVector{Float64, Int64}, 3} with dimensions 4⊗4⊗4
 0.50∠0°|0,0,0⟩ + 0.50∠0°|1,1,1⟩ + 0.50∠0°|2,2,2⟩ + 0.50∠0°|3,3,3⟩
 
 julia> ptrace(ψ,(1,3))
-4×4 Operator{Array{Float64,2},1} with dimensions 4
+4×4 Operator{Matrix{Float64}, 1} with dimensions 4
  0.25  0.0   0.0   0.0
  0.0   0.25  0.0   0.0
  0.0   0.0   0.25  0.0
@@ -153,7 +153,7 @@ Returns a sparse vector.
 # Example
 ```jldoctest
 julia> ψ = ket((3,0,1),(5,2,3))
-30-d Ket{SparseVector{Float64,Int64},3} with dimensions 5⊗2⊗3
+30-d Ket{SparseVector{Float64, Int64}, 3} with dimensions 5⊗2⊗3
 1.00∠0°|3,0,1⟩
 ```
 
@@ -179,7 +179,7 @@ Returns a sparse vector.
 # Example
 ```jldoctest
 julia> Ψ⁻ = normalize!(qb"01" - qb"10")
-4-d Ket{SparseVector{Float64,Int64},2} with dimensions 2⊗2
+4-d Ket{SparseVector{Float64, Int64}, 2} with dimensions 2⊗2
 0.71∠0°|0,1⟩ + 0.71∠180°|1,0⟩
 ```
 

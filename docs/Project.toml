@@ -4,4 +4,4 @@ PyPlot = "d330b81b-6aea-500a-939a-2ce795aea3ee"
 SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 
 [compat]
-Documenter = "0.24, 0.25"
+Documenter = "0.27"

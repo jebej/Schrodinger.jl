@@ -84,7 +84,7 @@ end
 
 @testset "Display" begin
     @test sprint(show, "text/plain", qb"01"+qb"10") == """
-    4-d $(Ket{SparseVector{Float64,Int64},2}) with dimensions 2⊗2
+    4-d $(Ket{SparseVector{Float64, Int64}, 2}) with dimensions 2⊗2
     1.00∠0°|0,1⟩ + 1.00∠0°|1,0⟩
     """
     @test sprint(show, normalize!(qb"01"+qb"10")) == "0.71∠0°|0,1⟩ + 0.71∠0°|1,0⟩"
@@ -96,7 +96,7 @@ end
     sp = VERSION >= v"1.4-" ? "" : " "
     sz = VERSION >= v"1.6-" ? " ⋅ " : "0.0"
     @test sprint(show, "text/plain", maxmixed(4)) == """
-    4×4 $(Operator{SparseMatrixCSC{Float64,Int64},1}) with dimensions 4
+    4×4 $(Operator{SparseMatrixCSC{Float64, Int64}, 1}) with dimensions 4
      0.25  $sz   $sz   $sz$sp
      $sz   0.25  $sz   $sz$sp
      $sz   $sz   0.25  $sz$sp

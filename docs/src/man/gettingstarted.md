@@ -24,7 +24,7 @@ Kets (and their dual, bras) are therefore finite-, or infinite-dimensional vecto
 
 ```jldoctest gettingstarted
 julia> g = Ket([1,0])
-2-d Ket{Array{Float64,1},1} with dimensions 2
+2-d Ket{Vector{Float64}, 1} with dimensions 2
 1.00∠0°|0⟩
 ```
 
@@ -51,9 +51,9 @@ Arbitrary operators can of course be created, but let's take a look at one that 
 
 ```jldoctest
 julia> σx
-2×2 Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 2
- 0.0  1.0
- 1.0  0.0
+2×2 Operator{SparseMatrixCSC{Float64, Int64}, 1} with dimensions 2
+  ⋅   1.0
+ 1.0   ⋅
 ```
 
 Notice that the first line of the output is very similar to that of the ket we created above. It lists the dimensions of the matrix, the type (which lists the type of the underlying matrix and the number of subspaces), and the space dimensions (which again is just a single 2-d space).
@@ -62,7 +62,7 @@ The state `g` that we created in the previous section is a ground state with the
 
 ```jldoctest gettingstarted
 julia> σx*g
-2-d Ket{Array{Float64,1},1} with dimensions 2
+2-d Ket{Vector{Float64}, 1} with dimensions 2
 1.00∠0°|1⟩
 ```
 
@@ -70,7 +70,7 @@ As expected, the output is a `Ket`, but notice the state is now $$|1⟩$$! By ac
 
 ```jldoctest gettingstarted
 julia> σx*σx*g
-2-d Ket{Array{Float64,1},1} with dimensions 2
+2-d Ket{Vector{Float64}, 1} with dimensions 2
 1.00∠0°|0⟩
 ```
 
@@ -86,9 +86,9 @@ H = ω/2*σx # Hamiltonian
 t = (0.0,2.0) # timespan
 O = -σz # observable
 # output
-2×2 Operator{SparseMatrixCSC{Float64,Int64},1} with dimensions 2
- -1.0  0.0
-  0.0  1.0
+2×2 Operator{SparseMatrixCSC{Float64, Int64}, 1} with dimensions 2
+ -1.0   ⋅
+   ⋅   1.0
 ```
 
 !!! note
@@ -111,7 +111,7 @@ using Schrodinger, PyPlot
 res = sesolve(π*σx, basis(2,0), (0.0,2.0), -σz, saveat=2/200)
 figure(figsize=(8,4.5), dpi=100);
 plot(res.times,real.(res.evals)); xlabel("time (s)"); legend(["\$⟨-σ_z⟩\$"]); grid()
-tight_layout(true); savefig(joinpath("img","gettingstarted-plot.svg"))
+tight_layout(); savefig(joinpath("img","gettingstarted-plot.svg"))
 ```
 ```julia
 using PyPlot
