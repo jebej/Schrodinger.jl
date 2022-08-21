@@ -1,0 +1,30 @@
+name: Documentation
+on:
+  push:
+    branches:
+      - master # update to match your development branch (master, main, dev, trunk, ...)
+    tags: '*'
+  pull_request:
+jobs:
+  build:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.9'
+      - name: Install Python dependencies
+        run: python -m pip install --user matplotlib
+      - name: Set up Julia
+        uses: julia-actions/setup-julia@v1
+        with:
+          version: '1.6'
+      - name: Install Julia dependencies
+        run: julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
+      - name: Build and deploy docs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: julia --project=docs/ docs/make.jl
