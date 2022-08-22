@@ -103,7 +103,7 @@ julia> numberop(4)
 """
 function numberop(::Type{T}, N::Integer) where {T<:Number}
     # nzval includes a structural 0 for the [1,1] entry
-    nzval = T[0:N;]
+    nzval = T[0:N-1;]
     return Operator(SparseMatrixCSC{T,Int}(N,N,[1:N+1;],[1:N;],nzval),(N,))
 end
 numberop(N::Integer) = numberop(Float64,N)
