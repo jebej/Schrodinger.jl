@@ -126,9 +126,17 @@ julia> displacementop(3,0.5im)
  -0.166001+0.0im            0.0+0.621974im    0.76524+0.0im
 ```
 """
-function displacementop(N::Integer, α::Number)
-    a = Array(destroy(N))
-    return Operator(LinearAlgebra.exp!(α.*a' .- α'.*a),(N,))
+displacementop(N::Integer, α::Number) = displacementop!(Matrix{ComplexF64}(undef,N,N), N, α)
+
+function displacementop!(D::Matrix, N::Integer, α::Number, B=similar(D))
+    # Compute D(α) = exp(im*H), where H = -1im * (α.*a' .- α'.*a) is Hermitian Tridiagonal
+    # 1. build Hermitian Tridiagonal matrix H via subdiagonal dl (dv is a zero vector)
+    # 2. factorize H by changing basis to real symmetric Tridiagonal matrix T = U'*H*U
+    # 3. compute exp(im*Λ) where Λ are the eigenvalues of T and go back to original basis
+    dl = [-1im*α*sqrt(n) for n in 1:(N-1)]
+    dv = [zero(real(eltype(dl))) for n in 1:N]
+    expim!(D, dv, dl, B)
+    return Operator(D, (N,))
 end
 
 """

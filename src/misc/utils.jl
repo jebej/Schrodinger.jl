@@ -113,6 +113,24 @@ function expim!(R::Matrix, D::Vector, V::Matrix, H::RealHermSymComplexHerm, B=si
     return R
 end
 
+function expim!(R::Matrix, dv::AbstractVector, dl::AbstractVector, B=similar(R))
+    # same as above, but for Hermitian Tridiagonal matrices with diagonal dv and subdiagonal dl
+    T,D = hermitian_tridiag_to_realsym_tridiag(dv,dl)
+    Λ,U = eigen!(T)
+    DU = D*U
+    n = length(dv)
+    @inbounds for j = 1:n
+        a = cis(Λ[j])
+        @simd for i = 1:n
+            B[i,j] = a * DU[i,j]
+        end
+    end
+    return mul!(R, B, adjoint(DU))
+    return R
+end
+
+
+
 excited_sys(A::QuObject, subs::Vararg{Integer}) = excited_sys(dims(A), sys)
 excited_sys(::Union{Dims{N},Val{N}}, subs::Vararg{Integer}) where N =
     ntuple(i->ifelse(i ∈ subs, 1, 0), Val(N))
