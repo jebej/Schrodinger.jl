@@ -41,10 +41,18 @@ dimsmatch(A::QuObject,Bs::AbstractVecOrTuple{QuObject}) = dimsmatch((A,),Bs)
     getindex(A.data,tensored_sub2ind(dims(A),t))
 @propagate_inbounds getindex(A::QuMatrix,ti::Tuple,tj::Tuple) =
     getindex(A.data,tensored_sub2ind(dims(A),ti),tensored_sub2ind(dims(A),tj))
+@propagate_inbounds getindex(A::QuMatrix,ti::Tuple,j::Integer) =
+    getindex(A.data,tensored_sub2ind(dims(A),ti),j)
+@propagate_inbounds getindex(A::QuMatrix,i::Integer,tj::Tuple) =
+    getindex(A.data,i,tensored_sub2ind(dims(A),tj))
 @propagate_inbounds setindex!(A::QuVector,v,t::Tuple) =
     setindex!(A.data,v,tensored_sub2ind(dims(A),t))
 @propagate_inbounds setindex!(A::QuMatrix,v,ti::Tuple,tj::Tuple) =
     setindex!(A.data,v,tensored_sub2ind(dims(A),ti),tensored_sub2ind(dims(A),tj))
+@propagate_inbounds setindex!(A::QuMatrix,v,ti::Tuple,j::Integer) =
+    setindex!(A.data,v,tensored_sub2ind(dims(A),ti),j)
+@propagate_inbounds setindex!(A::QuMatrix,v,i::Integer,tj::Tuple) =
+    setindex!(A.data,v,i,tensored_sub2ind(dims(A),tj))
 
 # Translate basic Base array methods to QuObjects
 @propagate_inbounds getindex(A::QuObject,idx...) = getindex(A.data,idx...)
