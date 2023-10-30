@@ -125,7 +125,7 @@ function expim!(R::Matrix, dv::AbstractVector, dl::AbstractVector, B=similar(R))
             B[i,j] = a * DU[i,j]
         end
     end
-    return mul!(R, B, adjoint(DU))
+    mul!(R, B, adjoint(DU))
     return R
 end
 

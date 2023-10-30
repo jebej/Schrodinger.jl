@@ -122,4 +122,4 @@ function check_choi(C::Operator{T,D}) where {T,D}
     return prod(i->dm[i],1:D÷2)
 end
 
-_half_dims(dm::Dims{D}) where{D} = ntuple(i->dm[i],D÷2)
+_half_dims(dm::Dims{D}) where {D} = ntuple(i->dm[i],D÷2)

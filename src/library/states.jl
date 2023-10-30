@@ -40,7 +40,7 @@ Returns a dense vector.
 ```jldoctest
 julia> coherent(6,0.4+1im)
 6-d Ket{Vector{ComplexF64}, 1} with dimensions 6
-0.60∠68°|1⟩ + 0.56∠-0°|0⟩ + 0.46∠136°|2⟩ + 0.29∠-155°|3⟩ + 0.15∠-87°|4⟩ +…
+0.60∠68°|1⟩ + 0.56∠0°|0⟩ + 0.46∠136°|2⟩ + 0.29∠-155°|3⟩ + 0.15∠-87°|4⟩ +…
 ```
 """
 function coherent(N::Integer, α::Number, analytic::Bool=false)
