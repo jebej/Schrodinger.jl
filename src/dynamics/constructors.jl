@@ -37,6 +37,21 @@ function LindbladEvo(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, Cₘ::Tuple{Var
     Lₙ,fₙ,pₙ = unpack_operators(Hₙ)
     return Liouvillian(dims(H₀),L₀,-1im.*super_vonneumann.(Lₙ,(Id,)),fₙ,pₙ)
 end
+function LindbladEvo(H₀::Operator, Hₙ::Tuple{Vararg{Tuple}}, Cₘ::Tuple{Vararg{Tuple}})
+    dimsmatch(H₀,first.(Hₙ)); dimsmatch(H₀,first.(Cₘ))
+    Id = data(qeye(dims(H₀)))
+    # Constant Hamiltonian term
+    L₀ = -1im*super_vonneumann(H₀,Id)
+    # Unpack time-dependent Hamiltonian terms
+    Lₙ,fₙ,pₙ = unpack_operators(Hₙ)
+    # Unpack time-dependent collapse operator terms
+    Lₘ,fₘ,pₘ = unpack_operators(Cₘ)
+    # Superoperatorize time-dependent operators
+    Lₙ_super = -1im.*super_vonneumann.(Lₙ,(Id,))
+    Lₘ_super = super_collapse.(data.(Lₘ),(Id,))
+    # Merge tuples
+    return Liouvillian(dims(H₀),L₀,(Lₙ_super...,Lₘ_super...),(fₙ...,fₘ...),(pₙ...,pₘ...))
+end
 LindbladEvo(H₀::Operator,Cₘ::Vararg{Operator}) = LindbladEvo(H₀,Cₘ)
 LindbladEvo(H::Tuple{Operator,Vararg{Tuple}},Cₘ::Vararg{Operator}) = LindbladEvo(first(H),tail(H),Cₘ)
 LindbladEvo(H::Tuple{Operator,Vararg{Tuple}},Cₘ::Tuple{Vararg{Operator}}) = LindbladEvo(first(H),tail(H),Cₘ)
@@ -133,13 +148,16 @@ function super_vonneumann(H,Id)
     return Id⊗data(H) - copy(transpose(data(H)))⊗Id
 end
 
-function sum_collapse(Cₘ,Id)
-    # sum the Lindblad superoperators corresponding to the action of
-    # D[Cᵢ](ρ) = CᵢρCᵢ† - 1/2 * (Cᵢ†Cᵢρ + ρCᵢ†Cᵢ) as a linear superoperator
-    mapreduce(+,data.(Cₘ)) do Cᵢ
-        CdC = Cᵢ'*Cᵢ
-        return conj(Cᵢ)⊗Cᵢ - (Id⊗CdC + copy(transpose(CdC))⊗Id)./2
-    end
+function sum_collapse(Cₘ, Id)
+    # sum the Lindblad collapse superoperators
+    mapreduce(Cᵢ->super_collapse(data(Cᵢ), Id), +, Cₘ)
+end
+
+function super_collapse(C::AbstractMatrix, Id::AbstractMatrix)
+    # represent the Lindblad superoperator corresponding to the action of
+    # D[C](ρ) = CρC† - 1/2 * (C†Cρ + ρC†C) as a linear superoperator
+    CdC = C'*C
+    return conj(C)⊗C - (Id⊗CdC + copy(transpose(CdC))⊗Id)./2
 end
 
 function step_hamiltonian!(H,H0,Hn,tspec)
