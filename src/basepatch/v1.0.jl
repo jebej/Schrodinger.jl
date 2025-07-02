@@ -1,5 +1,5 @@
 import Base: BitSet, convert, reverse, print_array, sum, promote_rule
-import LinearAlgebra: normalize, BLAS.dotu
+import LinearAlgebra: BLAS.dotu
 
 const IntCol = Union{AbstractVector{Int},BitSet,Set{Int},NTuple{N,Int} where N}
 
@@ -9,9 +9,9 @@ BitSet(elems::Vararg{Int}) = BitSet(elems)
 
 reverse(n::Number) = n
 
-normalize(z::Complex) = z == 0 ? one(z)/abs(one(z)) : z/abs(z)
-
-normalize(z::Real) = one(z)
+@static if VERSION < v"1.10"
+    LinearAlgebra.normalize(z::Number) = z == 0 ? one(z)/abs(one(z)) : z/abs(z)
+end
 
 trace(A::AbstractMatrix) = tr(A)
 
