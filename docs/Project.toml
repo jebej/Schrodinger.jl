@@ -1,7 +1,8 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 PyPlot = "d330b81b-6aea-500a-939a-2ce795aea3ee"
+Schrodinger = "5f5b5750-cb1a-11e8-178f-cf2a673dfc6f"
 SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 
 [compat]
-Documenter = "0.27"
+Documenter = "1.0"

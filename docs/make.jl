@@ -9,6 +9,7 @@ makedocs(
     format = Documenter.HTML(prettyurls = false),
     linkcheck = true,
     clean = false,
+    warnonly = true,
     pages = [
         "Home" => "index.md",
         "Manual" => [
