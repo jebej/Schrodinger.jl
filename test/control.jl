@@ -25,8 +25,7 @@ function opt_2Q_QFT(n)
     return grape(O,ui)
 end
 
-grape_res = opt_2Q_QFT(200)
-
 @testset "Optimal Control Tests" begin
-@test 1 - gate_fidelity(grape_res.Uf, grape_res.Ut) < 1E-8
+    grape_res = opt_2Q_QFT(200)
+    @test 1 - gate_fidelity(grape_res.Uf, grape_res.Ut) < 1E-8
 end

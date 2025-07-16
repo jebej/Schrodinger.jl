@@ -2,6 +2,10 @@ using LinearAlgebra: RealHermSymComplexHerm
 
 tname(T::Type) = T.name.name
 
+# replacement for promote_eltype due to https://github.com/JuliaLang/julia/pull/51135
+promote_elemtype(v1) = eltype(v1)
+promote_elemtype(v1, vs...) = promote_type(eltype(v1), promote_elemtype(vs...))
+
 function randomsmooth(n::Integer,m::Integer)
     R = Matrix{Float64}(undef,n,m)
     for i = 1:m

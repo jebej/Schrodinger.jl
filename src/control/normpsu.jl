@@ -31,7 +31,7 @@ function NormPSU(Ut::Operator,Hd::Operator,Hc::Vector{<:Operator},t::Real,n::Int
     # Storage for last control ampitudes, NaN for first run
     u_last = fill(NaN64,m*n)
     # Generate cache for various objects
-    H = Hermitian(zeros(promote_eltype(typeof(Hd_d),eltype(Hc_d)),N,N))
+    H = Hermitian(zeros(promote_type(eltype(Hd_d),eltype(eltype(Hc_d))),N,N))
     A = Matrix{ComplexF64}(undef,N,N)
     U = [Matrix{ComplexF64}(undef,N,N) for i=1:n]
     X = [Matrix{ComplexF64}(undef,N,N) for i=1:n]

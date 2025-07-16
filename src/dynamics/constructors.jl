@@ -171,7 +171,7 @@ function step_hamiltonian!(H,H0,Hn,tspec)
 end
 
 function compute_H_type(H0,Hn)
-    T1 = promote_eltype(H0,Hn[1]...)
+    T1 = promote_elemtype(H0,Hn[1]...)
     T2 = promote_type(_typeof_H_funs(Hn[2],Hn[3])...)
     return promote_type(T1,T2)
 end
