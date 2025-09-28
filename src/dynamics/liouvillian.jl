@@ -11,7 +11,7 @@ Liouvillian(dims::Dims{D},L₀::M,Lₙ=(),fₙ=(),pₙ=()) where {D,M<:AbstractM
 data(L::Liouvillian) = (L.L₀, L.Lₙ, L.fₙ, L.pₙ)
 
 # Liouvillian ODE Type, compatible with AbstractODEFunction interface
-using OrdinaryDiffEq.DiffEqBase: AbstractODEFunction
+using DiffEqBase: AbstractODEFunction
 struct LiouvillianODE{LT<:Liouvillian,TD,TJ,TP} <: AbstractODEFunction{true}
     L::LT
     tgrad::TD

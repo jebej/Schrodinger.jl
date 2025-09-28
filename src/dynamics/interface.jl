@@ -15,7 +15,7 @@ mesolve(H,C,ρ₀::Operator,tspan,e_ops=(),alg=Tsit5();kwargs...) = lsolve(Lindb
 mesolve(H,C,ψ₀::Ket,tspan,e_ops=(),alg=Tsit5();kwargs...) = mesolve(H,C,Operator(ψ₀),tspan,e_ops,alg;kwargs...)
 
 # The functions below require a Liouvillian
-using OrdinaryDiffEq.DiffEqBase: __solve # for inferability
+using DiffEqBase: __solve # for inferability
 
 function lsolve(L::Liouvillian,ψ₀::Ket,tspan,e_ops,alg;kwargs...)
     dimsmatch(L,ψ₀)
